@@ -6,28 +6,16 @@ import reportWebVitals from './reportWebVitals';
 import 'materialize-css/dist/css/materialize.min.css';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
-// import M from 'materialize-css/dist/js/materialize.min.js';
-// import { ProductContext } from './ProductContext';
-import {ProductProvider} from './ProductContext'
-
-// document.addEventListener('DOMContentLoaded', function() {
-//   M.AutoInit();
-// });
-
+import AppProvider from './AppProvider';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ProductProvider>
+    <AppProvider>
       <App />
-    </ProductProvider>
+    </AppProvider>
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
-
 
