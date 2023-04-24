@@ -1,18 +1,29 @@
-import React, {   
-                useContext, 
-                // useEffect 
-              } from 'react';
-// import M from 'materialize-css';
-import { useSelector } from 'react-redux'; 
+import React, { 
+  useEffect,
+} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import Navbar from './includes/Navbar';
+
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { ProductContext } from '../ProductContext';
+import { homepage } from '../features/main'
+
 
 const Homepage = () => {
-  const [products] = useContext(ProductContext);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(homepage());
+  }, [dispatch]);
+
+  const products = useSelector((state) => state.main.products);
+  const loading = useSelector((state) => state.main.loading);
+  const error = useSelector((state) => state.main.error);
 
   const isAuthenticated = useSelector(state => state.user.isAuthenticated); // Get isAuthenticated from the Redux state
+  // console.log(isAuthenticated)
 
   const settings = {
     autoplay: true,
@@ -29,9 +40,15 @@ const Homepage = () => {
   };
 
   return (
+  <>
+    <Navbar />
     <div className="container">
       <h1 className="center-align">Products</h1>
-      {isAuthenticated ? ( // Conditionally render content based on whether the user is authenticated or not
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : isAuthenticated ? (
         <Slider {...settings}>
           {products.map((product) => (
             <div key={product.id}>
@@ -45,6 +62,7 @@ const Homepage = () => {
         <p>Please log in to view products</p>
       )}
     </div>
+  </>
   );
 };
 

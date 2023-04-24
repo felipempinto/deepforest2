@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY_DF_WEBSITE')
@@ -17,9 +18,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'main',
     'users',
+    'forestmask',
     'storages',
     'rest_framework',
     'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -140,7 +143,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = "/media/"
 
 
-
+AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
@@ -154,7 +157,14 @@ REST_FRAMEWORK = {
 }
 
 
+REST_AUTH_SERIALIZERS = {
+    "USER_DETAILS_SERIALIZER":'users.serializers.UserSerializer',
+}
 
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+  }
 
 

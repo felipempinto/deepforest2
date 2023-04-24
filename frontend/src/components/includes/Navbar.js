@@ -1,52 +1,69 @@
-import React, { 
-  useRef, 
-  useEffect, 
-  useContext 
-} from 'react';
-import M from 'materialize-css';
-import { ProductContext } from '../../ProductContext';
+import React from 'react';
+import { NavLink,Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../features/user';
 
-const Navbar = () => {
-  const [products] = useContext(ProductContext);
-  const dropdownRef = useRef(null);
+function Navbar() {
 
-  useEffect(() => {
-    var dropdownElems = document.querySelectorAll('.dropdown-trigger');
-    M.Dropdown.init(dropdownElems, {
-      coverTrigger: false,
-      constrainWidth: false,
-      alignment: 'right',
-    });
-  }, []);
+  const dispatch = useDispatch();
+	const { isAuthenticated } = useSelector(state => state.user);
+  // console.log("ISAUTHNAV");
+  // console.log(isAuthenticated);
 
+  // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
+  const authlinks = (
+    <>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
+      </li>
+      <li className='nav-item'>
+				<a className='nav-link' href='#!' onClick={() => dispatch(logout())}>
+					Logout
+				</a>
+			</li>
+      {/* <li className="nav-item">
+        <NavLink className="nav-link" to="/logout">Logout</NavLink>
+      </li> */}
+    </>
+  );
+  
+  const guestLinks = (
+    <>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/login">Login</NavLink>
+      </li>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/register">Register</NavLink>
+      </li>
+    </>
+  );
+  
   return (
-    <nav>
-      <div className="nav-wrapper blue-grey darken-3">
-        <a href="/" className="brand-logo">
-          Logo
-        </a>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">My App</Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav">
+            {isAuthenticated ? authlinks : guestLinks}
+            <li className="nav-item"><NavLink className="nav-link" to="/forestmask">Forest Mask</NavLink></li>
 
-        <ul id="dropdown1" className="dropdown-content" ref={dropdownRef}>
-          {products.map(product => (
-            <li key={product.id}>
-              <a href={product.url}>{product.name}</a>
-            </li>
-          ))}
-        </ul>
-
-        <ul id="nav-mobile" className="right hide-on-med-and-down">
-          <li>
-            <a className="dropdown-trigger" href="#!" data-target="dropdown1">
-              Products
-              <i className="material-icons right">arrow_drop_down</i>
-            </a>
-          </li>
-          <li><a href='/login'>Login</a></li>
-        </ul>
+          </ul>
+        </div>
       </div>
     </nav>
   );
-};
+}
 
 export default Navbar;
