@@ -1,12 +1,14 @@
 # from django.db import models
 from django.contrib.gis.db import models
 from django.conf import settings
-from osgeo import gdal
 from django.contrib.gis.geos import GEOSGeometry
+
+from osgeo import gdal
 from shapely.geometry import MultiPolygon,Polygon
 from shapely.ops import transform
 import pyproj
 
+# from datetime import datetime
 
 gdal.SetConfigOption('AWS_REGION', 'us-east-2')
 gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)

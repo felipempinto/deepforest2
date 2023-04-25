@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // Main paths
 const productsRoute = require('./routes/main/products')
+const tilesRoute = require('./routes/main/tiles')
 
 // ForestMask Paths
 const imageslocationsRoute = require('./routes/forestmask/imageslocations')
@@ -24,6 +25,7 @@ app.use(cookieParser())
 
 app.use(imageslocationsRoute)
 app.use(productsRoute)
+app.use(tilesRoute)
 app.use(loginRoute)
 app.use(logoutRoute)
 app.use(meRoute)

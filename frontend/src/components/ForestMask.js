@@ -55,8 +55,9 @@ const ForestMask = () => {
     return (
     <>
       <Navbar/>
-      <div>
-        <h1>Forest Mask Map</h1>
+      <div className='container'>
+        <h1>Forest Mask</h1>
+        <h2>Locations used to train the model:</h2>
         <MapComponent data={data} />
       </div>
     </>

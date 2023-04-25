@@ -3,6 +3,7 @@ import React, {
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Navbar from './includes/Navbar';
+import Footer from './includes/Footer';
 
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
@@ -62,6 +63,7 @@ const Homepage = () => {
         <p>Please log in to view products</p>
       )}
     </div>
+    <Footer />
   </>
   );
 };
