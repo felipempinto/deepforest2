@@ -1,0 +1,9 @@
+footer {
+    background-color:bisque; 
+    color: black;
+  }
+
+li.inline {
+  display: inline-block;
+  margin-right: 10px; /* adjust this value to increase or decrease the space between the icons */
+}

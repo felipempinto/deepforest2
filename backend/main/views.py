@@ -8,6 +8,8 @@ from .models import Product,TilesProcessed
 
 from datetime import datetime
 from django.contrib.gis.geos import Polygon
+from django.utils import timezone
+# from django.utils.timezone import make_aware
 
 class ProductList(APIView):
     def get(self, request):
@@ -32,16 +34,21 @@ def tiles_list(request):
     product = request.data.get('product', None)
     bbox = request.data.get('bbox', None)
 
+    product = product.replace(' ','').lower()
+
     # TilesProcessed.update_from_s3('forestmask')
     
     if not product:
         queryset = TilesProcessed.objects.all()
     else:
         queryset = TilesProcessed.objects.filter(product=product)
+        # if len(queryset)==0:
+        #     print("A"*140)
+        #     return 
 
     if date1 and date2:
-        date1 = datetime.strptime(date1, '%Y-%m-%d').date()
-        date2 = datetime.strptime(date2, '%Y-%m-%d').date()
+        date1 = timezone.make_aware(datetime.strptime(date1, '%Y-%m-%d'),timezone.get_default_timezone()).date()
+        date2 = timezone.make_aware(datetime.strptime(date2, '%Y-%m-%d'),timezone.get_default_timezone()).date()
         queryset = queryset.filter(date_image__range=(date1, date2))
 
     if bbox is not None:

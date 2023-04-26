@@ -7,7 +7,7 @@ import { Navigate } from 'react-router-dom';
 
 function Register() {
   const dispatch = useDispatch();
-  const { registered, loading } = useSelector(state => state.user);
+  const { registered,  } = useSelector(state => state.user);//loading
 
   const [formData,setFormData] = useState({
         username: '',

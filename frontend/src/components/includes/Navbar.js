@@ -58,7 +58,7 @@ function Navbar() {
           <ul className="navbar-nav">
             {isAuthenticated ? authlinks : guestLinks}
             <li className="nav-item"><NavLink className="nav-link" to="/forestmask">Forest Mask</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/map">Request</NavLink></li>
+            <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
 
           </ul>
         </div>

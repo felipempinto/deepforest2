@@ -4,7 +4,7 @@
     right: 20px;
     padding: 10px;
     z-index: 400;
-    background-color: #868fa0;
+    background-color: white;
   }
   
 .map-container {
@@ -13,12 +13,12 @@
     width: 100%;
   }
 
-.button-toggle-side-nav{
-  position: fixed;
-  z-index: 500;
+#button-toggle-side-nav{
+  position: absolute;
+  z-index: 400;
   bottom: 20px;
   left: 20px;
-  background-color: #868fa0;
+  background-color: white;
 }
 
 .sidebar {
@@ -43,3 +43,46 @@
 .select-class{
   display: block;
 }
+
+
+.popup-content table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.popup-content td:first-child {
+  width: 30%;
+  font-weight: bold;
+}
+
+.popup-content td:last-child {
+  width: 70%;
+  word-break: break-all;
+}
+
+.date-section{
+  background-color:rgb(136, 136, 136);
+}
+
+
+.my-btn-class {
+  display: block; 
+  margin: 0 auto;  
+  font-size: 1.2rem; 
+  padding: 0.8rem 1.5rem; 
+}
+
+.datepicker-modal {
+  max-height: 395px !important;
+  height: 100% !important;
+
+}
+
+
+button#submit-button {
+  display: block;
+  margin: 0 auto;
+  background-color:darkcyan;
+  padding-bottom: 10px;
+}
+

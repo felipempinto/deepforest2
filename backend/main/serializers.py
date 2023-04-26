@@ -21,6 +21,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
        return data
 
 class TilesSerializer(serializers.ModelSerializer):
+    
+    mask_url = serializers.SerializerMethodField()
+
     class Meta:
         model = TilesProcessed
         fields = '__all__'
+
+    def get_mask_url(self, obj):
+        return obj.get_mask(obj.location)

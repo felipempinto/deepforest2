@@ -31,7 +31,6 @@ export const tiles = createAsyncThunk(
       date1,
       date2,
     });
-
     try {
       const res = await fetch('/api/tiles', {
         method: 'POST',
@@ -41,7 +40,6 @@ export const tiles = createAsyncThunk(
         },
         body,
       });
-
       const data = await res.json();
 
       if (res.status === 200) {
@@ -66,6 +64,7 @@ const mainSlice = createSlice({
       state.products.push(action.payload);
     },
     addTiles: (state, action) => {
+      // state.tiles = [];
       state.tiles = action.payload;
     },
   },

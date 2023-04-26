@@ -1,4 +1,5 @@
 import React from 'react';
+import "./Footer.css"
 
 const Footer = () => {
 return (
@@ -20,7 +21,7 @@ return (
               <li className="inline"><a className="footer-text" href="https://github.com/felipempinto" target="_blank" rel="noreferrer"><img src="icons8-github-50.png" width="25" height="25" alt="GitHub" /></a></li>
               <li className="email inline"><a className="footer-text" href="mailto:felipempfreelancer@gmail.com?subject=Deep forest help" target="_blank" rel="noreferrer"><img src="icons8-email-64.png" width="25" height="25" alt="Email" /></a></li>
               <li className="inline"><a className="footer-text" href="https://www.upwork.com/freelancers/~01dac11ce87134abd6" target="_blank" rel="noreferrer"><img src="icons8-upwork-50.png" width="25" height="25" alt="Upwork" /></a></li>
-            </ul>
+        </ul>
       </div>
     </div>
   </div>

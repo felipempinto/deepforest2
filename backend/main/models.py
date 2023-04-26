@@ -4,6 +4,7 @@ from django.utils.timezone import make_aware
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 
+from botocore.exceptions import ClientError,ParamValidationError
 import boto3
 from osgeo import gdal
 from shapely.geometry import MultiPolygon,Polygon
@@ -16,6 +17,13 @@ import datetime
 gdal.SetConfigOption('AWS_REGION', 'us-east-2')
 gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)
 gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY',settings.AWS_SECRET_ACCESS_KEY)
+BUCKET = settings.AWS_STORAGE_BUCKET_NAME
+
+s3 = boto3.client('s3',
+                    region_name='us-east-2',
+                    aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                    aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                )
 
 class Product(models.Model):
     name = models.CharField(max_length=50)
@@ -56,19 +64,26 @@ class TilesProcessed(models.Model):
     last_modified = models.DateTimeField()
     size = models.BigIntegerField()
     product = models.CharField(max_length=50)
+    location = models.CharField(max_length=200,null=True,blank=True)
     poly = models.MultiPolygonField(null=True,blank=True)
 
     class Meta:
         verbose_name = 'Tile'
         verbose_name_plural = 'Tiles'
 
+    def get_mask(self,location,expiration=1200):
+        try:
+            response = s3.generate_presigned_url('get_object',
+                                                    Params={'Bucket': BUCKET,
+                                                            'Key': location},
+                                                    ExpiresIn=expiration)
+        except (ClientError,ParamValidationError):
+            return None
+        else:
+            return response
+
     @classmethod
     def update_from_s3(cls, product):
-        s3 = boto3.client('s3',
-                            region_name='us-east-2',
-                            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                        )
         bucket_name = 'deepforestbucket'
         prefix = f'{product}/outputs/tiles/sentinel2/'
 
@@ -77,10 +92,11 @@ class TilesProcessed(models.Model):
         for obj in response['Contents']:
             if not obj['Key'].endswith('/'): 
                 name = obj['Key'].split('/')[-1]
+                location = prefix+name
                 last_modified = obj['LastModified']
                 size = obj['Size']
                 date_str = name.split('_')[2]
-                date_image = datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S')
+                date_image = make_aware(datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S'))
                 tile, created = cls.objects.update_or_create(name=name, defaults={
                     'last_modified': last_modified,
                     'size': size,
@@ -92,13 +108,14 @@ class TilesProcessed(models.Model):
                     tile.size = size
                     tile.product = product
                     tile.date_image = date_image
+                    tile.location = location
                     tile.save()
 
                  # Set the poly field using the bounding box
-                t1 = time.time()
+                # t1 = time.time()
                 url = f'/vsis3/{bucket_name}/{obj["Key"]}'
-                ds = gdal.Open(url)
-                print(time.time()-t1)
+                ds = gdal.Open(url)   ### It takes something like 0.5 seconds in my PC
+                # print(time.time()-t1)
                 bounds = get_bounds(ds)
                 poly = GEOSGeometry(bounds)#ogr.CreateGeometryFromWkt(bounds)
                 tile.poly = poly
