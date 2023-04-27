@@ -9,6 +9,7 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard'
 import ForestMask from './components/ForestMask'
 import RequestMap from './components/RequestMap';
+import LandCover from './components/LandCover';
 
 function App() {
   const dispatch = useDispatch();
@@ -25,6 +26,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/forestmask" exact element={<ForestMask />} />
+        <Route path="/landcover" exact element={<LandCover />} />
         <Route path="/map" exact element={<RequestMap />} />
         
       </Routes>

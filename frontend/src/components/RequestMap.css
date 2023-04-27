@@ -23,6 +23,7 @@
 
 .sidebar {
   max-width: 450px;
+  max-height: 600px;
   min-width: 260px;
   color: #868fa0;
   background-color: black;
@@ -85,4 +86,59 @@ button#submit-button {
   background-color:darkcyan;
   padding-bottom: 10px;
 }
+/* 
+.tabs .tab a {
+  background-color: black;
+  text-decoration: none;
+  color: white;
+}
 
+.tabs .tab a:hover {
+  background-color: rgb(141, 141, 141);
+  text-decoration: none;
+  color: white;
+} */
+
+.tabs .tab a:focus, .tabs .tab a:focus.active {
+  background-color: rgba(12, 12, 12, 0.2);
+  outline: none;
+}
+
+.tabs .tab a:hover, .tabs .tab a.active {
+  /* background-color: transparent; */
+  background-color: black;
+  text-decoration: none;
+  color: white;
+}
+
+
+.tabs .tab.disabled a,
+.tabs .tab.disabled a:hover {
+  background-color: black;
+  color: rgba(255, 255, 255);
+  text-decoration: none;
+  cursor: default;
+}
+
+.tabs .indicator {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background-color: #888888;
+  will-change: left, right;
+}
+
+
+.tabs {
+  width: 100%;
+}
+
+ul{
+  display: flex;
+}
+
+.collection{
+  max-height: 500px;
+  overflow-y: auto;
+
+}
