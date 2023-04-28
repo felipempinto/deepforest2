@@ -14,24 +14,17 @@ import {
 import { homepage } from '../features/main'
 import './RequestMap.css';
 import "react-datepicker/dist/react-datepicker.css";
-import { tiles } from '../features/main'
+import { tiles,resetTiles } from '../features/main'
 var parse = require('wellknown');
 
 
 function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [formSubmitted, setFormSubmitted] = useState(false);
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
-  const [activeTab, setActiveTab] = useState("tab1");
-
-  useEffect(() => {
-    const tabs = document.querySelector('.tabs');
-    M.Tabs.init(tabs);
-  }, []);
-
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-  }
+  const collapsibleRef = useRef(null);
+  const dispatch = useDispatch();
 
   const handleMouseOver = (id) => {
     const newColors = { ...geojsonColors };
@@ -50,14 +43,19 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     setGeojsonColors(newColors);
   }
 
-  const dispatch = useDispatch();
-
   const handleProductChange = (event) => {
     const productId = parseInt(event.target.value);
     const product = products.find((p) => p.id === productId);
     setSelectedProduct(product);
   };
 
+  useEffect(()=>{
+    // options = {}
+    // document.addEventListener('DOMContentLoaded', function() {
+    // var elems = document.querySelectorAll('.collapsible');
+    M.Collapsible.init(collapsibleRef.current, {});
+    // });
+  })
   useEffect(() => {
     M.Datepicker.init(startDateRef.current, {
       format: 'yyyy-mm-dd',
@@ -78,8 +76,17 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     });
   }, []);
 
+  const handleBackClick = ()=>{
+    setFormSubmitted(false);
+    dispatch(resetTiles())
+    console.log("BAH")
+  }
+
   const handleFormSubmit = (event) => {
     event.preventDefault();
+    if (selectedProduct && geojsons.length>0) {
+    setFormSubmitted(true);
+    }
 
     if (!selectedProduct) {
       alert("You need to select the product first!")
@@ -90,11 +97,18 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
         date1: startDateRef.current.value,
         date2: endDateRef.current.value
     };
+    console.log(formData)
 
     dispatch(tiles(formData));
 
   }
 };
+
+  function cvtDate(dateString) {
+    const date = new Date(dateString);
+    const formattedDate = `${date.toLocaleDateString('en-GB')} ${date.toLocaleTimeString()}`;
+    return formattedDate;
+  }
 
   const tab1 = <>
     <div className='section'>
@@ -127,7 +141,12 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           </div>
           </div>
         </div>
-        <button type="submit" className="waves-effect waves-light btn align-center" id="submit-button">
+        <button 
+           type="submit" 
+           className="waves-effect waves-light btn align-center" 
+           id="submit-button"
+           disabled={formSubmitted}
+           >
           Submit
         </button>
       </form>
@@ -135,7 +154,41 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
   </>
 
   var tab2 = <>
-   <div className="collection">
+  <div className='container'>
+  <h5 className="center-align">Products based on your search</h5>
+  <button 
+  onClick={handleBackClick}
+   className="waves-effect waves-light btn align-center" 
+   >
+    {/* onClick={() => dispatch(resetTiles())} */}
+    
+    <i className="material-icons">arrow_back</i> Back to search
+  </button>
+    <ul className="collapsible expandable ul-collapsible" ref={collapsibleRef}>
+      {geojsons.map((geojson,i) => (
+        <li className='li-collapsible' key={geojson.id}>
+          <div 
+            className="collapsible-header" 
+            onMouseOver={() => handleMouseOver(geojson.id)}
+            onMouseOut={() => handleMouseOut(geojson.id)}>
+              {cvtDate(geojson.date_image)}
+          </div>
+          <div className="collapsible-body">
+            <p><strong>Name: </strong>{geojson.name}</p>
+            <p><strong>Product: </strong>{geojson.product}</p>
+            <p><strong>Last Modified: </strong>{cvtDate(geojson.last_modified)}</p>
+            <p><strong>Size: </strong>{formatBytes(geojson.size)}</p>
+            <a className='center-align' href={geojson.mask_url} download={`${geojson.name}.png`}>
+              <i class="material-icons">download</i>
+            </a>
+            {/* <img src={geojson.mask_url} alt="mask" /> */}
+          </div>
+        </li>
+      )
+      )}
+    </ul>
+        
+   {/* <div className="collection">
    {geojsons.map((geojson, i) => (
         <a 
           key={i} 
@@ -151,28 +204,15 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           {geojson.date_image}
         </a>
             ))}
+    </div> */}
   </div>
   </>
 
 return (
-  <div className='container'>
-    <div>
-      <ul className="tabs">
-        <li className={`tab col s6 ${activeTab === 'tab1' ? 'active' : ''}`}>
-          <a href="#tab1" onClick={() => handleTabClick("tab1")}>Search</a>
-        </li>
-        <li className={`tab col s6 ${activeTab === 'tab2' ? 'active' : ''} ${geojsons.length===0?'disabled':''}`}>
-          <a href="#tab2" onClick={() => handleTabClick("tab2")}>Dataset</a>
-        </li>
-      </ul>
-    </div>
-    <div id="tab1" className={`col s12 ${activeTab === 'tab1' ? 'active' : ''}`}>
-      {tab1}
-    </div>
-    <div id="tab2" className={`col s12 ${activeTab === 'tab2' ? 'active' : ''}`}>
-      {tab2}
-    </div>
-  </div>
+  <>
+    {geojsons.length===0?tab1:tab2} 
+  </>
+  
 );
 }
 

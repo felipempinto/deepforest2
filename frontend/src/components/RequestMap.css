@@ -6,7 +6,7 @@
     z-index: 400;
     background-color: white;
   }
-  
+
 .map-container {
     position: relative;
     height: 100vh;
@@ -67,10 +67,10 @@
 
 
 .my-btn-class {
-  display: block; 
-  margin: 0 auto;  
-  font-size: 1.2rem; 
-  padding: 0.8rem 1.5rem; 
+  display: block;
+  margin: 0 auto;
+  font-size: 1.2rem;
+  padding: 0.8rem 1.5rem;
 }
 
 .datepicker-modal {
@@ -86,7 +86,7 @@ button#submit-button {
   background-color:darkcyan;
   padding-bottom: 10px;
 }
-/* 
+/*
 .tabs .tab a {
   background-color: black;
   text-decoration: none;
@@ -133,12 +133,36 @@ button#submit-button {
   width: 100%;
 }
 
-ul{
+/* ul{
   display: flex;
-}
+} */
 
 .collection{
   max-height: 500px;
   overflow-y: auto;
 
+}
+
+.collapsible{
+  overflow-y: auto;
+  color:black;
+  background-color: #888888;
+  word-wrap: break-word;
+  /* background-color: aqua; */
+}
+
+.collapsible-header{
+  color: #888888;
+  word-wrap: break-word;
+  /* wordWrap: "break-word" */
+}
+
+
+/* .li-collapsible{
+  color:red
+} */
+
+.ul-collapsible{
+  /* color:darkorange; */
+  max-height: 300px;
 }

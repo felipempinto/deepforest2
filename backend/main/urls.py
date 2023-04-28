@@ -14,5 +14,6 @@ urlpatterns = [
     # path('api/token/refresh/', views.CustomTokenRefreshView.as_view(), name='token_refresh'),
     # path('api/token/verify/', views.CustomTokenVerifyView.as_view(), name='token_verify'),
     path('api/tiles/', views.tiles_list, name='tiles_list'),
+    path('api/tiles/download/<int:tile_id>/', views.DownloadTileView.as_view(), name='download_tile'),
     path('api/tiles/update/', views.tiles_update, name='tiles_update'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

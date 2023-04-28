@@ -53,6 +53,32 @@ export const tiles = createAsyncThunk(
   }
 );
 
+export const downloadTiles = createAsyncThunk(
+  'tiles/download',
+  async ({ productId }, thunkAPI) => {
+    const state = thunkAPI.getState();
+    const token = state.auth.token; // assuming the JWT token is stored in the state under auth.token
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    const url = `/api/tiles/download/${productId}/`;
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+      const data = await res.json();
+
+      if (res.status === 200) {
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
 const mainSlice = createSlice({
   name: 'main',
   initialState: {
@@ -66,6 +92,9 @@ const mainSlice = createSlice({
     addTiles: (state, action) => {
       // state.tiles = [];
       state.tiles = action.payload;
+    },
+    resetTiles: (state) => {
+      state.tiles = [];
     },
   },
   extraReducers: (builder) => {
@@ -97,5 +126,5 @@ const mainSlice = createSlice({
   },
 });
 
-export const { addProduct, addTiles } = mainSlice.actions;
+export const { addProduct, addTiles,resetTiles } = mainSlice.actions;
 export default mainSlice.reducer;

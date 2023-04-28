@@ -1,12 +1,17 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework_simplejwt.views import TokenVerifyView,TokenRefreshView,TokenObtainPairView
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
+from rest_framework_simplejwt.views import TokenVerifyView,TokenRefreshView,TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .serializers import ProductSerializer,CustomTokenObtainPairSerializer,TilesSerializer
-from .models import Product,TilesProcessed
+from .models import Product,TilesProcessed,TilesDownloaded
 
 from datetime import datetime
+
+from django.db.models import F
 from django.contrib.gis.geos import Polygon
 from django.utils import timezone
 # from django.utils.timezone import make_aware
@@ -39,9 +44,9 @@ def tiles_list(request):
     # TilesProcessed.update_from_s3('forestmask')
     
     if not product:
-        queryset = TilesProcessed.objects.all()
+        queryset = TilesProcessed.objects.all().order_by(F('date_image').asc(nulls_last=True))
     else:
-        queryset = TilesProcessed.objects.filter(product=product)
+        queryset = TilesProcessed.objects.filter(product=product).order_by(F('date_image').asc(nulls_last=True))
         # if len(queryset)==0:
         #     print("A"*140)
         #     return 
@@ -66,3 +71,38 @@ def tiles_list(request):
 
 def tiles_update(request):
     TilesProcessed.update_from_s3(product="forestmask")
+
+
+class DownloadTileView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, tile_id):
+        try:
+            tile = TilesProcessed.objects.get(pk=tile_id)
+        except TilesProcessed.DoesNotExist:
+            raise NotFound('Tile not found.')
+        mask_url = tile.get_mask(tile.location)
+        if not mask_url:
+            return Response({'error': 'Failed to generate presigned URL'}, status=500)
+        user = request.user
+        TilesDownloaded.objects.create(user=user, tile=tile)
+        return Response({'mask_url': mask_url})
+
+    # def get(self, request, tile_id):
+    #     # tile = get_object_or_404(TilesProcessed, pk=tile_id)
+    #     tile = TilesProcessed.objects.get(pk=self.kwargs['pk'])
+    #     mask_url = tile.get_mask(tile.location)
+    #     if not mask_url:
+    #         return Response({'error': 'Failed to generate presigned URL'}, status=500)
+    #     user = request.user
+    #     TilesDownloaded.objects.create(user=user, tile=tile)
+    #     return Response({'error': 'Failed to generate presigned URL'}, status=500)
+
+    #     # response = requests.get(mask_url)
+    #     # content_type = response.headers['content-type']
+    #     # content = response.content
+    #     # file_name = f"{tile.name}.png"
+    #     # response = HttpResponse(content, content_type=content_type)
+    #     # response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+    #     # return response

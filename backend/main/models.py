@@ -14,6 +14,8 @@ import pyproj
 import time
 import datetime
 
+from users.models import User
+
 gdal.SetConfigOption('AWS_REGION', 'us-east-2')
 gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)
 gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY',settings.AWS_SECRET_ACCESS_KEY)
@@ -121,3 +123,13 @@ class TilesProcessed(models.Model):
                 tile.poly = poly
 
                 tile.save()
+
+
+
+class TilesDownloaded(models.Model):
+    user = models.ManyToManyField(User)
+    tile = models.ManyToManyField(TilesProcessed)
+    date = models.DateTimeField(auto_now_add=True)
+    
+    # class Meta:
+    #     unique_together = ('user', 'tile')

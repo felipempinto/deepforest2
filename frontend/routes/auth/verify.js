@@ -6,11 +6,11 @@ const router = express.Router();
 
 router.get('/api/users/verify', async (req,res) => {
     const { access,refresh } = req.cookies;
-    console.log("VERIFY")
-    console.log(access)
+    // console.log("VERIFY")
+    // console.log(access)
     console.log(refresh)
     const body = JSON.stringify({
-        token:access,
+        token:refresh,//access
     });
     try {
         const apiRes = await fetch(`${process.env.API_URL}/api/token/verify/`,{
