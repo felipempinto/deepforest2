@@ -37,12 +37,18 @@ class UserCreateSerializer(serializers.ModelSerializer):
     return user
 
 
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'profile_picture']
+
+
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
     # model = get_user_model()
-    fields = ('username', 'email',)
-    # fields = []
+    # fields = ('username', 'email',)
+    fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture']
     # read_only_fields = ()
 
 

@@ -10,6 +10,7 @@ import Dashboard from './components/Dashboard'
 import ForestMask from './components/ForestMask'
 import RequestMap from './components/RequestMap';
 import LandCover from './components/LandCover';
+import UpdateProfile from './components/UpdateProfile';
 
 function App() {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ function App() {
         <Route path="/forestmask" exact element={<ForestMask />} />
         <Route path="/landcover" exact element={<LandCover />} />
         <Route path="/map" exact element={<RequestMap />} />
-        
+        <Route path="/update" exact element={<UpdateProfile />}/>
       </Routes>
     </Router>
   );

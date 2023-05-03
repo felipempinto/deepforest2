@@ -1,0 +1,9 @@
+.nav-link{
+    color: black !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+.img-logo{
+    max-height: 50px;
+}

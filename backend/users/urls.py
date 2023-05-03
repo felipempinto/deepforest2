@@ -1,9 +1,11 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import RegisterView,RetrieveUserView#UserDetailView
+from . import views
 
 urlpatterns = [
     # path('', include(router.urls)),
-    path('register/', RegisterView.as_view()),
-    path('me/', RetrieveUserView.as_view()),
+    path('register/', views.RegisterView.as_view()),
+    path('me/', views.RetrieveUserView.as_view()),
+    # path('update/', views.UserUpdateView.as_view(), name='user_update'),
+    path('update/', views.UserUpdateView.as_view()),
 ]

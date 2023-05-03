@@ -2,7 +2,7 @@ import React,{
     useEffect 
 } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
-import Navbar from './includes/Navbar';
+import NavbarComponent from './includes/Navbar';
 
 import { Navigate } from 'react-router-dom';
 import { imagelocations } from '../features/forestmask';
@@ -45,7 +45,7 @@ const LandCover = () => {
   
     return (
     <>
-      <Navbar/>
+      <NavbarComponent/>
       <div className='container'>
         <h1>Land Cover</h1>
         <h2>Locations used to train the model:</h2>

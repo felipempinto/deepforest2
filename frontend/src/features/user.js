@@ -36,6 +36,41 @@ export const register = createAsyncThunk(
     }
 );
 
+export const update = createAsyncThunk(
+    'users/update',
+	async ({ first_name, last_name, profile_picture}, thunkAPI) => {
+        const body = JSON.stringify({
+			first_name,
+            last_name,
+			profile_picture,
+        });
+
+        try {
+			console.log("NAAAOOOOO")
+            const res = await fetch('/api/users/update',{
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    "Content-Type": 'application/json',
+                },
+                body,
+            });
+
+            const data = await res.json();
+
+            if (res.status === 201) {
+                return data;                
+            } else {
+                return thunkAPI.rejectWithValue(data);
+            }
+        } catch (err) {
+			console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA22")
+            return thunkAPI.rejectWithValue(err.response.data);
+        }
+    }
+);
+
+
 const getUser = createAsyncThunk('users/me', async (_, thunkAPI) => {
 	try {
 		const res = await fetch('/api/users/me', {
@@ -210,7 +245,17 @@ const userSlice = createSlice({
 			})
 			.addCase(logout.rejected, state => {
 				state.loading = false;
-			});
+			})
+			.addCase(update.pending,state => {
+				state.loading = true;
+			})
+			.addCase(update.fulfilled,state =>{
+				state.loading = false
+			})
+			.addCase(update.rejected,state =>{
+				state.loading = false
+			})
+			;
     }
 })
 

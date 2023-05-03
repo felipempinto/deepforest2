@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // import { register } from '../authSlice';
 import { register } from '../features/user';
-import Navbar from './includes/Navbar';
+import NavbarComponent from './includes/Navbar';
 import { Navigate } from 'react-router-dom';
 
 function Register() {
@@ -51,8 +51,8 @@ function Register() {
 
   return (
     <>
-      <Navbar />
-      <div>
+      <NavbarComponent />
+      <div className='container'>
       <h1>Register</h1>
       {/* <form onSubmit={handleSubmit}> */}
       <form onSubmit={onSubmit}>

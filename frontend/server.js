@@ -12,6 +12,7 @@ const tilesRoute = require('./routes/main/tiles')
 const imageslocationsRoute = require('./routes/forestmask/imageslocations')
 
 // Users paths
+const updateRoute = require('./routes/auth/update')
 const loginRoute = require('./routes/auth/login')
 const logoutRoute = require('./routes/auth/logout')
 const meRoute = require('./routes/auth/me')
@@ -31,6 +32,7 @@ app.use(logoutRoute)
 app.use(meRoute)
 app.use(registerRoute)
 app.use(verifyRoute)
+app.use(updateRoute)
 
 app.use(express.static(path.join(__dirname,'build')))
 app.get('*',(req,res) => {

@@ -3,7 +3,7 @@ import { useDispatch,useSelector } from "react-redux";
 import { Navigate } from 'react-router-dom'
 // import { login } from "../authSlice"
 import {resetRegistered,login} from '../features/user';
-import Navbar from "./includes/Navbar";
+import NavbarComponent from "./includes/Navbar";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -47,7 +47,7 @@ const Login = () => {
 
   return (
     <>
-      <Navbar />
+      <NavbarComponent />
       <div className="container">
       <div className="row justify-content-center">
         <div className="col-md-6">

@@ -1,7 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions, status
-from .serializers import UserCreateSerializer, UserSerializer
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework import permissions, status,generics
+
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.tokens import AccessToken
+
+from .models import User
+from .serializers import UserUpdateSerializer,UserCreateSerializer,UserSerializer
+
 
 class RegisterView(APIView):
   def post(self, request):
@@ -24,19 +31,28 @@ class RetrieveUserView(APIView):
   def get(self, request):
     user = request.user
     user = UserSerializer(user)
-    print(user.data)
 
     return Response(user.data, status=status.HTTP_200_OK)
 
 
-# from rest_framework import generics
-# from rest_framework.permissions import IsAuthenticated
-# # from .models import User
-# from .serializers import  UserCreateUpdateSerializer #UserSerializer,
 
-# class UserDetailView(generics.RetrieveUpdateAPIView):
-#     serializer_class = UserCreateUpdateSerializer
-#     permission_classes = (IsAuthenticated,)
+class UserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
 
-#     def get_object(self):
-#         return self.request.user
+    def post(self, request, *args, **kwargs):
+        try:
+            token = request.auth
+            payload = token.payload
+            user_id = payload['user_id']
+        except (InvalidToken, KeyError):
+            return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if user_id != request.user.id:
+            return Response({'detail': 'Token user does not match update user.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    

@@ -2,13 +2,12 @@ import React from 'react';
 import { NavLink,Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../features/user';
+import './Navbar.css'
 
-function Navbar() {
+function NavbarComponent() {
 
   const dispatch = useDispatch();
 	const { isAuthenticated } = useSelector(state => state.user);
-  // console.log("ISAUTHNAV");
-  // console.log(isAuthenticated);
 
   // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
@@ -22,50 +21,31 @@ function Navbar() {
 					Logout
 				</a>
 			</li>
-      {/* <li className="nav-item">
-        <NavLink className="nav-link" to="/logout">Logout</NavLink>
-      </li> */}
     </>
   );
   
   const guestLinks = (
     <>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/login">Login</NavLink>
-      </li>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/register">Register</NavLink>
-      </li>
+      <li className="nav-item"><NavLink className="nav-link" to="/login">Login</NavLink></li>
+      <li className="nav-item"><NavLink className="nav-link" to="/register">Register</NavLink></li>
     </>
   );
   
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-fluid">
-        <Link className="navbar-brand" to="/">My App</Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav">
-            {isAuthenticated ? authlinks : guestLinks}
-            <li className="nav-item"><NavLink className="nav-link" to="/forestmask">Forest Mask</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/landcover">Land Cover</NavLink></li>
-            <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
-
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <div className="container-fluid">
+      <Link className="navbar-brand" to="/">
+        <img className="img-logo" src="/Logo.png" alt="Deep Forest Logo" />
+      </Link>
+      <ul id="nav-mobile" className="right hide-on-med-and-down">
+        {isAuthenticated ? authlinks : guestLinks}
+        <li className="nav-item"><NavLink className="nav-link" to="/forestmask">Forest Mask</NavLink></li>
+        <li className="nav-item"><NavLink className="nav-link" to="/landcover">Land Cover</NavLink></li>
+        <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
+      </ul>
+    </div>
+  </nav>
   );
-}
+  };
 
-export default Navbar;
+export default NavbarComponent;

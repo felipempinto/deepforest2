@@ -160,7 +160,6 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
   onClick={handleBackClick}
    className="waves-effect waves-light btn align-center" 
    >
-    {/* onClick={() => dispatch(resetTiles())} */}
     
     <i className="material-icons">arrow_back</i> Back to search
   </button>

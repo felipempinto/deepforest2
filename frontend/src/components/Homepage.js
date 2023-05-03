@@ -2,7 +2,7 @@ import React, {
   useEffect,
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Navbar from './includes/Navbar';
+import NavbarComponent from './includes/Navbar';
 import Footer from './includes/Footer';
 
 import Slider from 'react-slick';
@@ -42,7 +42,7 @@ const Homepage = () => {
 
   return (
   <>
-    <Navbar />
+    <NavbarComponent />
     <div className="container">
       <h1 className="center-align">Products</h1>
       {loading ? (
