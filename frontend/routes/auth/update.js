@@ -9,6 +9,8 @@ router.post('/api/users/update', async (req, res) => {
     const body = JSON.stringify({first_name,last_name,profile_picture});
     const { access } = req.cookies;
 
+    console.log(req.body)
+
     try {
         const apiRes = await fetch(`${process.env.API_URL}/api/users/update/`,{
             method: 'POST',

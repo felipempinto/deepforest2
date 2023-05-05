@@ -39,23 +39,16 @@ export const register = createAsyncThunk(
 export const update = createAsyncThunk(
     'users/update',
 	async ({ first_name, last_name, profile_picture}, thunkAPI) => {
-        const body = JSON.stringify({
-			first_name,
-            last_name,
-			profile_picture,
-        });
-
+        const body = JSON.stringify({first_name,last_name,profile_picture});
         try {
-			console.log("NAAAOOOOO")
-            const res = await fetch('/api/users/update',{
+            const res = await fetch(
+				'/api/users/update',{
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     "Content-Type": 'application/json',
                 },
-                body,
-            });
-
+                body,});
             const data = await res.json();
 
             if (res.status === 201) {
@@ -64,7 +57,6 @@ export const update = createAsyncThunk(
                 return thunkAPI.rejectWithValue(data);
             }
         } catch (err) {
-			console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA22")
             return thunkAPI.rejectWithValue(err.response.data);
         }
     }

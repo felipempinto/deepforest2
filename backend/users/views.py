@@ -40,19 +40,31 @@ class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        print("A")
         try:
             token = request.auth
+            print("B")
             payload = token.payload
+            print("C")
             user_id = payload['user_id']
+            print("D")
         except (InvalidToken, KeyError):
+            print("E")
             return Response({'detail': 'Invalid token.'}, status=status.HTTP_401_UNAUTHORIZED)
 
         if user_id != request.user.id:
+            print("F")
             return Response({'detail': 'Token user does not match update user.'}, status=status.HTTP_401_UNAUTHORIZED)
 
+        print("G")
+        print(request.data)
         serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+        print("H")
         if serializer.is_valid():
+            print("I")
             serializer.save()
+            print("J")
             return Response(serializer.data, status=status.HTTP_200_OK)
+        print("K")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

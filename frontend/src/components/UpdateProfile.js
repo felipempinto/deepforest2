@@ -17,9 +17,23 @@ const UpdateProfile = () => {
   const [profile_picture, setProfilePicture] = useState(null);
 
 
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   dispatch(
+  //       update({first_name, last_name, profile_picture})
+  //     )};
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(update({first_name, last_name, profile_picture}))};
+    const formData = new FormData();
+    formData.append('first_name', first_name);
+    formData.append('last_name', last_name);
+    formData.append('profile_picture', profile_picture);
+    console.log(formData)
+    dispatch(
+      update(formData)
+    );
+  };  
 
   return (
     <>
