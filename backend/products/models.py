@@ -49,26 +49,74 @@ def get_bounds(ds):
                 [xmin,ymin]
             ]
         )
-    multi = MultiPolygon([poly])
+    # multi = MultiPolygon([poly])
 
     wgs84 = pyproj.CRS('EPSG:4326')
     utm = ds.GetProjection()
 
     project = pyproj.Transformer.from_crs(utm, wgs84,  always_xy=True).transform
-    multi = transform(project, multi)
-    return multi.wkt
+    # multi = transform(project, multi)
+    # return multi.wkt
+    poly = transform(project, poly)
+    return poly
 
-def get_upload_path(instance, filename):
-    return f"models_pth/{instance.product}/{filename}"
+def get_upload_pth(instance, filename):
+    return f"models/{instance.product}/{filename}/pth"
+
+def get_upload_files(instance, filename):
+    return f"models/{instance.product}/{filename}/files"
+
+# def get_upload_pth(instance, filename):
+#     return f"models/{instance.product}/{filename}/pth"
+
+class TrainModel(models.Model):
+    path = models.CharField(max_length=200)
+    outpath = models.CharField(max_length=200)
+    size = models.IntegerField(default=256)
+    batch_size = models.IntegerField(default=10)
+    learning_rate = models.FloatField(default=0.00001)
+    epochs = models.IntegerField(default=200)
+    workers = models.IntegerField(default=0)
+    bands = models.IntegerField(default=3)
+    classes = models.IntegerField(default=2)
+    model = models.CharField(max_length=20,default='unet')
+    encoder = models.CharField(max_length=50,default='resnet101')
+    loss = models.CharField(max_length=50,default='dice')
+    optimizer = models.CharField(max_length=50,default='adam')
 
 class ModelsTrained(models.Model):
     version = models.CharField(max_length=20)
-    description = models.TextField()
+    description = models.TextField(null=True,blank=True)
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
-    pth = models.FileField(upload_to=get_upload_path, null=True, blank=True)
+    pth = models.FileField(upload_to=get_upload_pth, null=True, blank=True)
     poly = models.MultiPolygonField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    train_csv = models.FileField(upload_to=get_upload_files, null=True, blank=True)
+    test_csv = models.FileField(upload_to=get_upload_files, null=True, blank=True)
+    file_locations = models.FileField(upload_to=get_upload_files, null=True, blank=True)
+    parameters = models.FileField(upload_to=get_upload_files, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    def save(self):
+        super(ModelsTrained, self).save()
+        if self.poly is None:
+            
+            polys = []
+            with open(self.file_locations.url) as f:
+                file = f.readline().replace('\n','')
+                ds = gdal.Open(file)
+                bounds = get_bounds(ds)
+                polys.append(bounds)
+
+            multi = MultiPolygon(polys)
+            multi = GEOSGeometry(multi)#ogr.CreateGeometryFromWkt(bounds)
+
+            self.poly = GEOSGeometry(multi)
+            self.save()
+
+        
+
+
 
 class RequestProcess(models.Model):
     pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)

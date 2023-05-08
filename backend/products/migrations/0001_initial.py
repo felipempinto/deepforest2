@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('version', models.CharField(max_length=20)),
                 ('description', models.TextField()),
-                ('pth', models.FileField(blank=True, null=True, upload_to=products.models.get_upload_path)),
+                ('pth', models.FileField(blank=True, null=True, upload_to=products.models.get_upload_pth)),
                 ('poly', django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, null=True, srid=4326)),
                 ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='main.product')),
             ],
