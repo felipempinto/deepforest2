@@ -6,6 +6,7 @@ from urllib import parse as urlparse
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY_DF_WEBSITE')
 DEBUG = os.environ.get("DEBUG")=='True'
+LOCAL = os.environ.get("LOCAL")=="True"
 # ALLOWED_HOSTS = []
 
 ALLOWED_HOSTS = [
@@ -173,12 +174,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         # 'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.BasicAuthentication',
-    ),
+    ],
 }
+
+if LOCAL:
+    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].append('rest_framework.authentication.SessionAuthentication')
+    REST_FRAMEWORK['DEFAULT_AUTHENTICATION_CLASSES'].append('rest_framework.authentication.BasicAuthentication')
 
 
 REST_AUTH_SERIALIZERS = {

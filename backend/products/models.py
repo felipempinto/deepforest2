@@ -6,7 +6,7 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 import django_rq
 
 from osgeo import gdal
-from shapely.geometry import MultiPolygon,Polygon
+from shapely.geometry import MultiPolygon,Polygon,shape
 from shapely.ops import transform
 import pyproj
 
@@ -14,9 +14,13 @@ from botocore.exceptions import ClientError,ParamValidationError
 from botocore.config import Config
 import boto3
 
-from users.models import User
-from main.models import Product
+import uuid
 import os
+from datetime import datetime
+
+from users.models import User
+from main.models import Product,TilesProcessed
+from .download_and_process import process
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
 
@@ -40,7 +44,6 @@ def get_bounds(ds):
     width, height = ds.RasterXSize, ds.RasterYSize
     xmax = xmin + width * xpixel
     ymin = ymax + height * ypixel
-    # return xmin, ymin, xmax, ymax
     poly = Polygon(
             [
                 [xmin,ymax],
@@ -49,25 +52,19 @@ def get_bounds(ds):
                 [xmin,ymin]
             ]
         )
-    # multi = MultiPolygon([poly])
 
     wgs84 = pyproj.CRS('EPSG:4326')
     utm = ds.GetProjection()
 
     project = pyproj.Transformer.from_crs(utm, wgs84,  always_xy=True).transform
-    # multi = transform(project, multi)
-    # return multi.wkt
     poly = transform(project, poly)
     return poly
 
 def get_upload_pth(instance, filename):
-    return f"models/{instance.product}/{filename}/pth"
+    return f"models/{instance.product}/pth/{filename}"
 
 def get_upload_files(instance, filename):
-    return f"models/{instance.product}/{filename}/files"
-
-# def get_upload_pth(instance, filename):
-#     return f"models/{instance.product}/{filename}/pth"
+    return f"models/{instance.product}/files/{filename}"
 
 class TrainModel(models.Model):
     path = models.CharField(max_length=200)
@@ -84,6 +81,15 @@ class TrainModel(models.Model):
     loss = models.CharField(max_length=50,default='dice')
     optimizer = models.CharField(max_length=50,default='adam')
 
+
+def read_text_file_from_s3(url):
+    import requests
+    response = requests.get(url)
+    response.raise_for_status()  # Check if the request was successful
+
+    file_contents = response.text
+    return file_contents
+
 class ModelsTrained(models.Model):
     version = models.CharField(max_length=20)
     description = models.TextField(null=True,blank=True)
@@ -97,32 +103,76 @@ class ModelsTrained(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
+    def __str__(self):
+        return f'{self.product.name} version {self.version}'
+
     def save(self):
         super(ModelsTrained, self).save()
         if self.poly is None:
             
             polys = []
-            with open(self.file_locations.url) as f:
-                file = f.readline().replace('\n','')
+
+            # with open(self.file_locations.url) as f:
+            content = read_text_file_from_s3(self.file_locations.url)
+            files = content.split('\n')
+            files = [i for i in files if i.replace(' ','')!='']
+            for file in files:
                 ds = gdal.Open(file)
                 bounds = get_bounds(ds)
                 polys.append(bounds)
 
             multi = MultiPolygon(polys)
-            multi = GEOSGeometry(multi)#ogr.CreateGeometryFromWkt(bounds)
+            multi = GEOSGeometry(multi.wkt)#ogr.CreateGeometryFromWkt(bounds)
 
             self.poly = GEOSGeometry(multi)
             self.save()
 
-        
+def requestprocess(self):
+    v = self.pth.version
+    product = self.pth.product.name.lower().replace(' ','')
+    pth = self.pth.pth.url
+    user = self.user.username
+    date = self.date_requested.strftime("%Y%m%d")
+    unique_id = uuid.uuid4().hex 
 
+    output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
+    
+    process(
+        date,
+        self.bounds.wkt,
+        pth,
+        output,
+        product=product
+    )
+    if self.name=='':
+        self.name = os.path.basename(output).replace('.tif','')
+    self.done = True
+    self.mask = output
+    self.save()
 
+    #TilesProcessed.update_from_s3()
 
 class RequestProcess(models.Model):
+    name = models.CharField(max_length=50,blank=True,null=True)
     pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
     mask = models.CharField(max_length=200,blank=True,null=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     done = models.BooleanField(default=False)
     bounds = models.MultiPolygonField(null=True, blank=True)
+    date_requested = models.DateTimeField(default=datetime.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+    def save(self, *args, **kwargs):
+        super(RequestProcess,self).save(*args, **kwargs)
+
+    # def save(self):
+    #     super(RequestProcess, self).save()
+
+        if not self.done:
+            job = django_rq.enqueue(
+                requestprocess,
+                args=(self,),
+                job_timeout=50000
+                )

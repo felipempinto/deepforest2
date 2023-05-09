@@ -8,7 +8,7 @@ from smart_open import open as smart_open
 import io
 import os
 import boto3
-# from tqdm import tqdm
+from tqdm import tqdm
 import sys
 
 
@@ -34,40 +34,6 @@ s3 = boto3.client('s3',
 
 dev = torch.device("cpu")
 
-def clip_img(output,inp_file,prj,xRes,yRes,extent,nodata=None):
-    gdal.Warp(output,
-                inp_file,
-                dstSRS=prj,
-                xRes=xRes,
-                yRes=yRes,
-                outputBounds=extent,
-                srcNodata = nodata,
-                resampleAlg='cubic',
-                format='GTiff')
-
-def get_bounds(ds):
-    if isinstance(ds,str):
-        ds = gdal.Open(ds)
-
-    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
-    width, height = ds.RasterXSize, ds.RasterYSize
-    xmax = xmin + width * xpixel
-    ymin = ymax + height * ypixel
-    return (xmin,ymin,xmax,ymax)
-    
-
-def create_polygons(img,xsize,ysize):
-    xmin, ymin, xmax, ymax = get_bounds(img)
-    x_ar = np.arange(xmin,xmax+xsize,xsize)
-    y_ar = np.arange(ymin,ymax+ysize,ysize)
-    polygons = []
-    for i in range(len(x_ar)-1):
-        for j in range(len(y_ar)-1):
-            polygons.append(
-                [x_ar[i], y_ar[j], x_ar[i+1], y_ar[j+1]]
-            )
-    return polygons
-
 ####################################################################################
 #########################   Classify pieces   ######################################
 
@@ -81,6 +47,15 @@ def create_img(img,array,output,dtype=gdal.GDT_Byte):
     dst.SetGeoTransform(img.GetGeoTransform())
     dst.FlushCache()
 
+def get_bounds(ds):
+    if isinstance(ds,str):
+        ds = gdal.Open(ds)
+
+    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
+    width, height = ds.RasterXSize, ds.RasterYSize
+    xmax = xmin + width * xpixel
+    ymin = ymax + height * ypixel
+    return (xmin,ymin,xmax,ymax)
 
 def normalize(array):
     array[np.isnan(array)] = 0
@@ -88,13 +63,13 @@ def normalize(array):
     return np.array(array,dtype=np.float32)
 
 
-def get_net(name,pth,dev,in_channels=4,classes=2):
+def get_net(name,pth,dev,in_channels=4,classes=2,encoder='resnet101'):
     if name=='forestmask':
         net = smp.Unet(
             in_channels=in_channels,
             classes=classes,
+            encoder_name=encoder
         ).to(dev)
-    
     net.load_state_dict(torch.load(pth,map_location='cpu'))
 
     return net
@@ -115,7 +90,6 @@ def classify(
     ###################     READING PTH    ##########################
     if pth=='':
         pth = f's3://deepforestbucket/{processing_name}/models_pth/net.pth'
-
     with smart_open(pth, mode='rb', transport_params={'client': s3}) as f:
         pth = io.BytesIO(f.read())
 
@@ -143,61 +117,82 @@ def classify(
     n_bands = img_inp.RasterCount
     if n_bands!=n_of_bands:
         raise InvalidNumberBandsException(f"Input file have {n_bands} bands, while it was expected {n_of_bands} bands")
+    
+    array = img_inp.ReadAsArray()
+    (b,g,_,n) = array
+    array = np.array([b,g,n])
+    input_bands = array.shape[0]
 
-    ###################     PREPARING CHIPS    #####################
-    res = img_inp.GetGeoTransform()[1]
-    proj = img_inp.GetProjection()
-    polygons = create_polygons(img_inp,size*res,size*res)
-    files = []
-    for n,p in enumerate(polygons,1):
-        name = f'/vsimem/{uuid.uuid4().hex.upper()}_{time.time()}_{str(n).zfill(10)}.tif'
-        clip_img(name,img_inp,proj,res,res,p)
-        files.append(name)
+    net = get_net(processing_name,pth,dev,in_channels=input_bands)
 
-    net = get_net(processing_name,pth,dev)
+    output_array = np.zeros(array.shape[1:])
+    x = 0
+    y = 0
+    xs = array.shape[1]
+    ys = array.shape[2]
+    overlap = int(size/(2**6))
 
-    ###################     PREDICTING    ##########################    
-    files_class = []
+    total = 0
+    while x < xs:
+        while y < ys:
+            y += (size - overlap)
+            total+=1
+        x += (size - overlap)
+        y = 0
+
+    x = 0
+    y = 0
+
+    pred = True
+    
+    pbar = tqdm(total=total)
     with torch.no_grad():
-        # for im in tqdm(files):
-        for im in files:
-            img = gdal.Open(im)
-            output_class = f'/vsimem/classified_{os.path.basename(im)}'
+        while x < xs:
+            while y < ys:
+                
+                x1,x2 = (x, x + size) if x + size < xs else (xs - size, xs)
+                y1,y2 = (y, y + size) if y + size < ys else (ys - size, ys)
 
-            x = img.ReadAsArray()
-            x = normalize(x)
-            x = np.expand_dims(x, 0)
-            x = torch.from_numpy(x).type(inputs_dtype).to(dev)
+                x_arr = array[:,x1:x2,y1:y2]
+                
+                if pred:
+                    x_arr = normalize(x_arr)
+                    x_arr = np.expand_dims(x_arr, 0)
+                    x_arr = torch.from_numpy(x_arr).type(inputs_dtype).to(dev)
 
-            out = net(x)
-            _, preds = torch.max(out, dim=1)
-            out = preds.cpu().detach().numpy()[0]
+                    out = net(x_arr)
+                    _, preds = torch.max(out, dim=1)
+                    out = preds.cpu().detach().numpy()[0]
+                    output_array[x1:x2,y1:y2] = out
 
-            create_img(img,out,output_class)
-            files_class.append(output_class)
+                y += (size-overlap) 
+                pbar.update(1)
+            x += (size-overlap)
+            y = 0
 
-    ###################     JOIN ALL    ##########################
-    gdal.Warp(output,
-              files_class,
-              format="GTiff",
-              options=["COMPRESS=LZW", "TILED=YES"])
+    local = f'temp/{output}'
+    create_img(img_inp,output_array,local)
 
-    output_s3 = f'{processing_name}/outputs/tiles/{filename}.tif'
-    s3.upload_file(output, AWS_STORAGE_BUCKET_NAME ,output_s3)
+    # if verbose:
+    # print("FILE SAVED AS: ",output)
+
+    # output_s3 = f'{processing_name}/outputs/tiles/{filename}.tif'
+    # s3.upload_file(output, AWS_STORAGE_BUCKET_NAME ,output)#output_s3)
+    s3.upload_file(local, AWS_STORAGE_BUCKET_NAME ,output)#output_s3)
     
     ###################     PREPARING OUTPUT   ####################
-    geom = get_bounds(output)
-    proj = osr.SpatialReference(wkt=gdal.Open(output).GetProjection())
-    response = {
-        'name':output_s3,
-        'bounds':geom,
-        'epsg':proj.GetAttrValue('AUTHORITY',1)
-        }
+    # geom = get_bounds(output)
+    # proj = osr.SpatialReference(wkt=gdal.Open(output).GetProjection())
+    # response = {
+    #     'name':output,
+    #     'bounds':geom,
+    #     'epsg':proj.GetAttrValue('AUTHORITY',1)
+    #     }
     
-    ###################     DELETE FILE    ##########################
-    os.remove(output)
+    # ###################     DELETE FILE    ##########################
+    # os.remove(output)
 
-    return response
+    # return response
 
 if __name__=="__main__":
     
