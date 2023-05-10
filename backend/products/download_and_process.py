@@ -327,6 +327,7 @@ def process(
             bounding_box,
             pth,
             output,
+            config_file,
             verbose=False,
             product='forestmask'
 ):
@@ -346,7 +347,7 @@ def process(
         output_path = f'{product}/outputs/api/{name[33:44]}/{name}.tif'
         if not os.path.exists(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
-        classify(file,output_path,pth)
+        classify(file,output_path,pth,config_file)
 
         f = f's3://{AWS_STORAGE_BUCKET_NAME}/{output_path}'
         images.append(f)

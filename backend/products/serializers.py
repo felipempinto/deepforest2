@@ -13,7 +13,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RequestProcess
-        fields = ['name','date_requested','bounds', 'pth']
+        fields = '__all__'#['name','date_requested','bounds', 'pth']
 
     def validate_bounds(self, value):
         try:

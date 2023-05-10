@@ -1,7 +1,6 @@
 import numpy as np
 import torch
 import segmentation_models_pytorch as smp
-import uuid
 import time
 from osgeo import gdal,osr
 from smart_open import open as smart_open
@@ -10,11 +9,7 @@ import os
 import boto3
 from tqdm import tqdm
 import sys
-
-
-class InvalidNumberBandsException(Exception):
-    "Raised if the number of bands is different from the accepted"
-    pass
+import requests
 
 gdal.UseExceptions()
 
@@ -47,24 +42,14 @@ def create_img(img,array,output,dtype=gdal.GDT_Byte):
     dst.SetGeoTransform(img.GetGeoTransform())
     dst.FlushCache()
 
-def get_bounds(ds):
-    if isinstance(ds,str):
-        ds = gdal.Open(ds)
-
-    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
-    width, height = ds.RasterXSize, ds.RasterYSize
-    xmax = xmin + width * xpixel
-    ymin = ymax + height * ypixel
-    return (xmin,ymin,xmax,ymax)
-
 def normalize(array):
     array[np.isnan(array)] = 0
     array = (array.max()-array)/(array.max()-array.min())
     return np.array(array,dtype=np.float32)
 
 
-def get_net(name,pth,dev,in_channels=4,classes=2,encoder='resnet101'):
-    if name=='forestmask':
+def get_net(model,pth,dev,in_channels=4,classes=2,encoder='resnet101'):
+    if model=='unet':
         net = smp.Unet(
             in_channels=in_channels,
             classes=classes,
@@ -74,18 +59,28 @@ def get_net(name,pth,dev,in_channels=4,classes=2,encoder='resnet101'):
 
     return net
 
+def read_json_file_from_s3(url):
+    response = requests.get(url)
+    response.raise_for_status()  # Check if the request was successful
 
+    json_data = response.json()
+    return json_data
 
 def classify(
              img,
              output='',
              pth = '',
-             n_of_bands=4,
-             n_of_classes=2,
+             config_file='',
              inputs_dtype = torch.float32,
-             size = 256,
-             processing_name='forestmask'
              ):
+    
+    json_data = read_json_file_from_s3(config_file)
+    size = json_data['size']
+    processing_name = json_data['path'].split('/')[1]
+    input_bands = json_data['bands']
+    classes = json_data['classes']
+    encoder = json_data['encoder']
+    model = json_data['model']
     
     ###################     READING PTH    ##########################
     if pth=='':
@@ -106,31 +101,36 @@ def classify(
     s = img.split('/')
     bucket = s[0]
     key = '/'.join(s[1:])
-    filename = os.path.dirname(key)
+    # filename = os.path.dirname(key)
     if bucket==AWS_STORAGE_BUCKET_NAME:
         s3.download_file(bucket,key, img_local)
     else:
         img_local = img
 
     ###################     READING IMG    ##########################
-    img_inp = gdal.Open(img_local)
-    n_bands = img_inp.RasterCount
-    if n_bands!=n_of_bands:
-        raise InvalidNumberBandsException(f"Input file have {n_bands} bands, while it was expected {n_of_bands} bands")
-    
+    img_inp = gdal.Open(img_local)    
+    #TODO
+    # Create the way to store which bands to use to create the composition and then, select the correct bands here
     array = img_inp.ReadAsArray()
     (b,g,_,n) = array
     array = np.array([b,g,n])
     input_bands = array.shape[0]
 
-    net = get_net(processing_name,pth,dev,in_channels=input_bands)
+    net = get_net(
+            model,
+            pth,
+            dev,
+            in_channels=input_bands,
+            classes=classes,
+            encoder = encoder
+            )
 
     output_array = np.zeros(array.shape[1:])
     x = 0
     y = 0
     xs = array.shape[1]
     ys = array.shape[2]
-    overlap = int(size/(2**6))
+    overlap = int(size/4)
 
     total = 0
     while x < xs:
@@ -171,28 +171,14 @@ def classify(
             y = 0
 
     local = f'temp/{output}'
-    create_img(img_inp,output_array,local)
+    if not os.path.exists(os.path.dirname(local)):
+        os.makedirs(os.path.dirname(local))
+    create_img(img_inp,output_array,local) 
 
-    # if verbose:
-    # print("FILE SAVED AS: ",output)
-
-    # output_s3 = f'{processing_name}/outputs/tiles/{filename}.tif'
-    # s3.upload_file(output, AWS_STORAGE_BUCKET_NAME ,output)#output_s3)
     s3.upload_file(local, AWS_STORAGE_BUCKET_NAME ,output)#output_s3)
-    
-    ###################     PREPARING OUTPUT   ####################
-    # geom = get_bounds(output)
-    # proj = osr.SpatialReference(wkt=gdal.Open(output).GetProjection())
-    # response = {
-    #     'name':output,
-    #     'bounds':geom,
-    #     'epsg':proj.GetAttrValue('AUTHORITY',1)
-    #     }
     
     # ###################     DELETE FILE    ##########################
     # os.remove(output)
-
-    # return response
 
 if __name__=="__main__":
     

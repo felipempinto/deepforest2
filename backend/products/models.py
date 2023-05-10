@@ -131,6 +131,7 @@ def requestprocess(self):
     v = self.pth.version
     product = self.pth.product.name.lower().replace(' ','')
     pth = self.pth.pth.url
+    config_file = self.pth.parameters.url
     user = self.user.username
     date = self.date_requested.strftime("%Y%m%d")
     unique_id = uuid.uuid4().hex 
@@ -142,6 +143,7 @@ def requestprocess(self):
         self.bounds.wkt,
         pth,
         output,
+        config_file,
         product=product
     )
     if self.name=='':
