@@ -4,6 +4,9 @@ const path = require('path')
 
 require('dotenv').config();
 
+// Products
+const getmodelsRoute = require('./routes/products/models')
+
 // Main paths
 const productsRoute = require('./routes/main/products')
 const tilesRoute = require('./routes/main/tiles')
@@ -33,6 +36,7 @@ app.use(meRoute)
 app.use(registerRoute)
 app.use(verifyRoute)
 app.use(updateRoute)
+app.use(getmodelsRoute)
 
 app.use(express.static(path.join(__dirname,'build')))
 app.get('*',(req,res) => {

@@ -7,10 +7,11 @@ import Home from './components/Homepage';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard'
-import ForestMask from './components/ForestMask'
+// import ForestMask from './components/ForestMask'
 import RequestMap from './components/RequestMap';
-import LandCover from './components/LandCover';
+// import LandCover from './components/LandCover';
 import UpdateProfile from './components/UpdateProfile';
+import RequestBounds from './components/RequestBounds';
 
 function App() {
   const dispatch = useDispatch();
@@ -26,8 +27,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/forestmask" exact element={<ForestMask />} />
-        <Route path="/landcover" exact element={<LandCover />} />
+        {/* <Route path="/forestmask" exact element={<ForestMask />} />
+        <Route path="/landcover" exact element={<LandCover />} /> */}
+        <Route path="/request" exact element={<RequestBounds />} />
         <Route path="/map" exact element={<RequestMap />} />
         <Route path="/update" exact element={<UpdateProfile />}/>
       </Routes>
