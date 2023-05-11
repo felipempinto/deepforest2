@@ -5,6 +5,7 @@ from django.contrib.gis.geos.error import GEOSException
 from .models import ModelsTrained, RequestProcess
 
 class ModelsTrainedSerializer(serializers.ModelSerializer):
+    product = serializers.StringRelatedField()
     class Meta:
         model = ModelsTrained
         fields = '__all__'
