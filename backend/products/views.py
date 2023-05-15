@@ -1,7 +1,9 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .models import ModelsTrained, RequestProcess
-from .serializers import ModelsTrainedSerializer, RequestProcessSerializer
+from .serializers import ModelsTrainedSerializer, RequestProcessSerializer,GeoJSONSerializer
 
 class ModelsTrainedListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -22,3 +24,16 @@ class RequestProcessRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     permission_classes = [IsAuthenticated]
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
+
+
+class GeoJSONUploadView(APIView):
+    def post(self, request, format=None):
+        serializer = GeoJSONSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            geojsonData = serializer.validated_data['geojsonData']
+            print(geojsonData)
+
+            return Response({'status': 'success'}, status=200)
+        else:
+            return Response(serializer.errors, status=400)

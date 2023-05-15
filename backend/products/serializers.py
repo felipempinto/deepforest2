@@ -30,3 +30,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         validated_data['user'] = user
 
         return super().create(validated_data)
+    
+
+class GeoJSONSerializer(serializers.Serializer):
+    geojsonData = serializers.JSONField()

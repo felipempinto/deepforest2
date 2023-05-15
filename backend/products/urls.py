@@ -6,4 +6,5 @@ urlpatterns = [
     path('models/<int:pk>/', views.ModelsTrainedRetrieveUpdateDestroyView.as_view(), name='models-retrieve-update-destroy'),
     path('requests/', views.RequestProcessListCreateView.as_view(), name='requests-list-create'),
     path('requests/<int:pk>/', views.RequestProcessRetrieveUpdateDestroyView.as_view(), name='requests-retrieve-update-destroy'),
+    path('geojsondata/', views.GeoJSONUploadView.as_view(), name='geojson-upload'),
 ]
