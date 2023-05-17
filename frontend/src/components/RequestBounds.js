@@ -16,6 +16,8 @@ import { MapContainer,
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
 import NavbarContainer from './includes/Navbar'
+// import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { models } from '../features/products';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import L from 'leaflet';
@@ -48,10 +50,13 @@ const Map = ({ filteredProduct }) => {
   const geojsonPolygon = wktPolygon ? parse(wktPolygon) : null;
   // const fileInputRef = useRef(null);
   const [polygon, setPolygon] = useState('');
-  const [geojsonData, setGeojsonData] = useState(null);
+  const [submitDisabled,setSubmitDisabled] = useState(false)
+  const [geojsonData, ] = useState(null);
   const featureGroupRef = useRef(null);
   const dateRef = useRef(null);
+  const navigate = useNavigate();
   // console.log(geojsonPolygon);
+  
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -84,6 +89,7 @@ const Map = ({ filteredProduct }) => {
   const user = useSelector((state) => state.user.user); 
 
   const handleRequest = useCallback(() => {
+    setSubmitDisabled(true);
     
     const pth = filteredProduct.id;
     const bounds = polygon;
@@ -91,10 +97,18 @@ const Map = ({ filteredProduct }) => {
     const userId = user.id;
     // console.log("AAAAA");
     // console.log(pth,bounds,date,userId);
+    if (!pth || !bounds || !date || !userId) {
+      console.log(pth,bounds,date,userId);
+      // Show alert indicating missing information
+      alert('Please complete all fields');
+      return;
+    }
 
     dispatch(request({pth,bounds,date,userId}))
-
-  }, [dispatch]);
+    navigate('/requests');
+  }, [dispatch, filteredProduct.id, polygon, dateRef, user.id]);
+  // }, [dispatch]);
+// }, [dispatch, filteredProduct.id, polygon, dateRef.current.value, user.id]);
 
   const onPolygonCreated = (e) => {
     const { layer } = e;
@@ -203,8 +217,13 @@ const Map = ({ filteredProduct }) => {
         <input type="file" accept=".geojson" ref={fileInputRef} onChange={handleFileUpload} />
       </div> */}
 
-    <div className='center section'>  
-        <a className='btn' onClick={handleRequest}>Submit</a>
+      {/* <div className='center section'>  
+        <a href='#!' className='btn' onClick={handleRequest}>Submit</a>
+      </div> */}
+      <div className='center section'>
+        <button className='btn' onClick={handleRequest} disabled={submitDisabled}>
+          {submitDisabled ? 'Submitting...' : 'Submit'}
+        </button>
       </div>
     </div>
   );

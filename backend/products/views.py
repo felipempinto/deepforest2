@@ -26,6 +26,21 @@ class RequestProcessRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     serializer_class = RequestProcessSerializer
 
 
+class RequestProcessUserListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = RequestProcessSerializer
+
+    # def get_queryset(self):
+    #     user_id = self.request.user.id
+    #     queryset = RequestProcess.objects.filter(user_id=user_id)
+    #     return queryset
+    
+    def get_queryset(self):
+        user_id = self.request.user.id
+        queryset = RequestProcess.objects.filter(user_id=user_id).order_by('-created_at')
+        return queryset
+
+
 class GeoJSONUploadView(APIView):
     def post(self, request, format=None):
         serializer = GeoJSONSerializer(data=request.data)

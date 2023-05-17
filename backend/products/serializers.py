@@ -15,9 +15,18 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RequestProcessSerializer(serializers.ModelSerializer):
+
+    pth = ModelsTrainedSerializer()
+    mask_url = serializers.SerializerMethodField()
+
     class Meta:
         model = RequestProcess
-        fields = '__all__'#['name','date_requested','bounds', 'pth']
+        fields = '__all__'
+        #['name','date_requested','bounds', 'pth']
+
+    def get_mask_url(self, obj):
+        mask_url = obj.get_mask()
+        return mask_url
 
     def validate_bounds(self, value,max_area = 5000):
         # print("AAAA",value)

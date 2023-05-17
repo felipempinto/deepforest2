@@ -90,39 +90,43 @@ class TilesProcessed(models.Model):
         prefix = f'{product}/outputs/tiles/sentinel2/'
 
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+        print(response)
 
-        for obj in response['Contents']:
-            if not obj['Key'].endswith('/'): 
-                name = obj['Key'].split('/')[-1]
-                location = prefix+name
-                last_modified = obj['LastModified']
-                size = obj['Size']
-                date_str = name.split('_')[2]
-                date_image = make_aware(datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S'))
-                tile, created = cls.objects.update_or_create(name=name, defaults={
-                    'last_modified': last_modified,
-                    'size': size,
-                    'product': product,
-                    'date_image': date_image
-                })
-                if not created:
-                    tile.last_modified = last_modified
-                    tile.size = size
-                    tile.product = product
-                    tile.date_image = date_image
-                    tile.location = location
+        try:
+            for obj in response['Contents']:
+                if not obj['Key'].endswith('/'): 
+                    name = obj['Key'].split('/')[-1]
+                    location = prefix+name
+                    last_modified = obj['LastModified']
+                    size = obj['Size']
+                    date_str = name.split('_')[2]
+                    date_image = make_aware(datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S'))
+                    tile, created = cls.objects.update_or_create(name=name, defaults={
+                        'last_modified': last_modified,
+                        'size': size,
+                        'product': product,
+                        'date_image': date_image
+                    })
+                    if not created:
+                        tile.last_modified = last_modified
+                        tile.size = size
+                        tile.product = product
+                        tile.date_image = date_image
+                        tile.location = location
+                        tile.save()
+
+                    # Set the poly field using the bounding box
+                    # t1 = time.time()
+                    url = f'/vsis3/{bucket_name}/{obj["Key"]}'
+                    ds = gdal.Open(url)   ### It takes something like 0.5 seconds in my PC
+                    # print(time.time()-t1)
+                    bounds = get_bounds(ds)
+                    poly = GEOSGeometry(bounds)#ogr.CreateGeometryFromWkt(bounds)
+                    tile.poly = poly
+
                     tile.save()
-
-                 # Set the poly field using the bounding box
-                # t1 = time.time()
-                url = f'/vsis3/{bucket_name}/{obj["Key"]}'
-                ds = gdal.Open(url)   ### It takes something like 0.5 seconds in my PC
-                # print(time.time()-t1)
-                bounds = get_bounds(ds)
-                poly = GEOSGeometry(bounds)#ogr.CreateGeometryFromWkt(bounds)
-                tile.poly = poly
-
-                tile.save()
+        except KeyError:
+            pass
 
 
 

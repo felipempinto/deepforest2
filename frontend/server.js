@@ -5,6 +5,8 @@ const path = require('path')
 require('dotenv').config();
 
 // Products
+const getRequestProductRoute = require('./routes/products/getRequests')
+
 const requestProductRoute = require('./routes/products/request')
 const geojsondataRoute = require('./routes/products/geojsondata')
 const getmodelsRoute = require('./routes/products/models')
@@ -41,6 +43,7 @@ app.use(updateRoute)
 app.use(getmodelsRoute)
 app.use(geojsondataRoute)
 app.use(requestProductRoute)
+app.use(getRequestProductRoute)
 
 app.use(express.static(path.join(__dirname,'build')))
 app.get('*',(req,res) => {

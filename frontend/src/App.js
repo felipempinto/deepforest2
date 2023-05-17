@@ -12,13 +12,21 @@ import RequestMap from './components/RequestMap';
 // import LandCover from './components/LandCover';
 import UpdateProfile from './components/UpdateProfile';
 import RequestBounds from './components/RequestBounds';
+import Requests from './components/Requests';
 
 function App() {
   const dispatch = useDispatch();
 
-	useEffect(() => {
-		dispatch(checkAuth());
-	}, [dispatch]);
+	// useEffect(() => {
+	// 	dispatch(checkAuth());
+	// }, [dispatch]);
+  useEffect(() => {
+    dispatch(checkAuth()).catch((error) => {
+      if (error.message !== '400') {
+        console.error('Error:', error);
+      }
+    });
+  }, [dispatch]);
 
   return (
     <Router>
@@ -32,6 +40,8 @@ function App() {
         <Route path="/request" exact element={<RequestBounds />} />
         <Route path="/map" exact element={<RequestMap />} />
         <Route path="/update" exact element={<UpdateProfile />}/>
+        <Route path="/requests" exact element={<Requests />}/>
+        
       </Routes>
     </Router>
   );

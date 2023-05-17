@@ -77,6 +77,9 @@ const getUser = createAsyncThunk('users/me', async (_, thunkAPI) => {
 		if (res.status === 200) {
 			return data;
 		} else {
+			const { dispatch } = thunkAPI;
+				
+			dispatch(logout());
 			return thunkAPI.rejectWithValue(data);
 		}
 	} catch (err) {

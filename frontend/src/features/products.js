@@ -25,6 +25,32 @@ export const models = createAsyncThunk(
   }
 );
 
+
+export const getRequests = createAsyncThunk(
+  'products/request/user',
+  async (thunkAPI) => {
+    try {
+      const res = await fetch('/api/products/request/user/', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+
+      if (res.status === 200) {
+        console.log(res)
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
+
 export const request = createAsyncThunk(
   'products/request',
   async ({pth,bounds,date,userId},thunkAPI) => {
@@ -92,6 +118,7 @@ const productSlice = createSlice({
   initialState: {
     models: [],
     geojsondata:[],
+    requests:[],
     loading: false,
     error: null,
   },
@@ -130,10 +157,22 @@ const productSlice = createSlice({
         state.error = null;
       })
       .addCase(request.fulfilled, (state, action) => {
-        state.geojsondata = action.payload;
+        // state.geojsondata = action.payload;
         state.loading = false;
       })
       .addCase(request.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(getRequests.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getRequests.fulfilled, (state, action) => {
+        state.requests = action.payload;
+        state.loading = false;
+      })
+      .addCase(getRequests.rejected, (state, action) => {
         state.error = action.error.message;
         state.loading = false;
       });

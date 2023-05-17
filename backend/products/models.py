@@ -178,3 +178,15 @@ class RequestProcess(models.Model):
                 args=(self,),
                 job_timeout=50000
                 )
+            
+
+    def get_mask(self,expiration=1200):
+        try:
+            response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': BUCKET,
+                                                            'Key': self.mask},
+                                                    ExpiresIn=expiration)
+        except (ClientError,ParamValidationError):
+            return None
+        else:
+            return response
