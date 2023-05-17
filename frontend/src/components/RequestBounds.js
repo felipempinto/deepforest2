@@ -19,8 +19,10 @@ import NavbarContainer from './includes/Navbar'
 import { models } from '../features/products';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import L from 'leaflet';
+import {request} from '../features/products'
 var parse = require('wellknown');
 // import { geojsondata } from '../features/products';
+// var parse = require('wellknown');
 
 const tileLayers = [
   {
@@ -41,12 +43,32 @@ const tileLayers = [
 ];
 
 const Map = ({ filteredProduct }) => {
+  const [geojsonEnabled, setGeojsonEnabled] = useState(true);
   const wktPolygon = filteredProduct?.poly;
   const geojsonPolygon = wktPolygon ? parse(wktPolygon) : null;
   // const fileInputRef = useRef(null);
+  const [polygon, setPolygon] = useState('');
   const [geojsonData, setGeojsonData] = useState(null);
   const featureGroupRef = useRef(null);
+  const dateRef = useRef(null);
   // console.log(geojsonPolygon);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    M.Datepicker.init(dateRef.current, {
+      format: 'yyyy-mm-dd',
+      container:document.body,
+      autoClose: true, 
+      setDefaultDate: true,
+      maxDate: new Date(), 
+      minDate: new Date(1900, 0, 1),
+    });
+    // const label = document.querySelector('label[for="date-picker"]');
+    // M.Tooltip.init(label, { tooltip: 'We will select the closest ones if there is no image in the date selected' });
+    const tooltips = document.querySelectorAll('.tooltipped');
+    M.Tooltip.init(tooltips);
+  // }, []);
+  })
 
   const fitBounds = useCallback((map) => {
     if (geojsonPolygon && map) {
@@ -55,12 +77,34 @@ const Map = ({ filteredProduct }) => {
     }
   },[geojsonPolygon]);
 
+  const handleToggleGeojson = () => {
+    setGeojsonEnabled((prevEnabled) => !prevEnabled);
+  };
+
+  const user = useSelector((state) => state.user.user); 
+
+  const handleRequest = useCallback(() => {
+    
+    const pth = filteredProduct.id;
+    const bounds = polygon;
+    const date = dateRef.current.value;
+    const userId = user.id;
+    // console.log("AAAAA");
+    // console.log(pth,bounds,date,userId);
+
+    dispatch(request({pth,bounds,date,userId}))
+
+  }, [dispatch]);
+
   const onPolygonCreated = (e) => {
     const { layer } = e;
-    // const map = layer._map;
-    // Do something with the created polygon layer
-    // For example, you can add it to the map or store its coordinates
-    layer.addTo(featureGroupRef.current);
+    // layer.addTo(featureGroupRef.current);
+    const wktPolygon = layer.toGeoJSON().geometry;
+    const wktString = parse.stringify(wktPolygon);
+    console.log(wktString);
+
+    setPolygon(wktString);
+    console.log(polygon);
   };
 
   // const handleFileUpload = async (event) => {
@@ -103,9 +147,22 @@ const Map = ({ filteredProduct }) => {
     return null; 
   };
 
+  const textLocation = 'You can draw a polygon by selecting the polygon icon in the top right corner of the map'
+  const textLocationTrain = 'Locations used during the training phase'
   return (
     <div>
-      <h3 className="center">Locations used for training:</h3>
+      <div>
+        <label htmlFor="date-picker" data-tooltip="We will select the closest ones if there is no image in the date selected" >Select the date:</label>
+        <input ref={dateRef} type="text" id="date-picker" className="datepicker"/>
+      </div>
+      {/* <label>Select the date</label>
+      <input type="text" class="datepicker"/> */}
+      <div className='section'>
+      <h3 className="center">Select a location <i className='material-icons tooltipped' data-position="bottom" data-tooltip={textLocation}>help</i></h3>
+      <button className='btn tooltipped' data-position="top" data-tooltip={textLocationTrain} onClick={handleToggleGeojson}>
+        {geojsonEnabled ? 'Disable locations' : 'Enable locations'}
+      </button>
+      </div>
       <MapContainer
         className="map-container map-container-request"
         center={[51.505, -0.09]}
@@ -121,7 +178,10 @@ const Map = ({ filteredProduct }) => {
             </LayersControl.BaseLayer>
           ))}
         </LayersControl>
-        {geojsonPolygon && <GeoJSON data={geojsonPolygon} />}
+        {/* {geojsonPolygon && <GeoJSON data={geojsonPolygon} />} */}
+        {geojsonPolygon && geojsonEnabled && (
+        <GeoJSON data={geojsonPolygon} style={{ color: 'red' }} />
+      )}
         <ZoomControl position="bottomright" />
         <MapComponent /> 
         <FeatureGroup ref={featureGroupRef}>
@@ -142,6 +202,10 @@ const Map = ({ filteredProduct }) => {
       {/* <div>
         <input type="file" accept=".geojson" ref={fileInputRef} onChange={handleFileUpload} />
       </div> */}
+
+    <div className='center section'>  
+        <a className='btn' onClick={handleRequest}>Submit</a>
+      </div>
     </div>
   );
 };
