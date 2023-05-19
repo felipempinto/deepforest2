@@ -1,6 +1,10 @@
 footer {
     background-color:bisque; 
     color: black;
+    flex: 1 0 auto;
+    margin-top: auto;
+    max-height: 200px;
+    
   }
 
 li.inline {
