@@ -8,6 +8,8 @@ import './Navbar.css'
 function NavbarComponent() {
   const ref = useRef(null);
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+  console.log(user)
 	const { isAuthenticated } = useSelector(state => state.user);
 
   useEffect(() => {
@@ -26,6 +28,9 @@ function NavbarComponent() {
   const authlinks = (
     <>
       <li className="nav-item">
+        <NavLink className="nav-link" to="/requests">My requests</NavLink>
+      </li>
+      <li className="nav-item">
         <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
       </li>
       <li className='nav-item'>
@@ -42,6 +47,8 @@ function NavbarComponent() {
       <li className="nav-item"><NavLink className="nav-link" to="/register">Register</NavLink></li>
     </>
   );
+
+  const picture = user?.profile_picture ?? '/Default_pfp.svg';
   
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -53,7 +60,7 @@ function NavbarComponent() {
         {isAuthenticated ? authlinks : guestLinks}
       </ul>
       <ul id="nav-mobile" className="right hide-on-med-and-down">
-        <li className="nav-item"><NavLink className="nav-link" to="/request">Request</NavLink></li>
+        <li className="nav-item"><NavLink className="nav-link" to="/request">New Request</NavLink></li>
         <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
         
         <li className="nav-link nav-item"><a 
@@ -61,8 +68,11 @@ function NavbarComponent() {
             href='#!'
             ref={ref} 
             data-target="dropdown1">
-              User
-              <i class="material-icons right">arrow_drop_down</i>
+                <img className="img-logo" src={picture} alt="User" />
+                
+              
+              {/* User */}
+              {/* <i class="material-icons right">arrow_drop_down</i> */}
           </a>
         </li>
         {/* <li className="nav-item"><NavLink className="nav-link" to="/forestmask">Forest Mask</NavLink></li>

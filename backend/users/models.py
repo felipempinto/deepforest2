@@ -22,7 +22,7 @@ class User(AbstractBaseUser):
     email = models.EmailField(max_length=255, unique=True)
     first_name = models.CharField(max_length=30, blank=True,null=True)
     last_name = models.CharField(max_length=30, blank=True,null=True)
-    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', default='Default_pfp.svg', null=True, blank=True)
     
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

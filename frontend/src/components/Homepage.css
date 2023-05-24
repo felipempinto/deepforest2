@@ -64,3 +64,9 @@ Nunito */
   padding-right: 50px !important;
   color: white !important;
 }
+
+.how-it-works-section{
+  font-family: komu-a,sans-serif;
+  background-color: hsla( 10.6508875739645,73.79912663755458%,55.09803921568628% ,1);
+  color: hsla( 46.666666666666615,90.00000000000003%,96.07843137254902% ,1);
+}

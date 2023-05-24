@@ -2,10 +2,26 @@ import React from 'react';
 import NavbarComponent from './includes/Navbar';
 import { useSelector } from 'react-redux';
 import { Navigate,useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { deleteUser } from '../features/user';
 
 function Dashboard() {
     const { isAuthenticated, user, loading } = useSelector(state => state.user);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleDeleteUser = () => {
+      dispatch(deleteUser(user.id))
+      .unwrap()
+      .then(() => {
+        // Deletion was successful, handle any necessary actions
+        console.log('User deleted successfully');
+      })
+      .catch((error) => {
+        // Error occurred during deletion, handle the error
+        console.error('Error deleting user:', error);
+      });
+    };
 
     if (!isAuthenticated && !loading && user === null)
       return <Navigate to='/login'/>;
@@ -24,6 +40,21 @@ function Dashboard() {
                 <div className='card-body'>
                   <h5 className='card-title center'>User Details</h5>
                   <div className='row'>
+                    <div className='col-12'>Profile Picture:</div>
+                    <div className='col'>
+                      {user.profile_picture ? (
+                        <img
+                          src={user.profile_picture}
+                          alt='Profile'
+                          width='100'
+                          height='100'
+                        />
+                      ) : (
+                        'No picture uploaded'
+                      )}
+                    </div>
+                  </div>
+                  <div className='row'>
                     <div className='col-2'>Username:</div>
                     <div className='col'>{user.username}</div>
                   </div>
@@ -39,26 +70,16 @@ function Dashboard() {
                     <div className='col-2'>Last Name:</div>
                     <div className='col'>{user.last_name}</div>
                   </div>
-                  <div className='row'>
-                    <div className='col-2'>Profile Picture:</div>
-                    <div className='col'>
-                      {user.profile_picture ? (
-                        <img
-                          src={user.profile_picture}
-                          alt='Profile'
-                          width='100'
-                          height='100'
-                        />
-                      ) : (
-                        'No picture uploaded'
-                      )}
-                    </div>
-                  </div>
                 </div>
               </div>
-              <button className='btn btn-primary mt-3' onClick={() => navigate('/update')}>
-              Update Profile
-            </button>
+              <div>
+                <button className='btn btn-primary mt-3' onClick={() => navigate('/update')}>
+                  Update Profile
+                </button>
+              </div>
+              <div>
+                <button className='btn btn-primary mt-3' onClick={handleDeleteUser}>Delete User</button>
+              </div>
             </div>
           )}
         </>

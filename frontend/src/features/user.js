@@ -172,6 +172,31 @@ export const logout = createAsyncThunk('users/logout', async (_, thunkAPI) => {
 	}
 });
 
+export const deleteUser = createAsyncThunk(
+	'users/deleteUser',
+	async (userId, thunkAPI) => {
+	  try {
+		const res = await fetch(`/api/users/delete/${userId}`, {
+		  method: 'DELETE',
+		  headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+		  },
+		});
+  
+		if (res.ok) {
+		  // Deletion was successful
+		  return userId;
+		} else {
+		  const data = await res.json();
+		  return thunkAPI.rejectWithValue(data);
+		}
+	  } catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	  }
+	}
+  );
+
 const initialState =  {
     isAuthenticated: false,
     user: null,

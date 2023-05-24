@@ -19,6 +19,7 @@ const tilesRoute = require('./routes/main/tiles')
 const imageslocationsRoute = require('./routes/forestmask/imageslocations')
 
 // Users paths
+const deleteRoute = require("./routes/auth/delete")
 const updateRoute = require('./routes/auth/update')
 const loginRoute = require('./routes/auth/login')
 const logoutRoute = require('./routes/auth/logout')
@@ -44,6 +45,7 @@ app.use(getmodelsRoute)
 app.use(geojsondataRoute)
 app.use(requestProductRoute)
 app.use(getRequestProductRoute)
+app.use(deleteRoute)
 
 app.use(express.static(path.join(__dirname,'build')))
 app.get('*',(req,res) => {

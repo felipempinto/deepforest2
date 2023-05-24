@@ -68,3 +68,16 @@ class UserUpdateView(APIView):
         print("K")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+class UserDeleteView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if request.user == instance:
+            self.perform_destroy(instance)
+            return Response(status=204)
+        else:
+            return Response({'detail': 'You do not have permission to delete this user.'}, status=403)
