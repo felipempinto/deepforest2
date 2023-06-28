@@ -4,6 +4,13 @@
     padding-right: 10px !important;
 }
 
+.img-profile{
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .img-logo{
     max-height: 50px;
 }

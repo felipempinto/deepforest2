@@ -10,7 +10,7 @@ import Dashboard from './components/Dashboard'
 // import ForestMask from './components/ForestMask'
 import RequestMap from './components/RequestMap';
 // import LandCover from './components/LandCover';
-import UpdateProfile from './components/UpdateProfile';
+// import UpdateProfile from './components/UpdateProfile';
 import RequestBounds from './components/RequestBounds';
 import Requests from './components/Requests';
 
@@ -39,7 +39,7 @@ function App() {
         <Route path="/landcover" exact element={<LandCover />} /> */}
         <Route path="/request" exact element={<RequestBounds />} />
         <Route path="/map" exact element={<RequestMap />} />
-        <Route path="/update" exact element={<UpdateProfile />}/>
+        {/* <Route path="/update" exact element={<UpdateProfile />}/> */}
         <Route path="/requests" exact element={<Requests />}/>
         
       </Routes>

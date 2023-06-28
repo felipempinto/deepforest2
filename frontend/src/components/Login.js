@@ -6,6 +6,7 @@ import {resetRegistered,login} from '../features/user';
 import NavbarComponent from "./includes/Navbar";
 
 const Login = () => {
+  const [loginError, setLoginError] = useState('');
   const dispatch = useDispatch();
   const { loading, isAuthenticated, registered } = useSelector(
     state => state.user
@@ -26,9 +27,26 @@ const Login = () => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
+  // const onSubmit = async(e) => {
+  //   e.preventDefault();
+  //   const results = dispatch(login({username,password}));
+  //   console.log(results)
+  // };
   const onSubmit = e => {
     e.preventDefault();
-    dispatch(login({username,password}));
+    dispatch(login({ username, password }))
+      .then(data => {
+        if (data.meta.requestStatus=='rejected') {
+          // alert(data.payload.detail)
+          // console.log("ERROR")
+          setLoginError(data.payload.detail);
+        } else {
+          console.log("SUCESS")          
+        }        
+      })
+      .catch(error => {
+        console.error('Login error:', error);
+      });
   };
 
   if (isAuthenticated) return <Navigate to='/' />;
@@ -80,6 +98,7 @@ const Login = () => {
                     // onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
+                {loginError && <p style={{ color: 'red' }}>{loginError}</p>}
                 {loading ? (
                   <div className='spinner-border text-primary' role='status'>
                     <span className='visually-hidden'>Loading...</span>

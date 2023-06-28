@@ -16,23 +16,17 @@ const UpdateProfile = () => {
   const [last_name, setLastName] = useState(user.last_name);
   const [profile_picture, setProfilePicture] = useState(null);
 
-
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   dispatch(
-  //       update({first_name, last_name, profile_picture})
-  //     )};
-
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append('first_name', first_name);
-    formData.append('last_name', last_name);
-    formData.append('profile_picture', profile_picture);
-    console.log(formData)
-    dispatch(
-      update(formData)
-    );
+    // console.log(profile_picture)
+    let form_data = new FormData();
+    form_data.append('first_name', first_name);
+    form_data.append('last_name', last_name);
+    form_data.append('profile_picture', profile_picture, profile_picture.name);
+    dispatch(update(form_data))
+
+    // dispatch(update({ first_name, last_name,profile_picture }))
+    // dispatch(update({ first_name, last_name, profile_picture: profile_picture }));
   };  
 
   return (
@@ -40,7 +34,7 @@ const UpdateProfile = () => {
       <NavbarComponent />
       <div className="container">
         <h2 className="form-heading">Update Profile</h2>
-        <form className="form" onSubmit={handleSubmit}>
+        <form className="form" onSubmit={handleSubmit} encType="multipart/form-data">
           <div className="form-group">
             <label htmlFor="first_name" className="form-label">First Name:</label>
             <input
@@ -68,6 +62,7 @@ const UpdateProfile = () => {
               name="profile_picture"
               className="form-input"
               onChange={(e) => setProfilePicture(e.target.files[0])}
+              // onChange={}
             />
           </div>
           <button type="submit" className="submit-btn">Update</button>

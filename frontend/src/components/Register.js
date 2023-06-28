@@ -8,6 +8,7 @@ import { Navigate } from 'react-router-dom';
 function Register() {
   const dispatch = useDispatch();
   const { registered,  } = useSelector(state => state.user);//loading
+  const [registerError, setRegisterError] = useState('');
 
   const [formData,setFormData] = useState({
         username: '',
@@ -24,8 +25,28 @@ function Register() {
 
   const onSubmit = e => {
         e.preventDefault();
-        dispatch(register({username,email,password,password2}));
+        dispatch(register({username,email,password,password2}))
+        .then(data=>{
+          console.log(data);
+          if (data.meta.requestStatus=='rejected') {
+            // console.log(data.payload.username);
+            // setRegisterError(data.payload.username[0]);
+            // setRegisterError(data.payload.email);
+            // setRegisterError(data.payload.error);
+            // setRegisterError(data.payload.non_field_errors);
+
+            setRegisterError(data.payload.username || data.payload.email || data.payload.error || data.payload.non_field_errors);
+          } else {
+            console.log("SUCESS")          
+          }        
+        })
+        .catch(error => {
+          console.log("ERROR",error);
+          console.error('Login error:', error);
+        });
+        ;
   };
+
 
   if (registered) return <Navigate to='/login'/>;
 
@@ -96,6 +117,7 @@ function Register() {
             onChange={onChange}//{handleChange}
           />
         </div>
+        {registerError && <p style={{ color: 'red' }}>{registerError}</p>}
         <button type="submit">Register</button>
       </form>
     </div>

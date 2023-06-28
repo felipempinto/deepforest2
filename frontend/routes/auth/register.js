@@ -5,8 +5,6 @@ const fetch = (...args) =>
 const router = express.Router();
 
 router.post('/api/users/register', async (req, res) => {
-    console.log("REGISTER4");
-    // const { first_name, last_name, email, password } = req.body;
     const { username, email, password, password2 } = req.body;
 
     const body = JSON.stringify({
@@ -14,10 +12,6 @@ router.post('/api/users/register', async (req, res) => {
         email,
         password,
         password2
-        // first_name,
-        // last_name,
-        // email,
-        // password,
     });
     console.log(body);
 
@@ -33,9 +27,13 @@ router.post('/api/users/register', async (req, res) => {
         const data = await apiRes.json();
         return res.status(apiRes.status).json(data);
     } catch (error) {
+        const errorMessage = await error.response.text();
         return res.status(500).json({
-            error: 'Something went wrong when registering account',
-        });
+            error: errorMessage || 'Something went wrong when registering account',
+          });
+        // return res.status(500).json({
+        //     error: 'Something went wrong when registering account',
+        // });
     }
 });
 

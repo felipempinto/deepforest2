@@ -16,8 +16,15 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
 
 class RequestProcessSerializer(serializers.ModelSerializer):
 
-    pth = ModelsTrainedSerializer()
+    # pth = ModelsTrainedSerializer()
     mask_url = serializers.SerializerMethodField()
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+        if request and request.method == 'GET':
+            fields['pth'] = ModelsTrainedSerializer()
+        return fields
 
     class Meta:
         model = RequestProcess

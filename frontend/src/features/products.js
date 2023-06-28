@@ -51,6 +51,34 @@ export const getRequests = createAsyncThunk(
   }
 );
 
+export const deleteRequest = createAsyncThunk(
+	'requests/delete',
+	async (id, thunkAPI) => {
+	  try {
+		const res = await fetch(`/api/products/requests/delete/${id}`, {
+		  method: 'DELETE',
+		  headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+		  },
+		});
+  
+		if (res.ok) {
+		  // Deletion was successful
+      console.log('JOIA')
+		  return id;
+		} else {
+		  const data = await res.json();
+      console.log('SOCORRO2')
+		  return thunkAPI.rejectWithValue(data);
+		}
+	  } catch (err) {
+      console.log('SOCORRO')
+		return thunkAPI.rejectWithValue(err.response.data);
+	  }
+	}
+  );
+
 export const request = createAsyncThunk(
   'products/request',
   async ({pth,bounds,date,userId},thunkAPI) => {

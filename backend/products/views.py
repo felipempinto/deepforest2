@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics,status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -52,3 +52,13 @@ class GeoJSONUploadView(APIView):
             return Response({'status': 'success'}, status=200)
         else:
             return Response(serializer.errors, status=400)
+        
+
+class RequestProcessDeleteView(APIView):
+    def delete(self, request, pk):
+        try:
+            request_process = RequestProcess.objects.get(pk=pk)
+            request_process.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except RequestProcess.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)

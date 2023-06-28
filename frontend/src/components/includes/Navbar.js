@@ -48,7 +48,8 @@ function NavbarComponent() {
     </>
   );
 
-  const picture = user?.profile_picture ?? '/Default_pfp.svg';
+  const picture = user.user?.profile_picture ?? '/Default_pfp.svg';
+  console.log(user)
   
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -68,7 +69,7 @@ function NavbarComponent() {
             href='#!'
             ref={ref} 
             data-target="dropdown1">
-                <img className="img-logo" src={picture} alt="User" />
+                <img className="img-profile" src={picture} alt="User" />
                 
               
               {/* User */}

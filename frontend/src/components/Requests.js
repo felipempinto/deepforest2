@@ -2,11 +2,11 @@ import React,{ useEffect } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
 import NavbarComponent from './includes/Navbar';
 import { 
-  Navigate,
+  // Navigate,
   Link
 } from 'react-router-dom';
 import M from 'materialize-css/dist/js/materialize.min.js';
-import { getRequests } from '../features/products';
+import { getRequests,deleteRequest } from '../features/products';
 import { formatDistanceToNow } from 'date-fns';
 // import M from 'materialize-css';
 
@@ -18,6 +18,61 @@ const Requests = () => {
     const formatRelativeTime = (dateString) => {
         return formatDistanceToNow(new Date(dateString), { addSuffix: true });
       };
+    
+      // dispatch(actionCreator('233'))
+      //     .then(unwrapResult)
+      //     .then((result) => {
+      //       console.log(result); // => 233
+      //     })
+      //     .catch((error) => {
+      //       console.error(error); // if there is an error
+      //     });
+      
+
+    const handleDeleteRequest = (requestId) => {
+        dispatch(deleteRequest(requestId))
+          .then((action) => {
+            
+            // Check if the request was successfully deleted
+            if (action.meta.requestStatus === 'fulfilled') {
+              console.log("A");
+              // Reload the page to update the request list
+              window.location.reload();
+            } else {
+              console.log("B");
+              // Handle error if the request deletion failed
+              console.error('Failed to delete request');
+            }
+          })
+          .catch((error) => {
+            console.log("C");
+            console.error('Error occurred while deleting request:', error);
+          });
+      };
+
+
+      // function handleDeleteRequest(requestId) {
+      //   // Send DELETE request to the backend
+      //   fetch(`/api/products/requests/delete/${requestId}`, {
+      //     method: 'DELETE'
+      //   })
+      //     .then(response => {
+      //       // Check if the request was successfully deleted
+      //       console.log(response)
+      //       if (response.ok) {
+      //         // Reload the page to update the request list
+      //         console.log("DELETAR")
+      //         window.location.reload();
+      //       } else {
+      //         // Handle error if the request deletion failed
+      //         // window.location.reload();
+      //         console.error('Failed to delete request');
+      //       }
+      //     })
+      //     .catch(error => {
+      //       console.error('Error occurred while deleting request:', error);
+      //     });
+      // }
 
       // const handleDownload = (event, maskUrl) => {
       //   event.preventDefault();
@@ -99,7 +154,13 @@ const Requests = () => {
               </td>
               <td>{formatRelativeTime(request.created_at)}</td>
               <td>{formatRelativeTime(request.updated_at)}</td>
-              <td><a href='/'><i className='material-icons'>delete</i></a></td>
+              {/* <td><a href='/api/products/requests/delete/{request.id}'><i className='material-icons'>delete</i></a></td> */}
+              {/* <td><a href={`/api/products/requests/delete/${request.id}`}><i className='material-icons'>delete</i></a></td> */}
+              <td>
+                <a href="#" onClick={() => handleDeleteRequest(request.id)}>
+                  <i className='material-icons'>delete</i>
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>

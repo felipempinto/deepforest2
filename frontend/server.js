@@ -6,7 +6,7 @@ require('dotenv').config();
 
 // Products
 const getRequestProductRoute = require('./routes/products/getRequests')
-
+const deleteRequestProductRoute = require('./routes/products/delete')
 const requestProductRoute = require('./routes/products/request')
 const geojsondataRoute = require('./routes/products/geojsondata')
 const getmodelsRoute = require('./routes/products/models')
@@ -20,7 +20,7 @@ const imageslocationsRoute = require('./routes/forestmask/imageslocations')
 
 // Users paths
 const deleteRoute = require("./routes/auth/delete")
-const updateRoute = require('./routes/auth/update')
+// const updateRoute = require('./routes/auth/update')
 const loginRoute = require('./routes/auth/login')
 const logoutRoute = require('./routes/auth/logout')
 const meRoute = require('./routes/auth/me')
@@ -40,12 +40,13 @@ app.use(logoutRoute)
 app.use(meRoute)
 app.use(registerRoute)
 app.use(verifyRoute)
-app.use(updateRoute)
+// app.use(updateRoute)
 app.use(getmodelsRoute)
 app.use(geojsondataRoute)
 app.use(requestProductRoute)
 app.use(getRequestProductRoute)
 app.use(deleteRoute)
+app.use(deleteRequestProductRoute)
 
 app.use(express.static(path.join(__dirname,'build')))
 app.get('*',(req,res) => {

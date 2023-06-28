@@ -43,10 +43,12 @@ router.post('/api/users/login',async(req,res)=>{
 
 			return res.status(200).json({ success: 'Logged in successfully' });
 		} else {
+			console.log("ERROR 1");
 			return res.status(apiRes.status).json(data);
         }
         
     } catch (error) {
+		console.log("ERROR 2");
 		console.log(error)
         return res.status(500).json({
 			error: 'Something went wrong when logging in',

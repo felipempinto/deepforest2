@@ -37,31 +37,33 @@ export const register = createAsyncThunk(
 );
 
 export const update = createAsyncThunk(
-    'users/update',
-	async ({ first_name, last_name, profile_picture}, thunkAPI) => {
-        const body = JSON.stringify({first_name,last_name,profile_picture});
-        try {
-            const res = await fetch(
-				'/api/users/update',{
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    "Content-Type": 'application/json',
-                },
-                body,});
-            const data = await res.json();
-
-            if (res.status === 201) {
-                return data;                
-            } else {
-                return thunkAPI.rejectWithValue(data);
-            }
-        } catch (err) {
-            return thunkAPI.rejectWithValue(err.response.data);
-        }
-    }
-);
-
+	'users/update',
+	async ({ first_name, last_name, profile_picture }, thunkAPI) => {
+	  const formData = new FormData();
+	  formData.append('first_name', first_name);
+	  formData.append('last_name', last_name);
+	  formData.append('profile_picture', profile_picture);
+  
+	  try {
+		const res = await fetch('/api/users/update', {
+		  method: 'POST',
+		  headers: {
+			Accept: 'application/json',
+		  },
+		  body: formData,
+		});
+		const data = await res.json();
+  
+		if (res.status === 201) {
+		  return data;
+		} else {
+		  return thunkAPI.rejectWithValue(data);
+		}
+	  } catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	  }
+	}
+  );
 
 const getUser = createAsyncThunk('users/me', async (_, thunkAPI) => {
 	try {
@@ -94,6 +96,7 @@ export const login = createAsyncThunk(
             username,
             password,
         });
+		console.log(username,password)
 
         try {
 			// console.log('Login Function user.js')
@@ -267,12 +270,15 @@ const userSlice = createSlice({
 				state.loading = false;
 			})
 			.addCase(update.pending,state => {
+				console.log(state)
 				state.loading = true;
 			})
 			.addCase(update.fulfilled,state =>{
+				console.log(state)
 				state.loading = false
 			})
 			.addCase(update.rejected,state =>{
+				console.log(state)
 				state.loading = false
 			})
 			;
