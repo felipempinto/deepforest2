@@ -22,6 +22,10 @@ import { models } from '../features/products';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import L from 'leaflet';
 import {request} from '../features/products'
+import { 
+  Navigate,
+  // Link
+} from 'react-router-dom';
 var parse = require('wellknown');
 // import { geojsondata } from '../features/products';
 // var parse = require('wellknown');
@@ -55,6 +59,7 @@ const Map = ({ filteredProduct }) => {
   const featureGroupRef = useRef(null);
   const dateRef = useRef(null);
   const navigate = useNavigate();
+  
   // console.log(geojsonPolygon);
   
   const dispatch = useDispatch();
@@ -104,9 +109,10 @@ const Map = ({ filteredProduct }) => {
       return;
     }
 
+
     dispatch(request({pth,bounds,date,userId}))
     navigate('/requests');
-  }, [dispatch, filteredProduct.id, polygon, dateRef, user.id]);
+  }, [dispatch, filteredProduct.id, polygon, dateRef, user.id,navigate]);
   // }, [dispatch]);
 // }, [dispatch, filteredProduct.id, polygon, dateRef.current.value, user.id]);
 
@@ -232,6 +238,7 @@ const Map = ({ filteredProduct }) => {
 
 function RequestBounds() {
     const dispatch = useDispatch();
+    const { isAuthenticated, user, loading } = useSelector(state => state.user);
     const [selectedProduct, setSelectedProduct] = useState("");
     const [selectedVersion, setSelectedVersion] = useState("");
 
@@ -278,6 +285,9 @@ function RequestBounds() {
     M.FormSelect.init(selectVersionRef.current, {});
   }, [filteredVersions]);
 
+  console.log(isAuthenticated,loading,user)
+  if (!isAuthenticated && !loading && user === null)
+      return <Navigate to='/login'/>;
   return (
     <>
     <NavbarContainer/>

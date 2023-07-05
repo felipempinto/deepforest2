@@ -28,7 +28,7 @@ function Register() {
         dispatch(register({username,email,password,password2}))
         .then(data=>{
           console.log(data);
-          if (data.meta.requestStatus=='rejected') {
+          if (data.meta.requestStatus==='rejected') {
             // console.log(data.payload.username);
             // setRegisterError(data.payload.username[0]);
             // setRegisterError(data.payload.email);

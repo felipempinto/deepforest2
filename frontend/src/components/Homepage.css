@@ -70,3 +70,18 @@ Nunito */
   background-color: hsla( 10.6508875739645,73.79912663755458%,55.09803921568628% ,1);
   color: hsla( 46.666666666666615,90.00000000000003%,96.07843137254902% ,1);
 }
+
+.img-carousel{
+  min-width: 250px !important;
+  min-height: 250px !important;
+}
+
+.img-card{
+  /* max-width: 600px;
+  max-height: 450px; */
+  /* width: 100%;
+  height: 100%; */
+  width: 500px;
+  height: 500px;
+  object-fit:cover;
+}

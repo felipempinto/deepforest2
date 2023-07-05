@@ -2,7 +2,7 @@ import React,{ useEffect } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
 import NavbarComponent from './includes/Navbar';
 import { 
-  // Navigate,
+  Navigate,
   Link
 } from 'react-router-dom';
 import M from 'materialize-css/dist/js/materialize.min.js';
@@ -11,6 +11,8 @@ import { formatDistanceToNow } from 'date-fns';
 // import M from 'materialize-css';
 
 const Requests = () => {
+    const { isAuthenticated, user, loading } = useSelector(state => state.user);
+
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
@@ -91,15 +93,17 @@ const Requests = () => {
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(getRequests());
-      }, []); 
+      }, [dispatch]); 
 
     useEffect(()=>{
         const tooltips = document.querySelectorAll('.tooltipped');
         M.Tooltip.init(tooltips);
       })
     
-    // const isAuthenticated = useSelector(state => state.user.isAuthenticated); 
     const requests = useSelector(state => state.product.requests); 
+
+    if (!isAuthenticated && !loading && user === null)
+      return <Navigate to='/login'/>;
 
     const text = 'The processing usually takes from 30 minutes to 1h'
     return (

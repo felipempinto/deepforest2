@@ -26,19 +26,11 @@ const Login = () => {
   const onChange = e => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
-
-  // const onSubmit = async(e) => {
-  //   e.preventDefault();
-  //   const results = dispatch(login({username,password}));
-  //   console.log(results)
-  // };
   const onSubmit = e => {
     e.preventDefault();
     dispatch(login({ username, password }))
       .then(data => {
-        if (data.meta.requestStatus=='rejected') {
-          // alert(data.payload.detail)
-          // console.log("ERROR")
+        if (data.meta.requestStatus==='rejected') {
           setLoginError(data.payload.detail);
         } else {
           console.log("SUCESS")          
@@ -48,20 +40,13 @@ const Login = () => {
         console.error('Login error:', error);
       });
   };
-
-  if (isAuthenticated) return <Navigate to='/' />;
-
-  // const [username, setUsername] = useState("");
-  // const [password, setPassword] = useState("");
-
-  // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  // console.log(isAuthenticated)
+  
   // if (isAuthenticated) return <Navigate to='/' />;
+  if (typeof isAuthenticated !== 'undefined' && isAuthenticated) {
+    return <Navigate to="/requests" />;
+  }
+  
 
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   dispatch(login({ username, password }));
-  // };
 
   return (
     <>
