@@ -15,6 +15,7 @@ import { homepage } from '../features/main'
 import './RequestMap.css';
 import "react-datepicker/dist/react-datepicker.css";
 import { tiles,resetTiles } from '../features/main'
+import tileLayersData from './tileLayers.json';
 var parse = require('wellknown');
 
 
@@ -36,7 +37,6 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     newColors[id] = 'blue';
     setGeojsonColors(newColors);
   }
-  
   const handleMouseOut = (id) => {
     const newColors = { ...geojsonColors };
     newColors[id] = 'red';
@@ -48,15 +48,11 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     const product = products.find((p) => p.id === productId);
     setSelectedProduct(product);
   };
+  console.log("REPEAT")
 
-  useEffect(()=>{
-    // options = {}
-    // document.addEventListener('DOMContentLoaded', function() {
-    // var elems = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(collapsibleRef.current, {});
-    // });
-  })
   useEffect(() => {
+    M.Collapsible.init(collapsibleRef.current, {});
+
     M.Datepicker.init(startDateRef.current, {
       format: 'yyyy-mm-dd',
       container:document.body,
@@ -79,7 +75,6 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
   const handleBackClick = ()=>{
     setFormSubmitted(false);
     dispatch(resetTiles())
-    console.log("BAH")
   }
 
   const handleFormSubmit = (event) => {
@@ -97,10 +92,9 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
         date1: startDateRef.current.value,
         date2: endDateRef.current.value
     };
-    console.log(formData)
 
     dispatch(tiles(formData));
-
+    setFormSubmitted(true);
   }
 };
 
@@ -117,12 +111,7 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           <h2>Search for free products:</h2>
 
           <label htmlFor="product-select">Select a product:</label>
-          <select
-            id="product-select"
-            className="select-class"
-            value={selectedProduct ? selectedProduct.id : ''}
-            onChange={handleProductChange}
-          >
+          <select id="product-select" className="select-class" value={selectedProduct ? selectedProduct.id : ''} onChange={handleProductChange}>
             <option value="">-- Select a product --</option>
             {products.map((product) => (
               <option key={product.id} value={product.id}>
@@ -142,24 +131,32 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           </div>
         </div>
         <button 
-           type="submit" 
-           className="waves-effect waves-light btn align-center" 
-           id="submit-button"
-           disabled={formSubmitted}
-           >
-          Submit
+            type="submit" 
+            className="waves-effect waves-light btn align-center" 
+            id="submit-button" 
+            disabled={formSubmitted}>
+              Submit
         </button>
       </form>
+      {geojsons.length === 0 && formSubmitted && (
+      <div className='center'>
+        <p className='center' style={{ color: 'red' }}>
+          No images found.
+        </p>
+        <button 
+            className="waves-effect waves-light btn white" 
+            onClick={() => setFormSubmitted(false)}>
+              Dismiss
+        </button>
+      </div>
+    )}
     </div>
   </>
 
   var tab2 = <>
   <div className='container'>
   <h5 className="center-align">Products based on your search</h5>
-  <button 
-  onClick={handleBackClick}
-   className="waves-effect waves-light btn align-center" 
-   >
+  <button onClick={handleBackClick} className="waves-effect waves-light btn align-center">
     
     <i className="material-icons">arrow_back</i> Back to search
   </button>
@@ -180,30 +177,11 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
             <a className='center-align' href={geojson.mask_url} download={`${geojson.name}.png`}>
               <i class="material-icons">download</i>
             </a>
-            {/* <img src={geojson.mask_url} alt="mask" /> */}
           </div>
         </li>
       )
       )}
     </ul>
-        
-   {/* <div className="collection">
-   {geojsons.map((geojson, i) => (
-        <a 
-          key={i} 
-          href={geojson.mask_url} 
-          className="collection-item" 
-          download
-          onMouseOver={() => handleMouseOver(geojson.id)}
-          onMouseOut={() => handleMouseOut(geojson.id)}
-          >
-          <span className="badge">
-            <p>({formatBytes(geojson.size)})</p>
-          </span>
-          {geojson.date_image}
-        </a>
-            ))}
-    </div> */}
   </div>
   </>
 
@@ -222,14 +200,12 @@ function formatBytes(bytes, decimals = 2) {
   const dm = decimals < 0 ? 0 : decimals
   const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
 
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
 function RequestMap() {
     const dispatch = useDispatch();
-
     useEffect(() => {
         dispatch(homepage());
     }, [dispatch]);
@@ -267,98 +243,65 @@ function RequestMap() {
           "size": tile.size
         }
       }
-  
       return geojson;
-
     });
-
-    const tileLayers = [
-      {
-        key:1,
-        name: 'OpenStreetMap',
-        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      },
-      {
-        key:2,
-        name: 'Stamen Terrain',
-        url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png',
-      },
-      {
-        key:3,
-        name:"World Imagery ArcGIS",
-        url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-      }
-    ];
+    
+    const tileLayers = tileLayersData.map((layer) => ({
+      key: layer.key,
+      name: layer.name,
+      url: layer.url,
+    }));
 
   return (
     <>
-        <MapContainer className='map-container' center={[51.505, -0.09]} zoom={5} zoomControl={false} maxZoom={20} minZoom={2}>
-              <LayersControl position="bottomright">
-              {tileLayers.map((layer, index) => (
-                <LayersControl.BaseLayer checked name={layer.name} key={index}>
-                  <TileLayer url={layer.url} key={index}/>
-                </LayersControl.BaseLayer>
-              ))}
-            </LayersControl>
-            
-            {geojsons.map((geojson, i) => (
-              // console.log(geojson)))
-              <GeoJSON 
-                  id={`geojson-${tiles[i].id}`}
-                  key={tiles[i].id} 
-                  data={geojson} 
-                  style={{ color: geojsonColors[tiles[i].id] }}
-              >
-                <Popup>
-                <div className="popup-content">
-                  <table>
-                    <tbody>
-                      <tr>
-                        <td>Name:</td>
-                        <td>{geojson.properties.name}</td>
-                      </tr>
-                      <tr>
-                        <td>Product:</td>
-                        <td>{geojson.properties.product}</td>
-                      </tr>
-                      <tr>
-                        <td>Date:</td>
-                        <td>{geojson.properties.date_image}</td>
-                      </tr>
-                      <tr>
-                        <td>Size:</td>
-                        <td>{formatBytes(geojson.properties.size)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  {geojson.properties.mask_url &&
-                    <a 
-                      className="btn waves-effect waves-light my-btn-class" 
-                      href={geojson.properties.mask_url} 
-                      download
-                    >
-                      Download
-                    </a>
-                  }
-                </div>
-              </Popup>
-              </GeoJSON>
-            ))
-            }
-            <ZoomControl position="bottomright"/>
-        </MapContainer> 
-
-        <div className={`sidebar ${showSidebar ? 'active' : ''}`}>
-        
-            <SideNavComponent 
-                products={products} 
-                geojsons={tiles} 
-                geojsonColors={geojsonColors} 
-                setGeojsonColors={setGeojsonColors} 
-                />
-        </div>
-        <button onClick={handleBackClick} className="waves-effect waves-light btn" id="back-button">Back</button>
-        <button onClick={toggleSidebar} className="waves-effect waves-light btn" id="button-toggle-side-nav"><i className="material-icons">menu</i></button>
+      <MapContainer className='map-container' center={[51.505, -0.09]} zoom={5} zoomControl={false} maxZoom={20} minZoom={2}>
+        <LayersControl position="bottomright">
+          {tileLayers.map((layer, index) => (
+            <LayersControl.BaseLayer checked name={layer.name} key={index}>
+              <TileLayer url={layer.url} key={index}/>
+            </LayersControl.BaseLayer>
+          ))}
+        </LayersControl>
+          
+        {geojsons.map((geojson, i) => (
+          <GeoJSON id={`geojson-${tiles[i].id}`} key={tiles[i].id} data={geojson} style={{ color: geojsonColors[tiles[i].id] }}>
+            <Popup>
+              <div className="popup-content">
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>Name:</td>
+                      <td>{geojson.properties.name}</td>
+                    </tr>
+                    <tr>
+                      <td>Product:</td>
+                      <td>{geojson.properties.product}</td>
+                    </tr>
+                    <tr>
+                      <td>Date:</td>
+                      <td>{geojson.properties.date_image}</td>
+                    </tr>
+                    <tr>
+                      <td>Size:</td>
+                      <td>{formatBytes(geojson.properties.size)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                {geojson.properties.mask_url &&
+                  <a className="btn waves-effect waves-light my-btn-class" href={geojson.properties.mask_url} download>
+                    Download
+                  </a>}
+              </div>
+            </Popup>
+          </GeoJSON>
+        ))}
+        <ZoomControl position="bottomright"/>
+      </MapContainer> 
+      <div className={`sidebar ${showSidebar ? 'active' : ''}`}>
+        <SideNavComponent products={products} geojsons={tiles} geojsonColors={geojsonColors} setGeojsonColors={setGeojsonColors}/>
+      </div>
+      <button onClick={handleBackClick} className="waves-effect waves-light btn" id="back-button">Back</button>
+      <button onClick={toggleSidebar} className="waves-effect waves-light btn" id="button-toggle-side-nav"><i className="material-icons">menu</i></button>
     </>
   );
 }
