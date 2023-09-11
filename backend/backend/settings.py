@@ -137,22 +137,22 @@ CACHES = {
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS_DEEPFOREST")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS_DF_WEBSITE")
 EMAIL_PORT = 587
 
 ##############################    AWS    ##############################
-USE_S3 = os.getenv('USE_S3_DEEPFOREST') == 'True'
+USE_S3 = os.getenv('USE_S3_DF_WEBSITE') == 'True'
 
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DEEPFOREST')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DEEPFOREST')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DEEPFOREST')
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
 
 AWS_S3_FILE_OVERWRITE = False
 
 AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_LOCATION = 'static'
-AWS_URL = os.environ.get("AWS_URL_DEEPFOREST")
+AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
 if USE_S3:
 
