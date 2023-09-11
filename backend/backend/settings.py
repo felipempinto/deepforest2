@@ -148,7 +148,10 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS_DF_WEBSITE")
 EMAIL_PORT = 587
 
 ##############################    AWS    ##############################
-USE_S3 = os.getenv('USE_S3_DF_WEBSITE') == 'True'
+#TODO:
+## Use S3 again, for now it's breaking and I don't know the reason.
+
+USE_S3 = False#os.getenv('USE_S3_DF_WEBSITE') == 'True'
 
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
@@ -161,6 +164,8 @@ AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_LOCATION = 'static'
 AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 if USE_S3:
 
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -170,8 +175,17 @@ if USE_S3:
     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 else:
-    STATIC_URL = '/staticfiles/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    # STATIC_URL = '/staticfiles/'
+    # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    STATIC_URL = '/static/'
+
+    if DEBUG:
+        STATIC_URL = '/static/'
+        STATIC_ROOT = 'staticfiles'
+        STATICFILES_DIRS = (
+            os.path.join(BASE_DIR, "static"),
+        )
 
 # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 # STATICFILES_DIRS = [
@@ -179,7 +193,7 @@ else:
 #   os.path.join(BASE_DIR, "build","static"),
 # ]
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 # # STATICFILES_DIRS = (os.path.join('../frontend','static','build'),)
 # STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
