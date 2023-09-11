@@ -68,7 +68,9 @@ CORS_ALLOWED_ORIGINS = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": [os.path.join(BASE_DIR, "build")],
+        "DIRS": [
+            # os.path.join(BASE_DIR, "build")
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -172,12 +174,12 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_DIRS = [
-  # Tell Django where to look for React's static files (css, js)
-  os.path.join(BASE_DIR, "build","static"),
-]
+# STATICFILES_DIRS = [
+#   # Tell Django where to look for React's static files (css, js)
+#   os.path.join(BASE_DIR, "build","static"),
+# ]
 
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 # # STATICFILES_DIRS = (os.path.join('../frontend','static','build'),)
 # STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
