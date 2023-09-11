@@ -20,7 +20,12 @@ if os.environ['LOCAL'] == 'True':
     ALLOWED_HOSTS.append( 'localhost',)
     
 
-CSRF_TRUSTED_ORIGINS = ['https://deepforest.app',]
+CSRF_TRUSTED_ORIGINS = [
+    'https://deepforest.app',
+    'https://v2.deepforest.app',
+
+                        ]
+# CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
