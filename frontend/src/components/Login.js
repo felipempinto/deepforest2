@@ -4,6 +4,7 @@ import { Navigate } from 'react-router-dom'
 // import { login } from "../authSlice"
 import {resetRegistered,login} from '../features/user';
 import NavbarComponent from "./includes/Navbar";
+import M from 'materialize-css';
 
 const Login = () => {
   const [loginError, setLoginError] = useState('');
@@ -16,6 +17,11 @@ const Login = () => {
     username: '',
     password: '',
   });
+
+  useEffect(() => {
+    M.AutoInit();
+  }, []);
+  
 
   useEffect(() => {
     if (registered) dispatch(resetRegistered());
@@ -33,7 +39,14 @@ const Login = () => {
         if (data.meta.requestStatus==='rejected') {
           setLoginError(data.payload.detail);
         } else {
-          console.log("SUCESS")          
+          console.log("SUCESS")
+          // M.toast({html: 'I am a toast!'})     
+          M.toast(
+            {html: "IDAFSDFADFASDASDVASDV", 
+             classes: 'orange rounded', 
+             displayLength:10000
+            }
+             );
         }        
       })
       .catch(error => {
@@ -92,7 +105,9 @@ const Login = () => {
                   // <button className='btn btn-primary mt-4'>Login</button>
                   <button type="submit" className="btn btn-primary">Login</button>
                 )}
+                 <a onclick="M.toast({html: 'I am a toast'})" class="btn">Toast!</a>
               </form>
+
             </div>
           </div>
         </div>

@@ -12,7 +12,7 @@ router.post('/api/users/login',async(req,res)=>{
     const body = JSON.stringify({ username,password });
 
     try {
-        const apiRes = await fetch(`${process.env.API_URL}/api/token/`, {
+        const apiRes = await fetch(`${process.env.API_URL}/api/main/token/`, {
 			method: 'POST',
 			headers: {
 				Accept: 'application/json',

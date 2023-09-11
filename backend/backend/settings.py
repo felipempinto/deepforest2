@@ -57,12 +57,13 @@ ROOT_URLCONF = 'backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # replace with your React app URL
+    'http://localhost:5000',
 ]
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        "DIRS": [os.path.join(BASE_DIR, "build")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -141,36 +142,44 @@ EMAIL_PORT = 587
 
 ##############################    AWS    ##############################
 USE_S3 = os.getenv('USE_S3_DEEPFOREST') == 'True'
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DEEPFOREST')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DEEPFOREST')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DEEPFOREST')
+
+AWS_S3_FILE_OVERWRITE = False
+
+AWS_S3_REGION_NAME = "us-east-2"
+AWS_S3_SIGNATURE_VERSION = "s3v4"
+AWS_LOCATION = 'static'
+AWS_URL = os.environ.get("AWS_URL_DEEPFOREST")
+
 if USE_S3:
-    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DEEPFOREST')
-    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DEEPFOREST')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DEEPFOREST')
-
-    AWS_S3_FILE_OVERWRITE = False
-
-    AWS_S3_REGION_NAME = "us-east-2"
-    AWS_S3_SIGNATURE_VERSION = "s3v4"
 
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-
-    AWS_LOCATION = 'static'
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'    
+    # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    
     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-    #NEW
-    AWS_URL = os.environ.get("AWS_URL_DEEPFOREST")
-
 else:
     STATIC_URL = '/staticfiles/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [
+  # Tell Django where to look for React's static files (css, js)
+  os.path.join(BASE_DIR, "build","static"),
+]
+
 # STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-STATICFILES_DIRS = (os.path.join('../frontend','build','static'),)
+# # STATICFILES_DIRS = (os.path.join('../frontend','static','build'),)
+# STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+
+# settings.py
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_URL = "/media/"
-
 
 AUTH_USER_MODEL = 'users.User'
 

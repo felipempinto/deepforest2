@@ -14,7 +14,7 @@ router.post('/api/tiles/', async (req, res) => {
     });
 
     try {
-        const apiRes = await fetch(`${process.env.API_URL}/api/tiles/`,{
+        const apiRes = await fetch(`${process.env.API_URL}/api/main/tiles/`,{
             method: 'POST',
             headers: {
                 Accept: 'application/json',

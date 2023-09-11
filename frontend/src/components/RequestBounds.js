@@ -16,7 +16,6 @@ import { MapContainer,
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
 import NavbarContainer from './includes/Navbar'
-// import { Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { models } from '../features/products';
 import M from 'materialize-css/dist/js/materialize.min.js';
@@ -26,27 +25,16 @@ import {
   Navigate,
   // Link
 } from 'react-router-dom';
+import tileLayersData from './tileLayers.json';
 var parse = require('wellknown');
 // import { geojsondata } from '../features/products';
 // var parse = require('wellknown');
 
-const tileLayers = [
-  {
-    key: 1,
-    name: 'OpenStreetMap',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  },
-  {
-    key: 2,
-    name: 'Stamen Terrain',
-    url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}{r}.png',
-  },
-  {
-    key: 3,
-    name: 'World Imagery ArcGIS',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  },
-];
+const tileLayers = tileLayersData.map((layer) => ({
+  key: layer.key,
+  name: layer.name,
+  url: layer.url,
+}));
 
 const Map = ({ filteredProduct }) => {
   const [geojsonEnabled, setGeojsonEnabled] = useState(true);
@@ -68,9 +56,9 @@ const Map = ({ filteredProduct }) => {
     M.Datepicker.init(dateRef.current, {
       format: 'yyyy-mm-dd',
       container:document.body,
-      autoClose: true, 
+      autoClose: true,
       setDefaultDate: true,
-      maxDate: new Date(), 
+      maxDate: new Date(),
       minDate: new Date(1900, 0, 1),
     });
     // const label = document.querySelector('label[for="date-picker"]');
@@ -106,6 +94,7 @@ const Map = ({ filteredProduct }) => {
       console.log(pth,bounds,date,userId);
       // Show alert indicating missing information
       alert('Please complete all fields');
+      setSubmitDisabled(false)
       return;
     }
 

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/api/products', async (req, res) => {
 	try {
-	  const apiRes = await fetch(`${process.env.API_URL}/`, {
+	  const apiRes = await fetch(`${process.env.API_URL}/api/main/`, {
 		method: 'GET',
 		headers: {
 		  Accept: 'application/json',

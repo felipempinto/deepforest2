@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include , re_path
+from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -7,12 +8,19 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView
 )
 
+def render_react(request):
+    return render(request, "index.html")
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html')),    
+    # path('',render_react,),
+    # re_path('.*', TemplateView.as_view(template_name='index.html')),
+    # path("",)
+    # path('', TemplateView.as_view(template_name='index.html')),    
+    # path('', TemplateView.as_view(template_name='build/index.html')),
     path('django-rq/', include('django_rq.urls')),
     path('api/main/',include('main.urls')),
-    # path('',include('main.urls')),
+    path('',include('main.urls')),
     path('api/products/',include('products.urls')),
     path('api/users/',include('users.urls')),
     path("api/forestmask/",include('forestmask.urls')),
