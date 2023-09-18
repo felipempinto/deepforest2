@@ -18,9 +18,9 @@ urlpatterns = [
     # path("",)
     # path('', TemplateView.as_view(template_name='index.html')),    
     # path('', TemplateView.as_view(template_name='build/index.html')),
+    path('',include('main.urls')),
     path('django-rq/', include('django_rq.urls')),
     path('api/main/',include('main.urls')),
-    path('',include('main.urls')),
     path('api/products/',include('products.urls')),
     path('api/users/',include('users.urls')),
     path("api/forestmask/",include('forestmask.urls')),

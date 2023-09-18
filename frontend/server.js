@@ -2,7 +2,10 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const path = require('path')
 
-require('dotenv').config();
+// require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+  }
 
 // Products
 const getRequestProductRoute = require('./routes/products/getRequests')
