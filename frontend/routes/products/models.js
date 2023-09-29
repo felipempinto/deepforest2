@@ -6,7 +6,6 @@ const fetch = (...args) => import('node-fetch').then(({default:fetch}) => fetch(
 const router = express.Router();
 
 router.get('/api/products/models/', async (req, res) => {
-	console.log("MODELS")
 	const { access } = req.cookies;
 	try {
 	  const apiRes = await fetch(`${process.env.API_URL}/api/products/models/`, {

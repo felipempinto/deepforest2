@@ -1,16 +1,27 @@
-import {useEffect,useRef} from 'react';
+import {useEffect,useRef,useState } from 'react';
 import { NavLink,Link } from 'react-router-dom';
 // import { useDispatch, useSelector } from 'react-redux';
-// import { logout } from '../../features/user';
 import M from 'materialize-css';
+import { AuthCheck } from "../includes/Auth";
+import { Logout } from '../Logout';
 import './Navbar.css'
 
 function NavbarComponent() {
   const ref = useRef(null);
-  // const dispatch = useDispatch();
-  // const user = useSelector((state) => state.user);
-  // console.log(user)
-	// const { isAuthenticated } = useSelector(state => state.user);
+  // const [isAuthenticated,setIsAuthenticated] = useState(false);
+
+
+  const isAuthenticated = AuthCheck('')
+  console.log(isAuthenticated);
+  // useEffect(() => {
+    // AuthCheck('')
+    // setIsAuthenticated(AuthCheck(''));
+    // async function checkAuthentication() {
+    //   setIsAuthenticated(await AuthCheck(''));
+    // }
+
+    // checkAuthentication();
+  // }, []); 
 
   useEffect(() => {
     const elem = ref.current;
@@ -21,9 +32,6 @@ function NavbarComponent() {
           coverTrigger:false
         });
   }, []);
-
-
-  // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const authlinks = (
     <>
@@ -37,6 +45,7 @@ function NavbarComponent() {
 				<a 
           className='nav-link' 
           href='#!' 
+          onClick={Logout()}
           // onClick={() => dispatch(logout())}
           >
 					Logout
@@ -53,9 +62,6 @@ function NavbarComponent() {
   );
 
   // const picture = user.user?.profile_picture ?? '/Default_pfp.svg';
-  // TODO: 
-  // create the isAuthenticated without the problem of using Express.
-  const isAuthenticated = false
   const picture = 'Default_pfp.svg'
 
 

@@ -62,7 +62,7 @@ ROOT_URLCONF = 'backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # replace with your React app URL
-    'http://localhost:5000',
+    # 'http://localhost:5000',
 ]
 
 TEMPLATES = [

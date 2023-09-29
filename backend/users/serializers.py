@@ -5,20 +5,25 @@ from .models import User
 from django.contrib.auth import get_user_model
 
 class UserCreateSerializer(serializers.ModelSerializer):
+  password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
   class Meta:
     model = User
     # fields = ('first_name', 'last_name', 'email', 'password')
-    fields = ('username', 'email', 'password')#,'password2')
+    # fields = ('username', 'email', 'password')
+    fields = ['username', 'email', 'password', 'password2']
+    extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
   def validate(self, data):
-    print(data)
-    user = User(**data)
+    # print(**data)
     password = data.get('password')
     password2 = data.get('password2')
-
     if password != password2:
         raise serializers.ValidationError("Passwords do not match.")
 
+    _ = data.pop('password2')
+    user = User(**data)
     try:
       validate_password(password, user)
     except exceptions.ValidationError as e:
@@ -31,8 +36,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
   def create(self, validated_data):
     user = User.objects.create_user(
-      # first_name=validated_data['first_name'],
-      # last_name=validated_data['last_name'],
       username=validated_data['username'],
       email=validated_data['email'],
       password=validated_data['password'],

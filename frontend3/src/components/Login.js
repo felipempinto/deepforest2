@@ -2,21 +2,15 @@ import React, {
     useEffect, 
     useState 
 } from "react";
-// import { useDispatch,useSelector } from "react-redux";
-// import { Navigate } from 'react-router-dom'
-// import {resetRegistered,login} from '../features/user';
 import NavbarComponent from "./includes/Navbar";
 import M from 'materialize-css';
 import axios from 'axios';
 import './Login.css'
-const cookie = require('cookie');
+import { useCookies } from 'react-cookie';
+import { AuthCheck } from "./includes/Auth";
 
-const API_URL = process.env.API_URL || 'http://127.0.0.1:8000/'
 
-// function checkAuth(access,refresh){
-//     // const response = await axios.post(`${API_URL}api/main/token/`,formData)
-//     return true
-// }
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/'
 
 const Login = () => {
     const [formData,setFormData] = useState({
@@ -24,21 +18,8 @@ const Login = () => {
         password:'',
     });
 
-    const [accessToken,setAccessToken] = useState(localStorage.getItem('access_token'))
-    const [refreshToken,setRefreshToken] = useState(localStorage.getItem('refresh_token'))
-
-    useEffect(() => {
-        // setAccessToken(localStorage.getItem('access_token'))
-        // setRefreshToken(localStorage.getItem('refresh_token'))
-        console.log("CHANGING TOKENS");
-        console.log(accessToken,refreshToken)
-        console.log(
-                    localStorage.getItem('access_token'),
-                    localStorage.getItem('refresh_token')
-                    )
-        console.log("AAAAAAAAAAAAAA333333333333333333")
-      }, [])
-    
+    const [cookies, setCookie] = useCookies(['access_token', 'refresh_token'])
+    // AuthCheck('/');
 
     const onSubmit = async (e) => {
         e.preventDefault()
@@ -46,27 +27,9 @@ const Login = () => {
         const response = await axios.post(`${API_URL}api/main/token/`,formData)
         .then((response) => {
             if (response.status === 200) {
-                console.log("SUCESS")
                 const { access, refresh } = response.data;
-                console.log(access,refresh);
-                console.log("SUCCESS 2")
-                cookie.serialize('access', access, {
-                    httpOnly: true,
-                    maxAge: 60 * 30,
-                    path: '/api/',
-                    sameSite: 'strict',
-                    secure: process.env.NODE_ENV === 'production',
-                })
-                cookie.serialize('refresh', refresh, {
-                    httpOnly: true,
-                    maxAge: 60 * 60 * 24,
-                    path: '/api/',
-                    sameSite: 'strict',
-                    secure: process.env.NODE_ENV === 'production',
-                })
-                
-                setAccessToken(access)
-                setRefreshToken(refresh);
+                // setCookie('access_token', access)
+                // setCookie('refresh_token', refresh);
 
             } else {
                 console.log(response.status)
@@ -113,11 +76,9 @@ const Login = () => {
 				<a className='pink-text' href='#!'><b>Forgot Password?</b></a>
 			  </label>
             </div>
-
-            <br />
+            <br/>
               <div className='row'>
                 <button type='submit' className='col s12 btn btn-large waves-effect green'>Login</button>
-                {/* <button type="submit" className="btn btn-primary">Login</button> */}
               </div>
           </form>
         </div>
