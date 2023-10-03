@@ -8,19 +8,22 @@ import 'leaflet/dist/leaflet.css';
 
 import { store } from './store';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  // <React.StrictMode>
-  // </React.StrictMode> 
-  <React>
+// const root = ReactDOM.createRoot(document.getElementById('root'));
+// root.render(
+//   // <React.StrictMode>
+//   // </React.StrictMode> 
+//   <React>
+//     <Provider store={store}>
+//       <App />
+//     </Provider>
+//   </React>
+// );
+
+ReactDOM.render(
     <Provider store={store}>
       <App />
-    </Provider>
-  </React>
-  
+    </Provider>,
+  document.getElementById('root')
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
