@@ -7,6 +7,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView
 )
+from django.conf import settings
+from django.conf.urls.static import static
 from .urls_frontend import urls as urls_frontend
 
 def render_react(request):
@@ -38,6 +40,9 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
-] + urls_frontend
+] + \
+urls_frontend + \
+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 
 

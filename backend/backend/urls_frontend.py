@@ -1,7 +1,8 @@
 from django.views.generic import TemplateView
 from django.urls import path
 
-URLS = [
+URLS = [ 
+    #Add new URLs here
     '',
     'login/',
     'register/',

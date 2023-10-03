@@ -2,6 +2,9 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from urllib import parse as urlparse
+import mimetypes
+
+mimetypes.add_type("text/css", ".css", True)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY_DF_WEBSITE')
@@ -23,8 +26,8 @@ if os.environ['LOCAL'] == 'True':
 CSRF_TRUSTED_ORIGINS = [
     'https://deepforest.app',
     'https://v2.deepforest.app',
-
                         ]
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 # CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1']
 
 INSTALLED_APPS = [
@@ -63,6 +66,7 @@ ROOT_URLCONF = 'backend.urls'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # replace with your React app URL
     'http://localhost:8000',
+    "http://127.0.0.1:8000",
     # 'http://localhost:5000',
 ]
 
@@ -150,11 +154,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS_DF_WEBSITE")
 EMAIL_PORT = 587
 
 ##############################    AWS    ##############################
-#TODO:
-## Use S3 again, for now it's breaking and I don't know the reason.
-
-USE_S3 = False#os.getenv('USE_S3_DF_WEBSITE') == 'True'
-
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
@@ -166,23 +165,26 @@ AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_LOCATION = 'static'
 AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
+# #TODO:
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# ## Use S3 again, for now it's breaking and I don't know the reason.
+# USE_S3 = False#os.getenv('USE_S3_DF_WEBSITE') == 'True'
 
-if USE_S3:
+# if USE_S3:
 
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'    
-    # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+#     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'    
+#     # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
     
-    STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-else:
-    # STATIC_URL = '/staticfiles/'
-    # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
-    STATIC_URL = '/static/'
+#     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
+#     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# else:
+#     # STATIC_URL = '/staticfiles/'
+#     # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#     STATIC_ROOT = os.path.join(BASE_DIR, "static")
+#     STATIC_URL = '/static/'
 
-# STATIC_URL = '/static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
   os.path.join(BASE_DIR, "build/static"),
 ]
@@ -204,9 +206,8 @@ STATICFILES_DIRS = [
 # STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
 # settings.py
-
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
-MEDIA_URL = "/media/"
+MEDIA_URL = "/"
+MEDIA_ROOT = os.path.join(BASE_DIR,'build/')
 
 AUTH_USER_MODEL = 'users.User'
 
