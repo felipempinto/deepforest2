@@ -166,7 +166,7 @@ AWS_LOCATION = 'static'
 AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
 # #TODO:
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 # ## Use S3 again, for now it's breaking and I don't know the reason.
 # USE_S3 = False#os.getenv('USE_S3_DF_WEBSITE') == 'True'
 
@@ -207,7 +207,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 
 # settings.py
-MEDIA_URL = "/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR,'build/')
 
 AUTH_USER_MODEL = 'users.User'
