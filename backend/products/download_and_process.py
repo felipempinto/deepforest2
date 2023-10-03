@@ -18,9 +18,15 @@ from botocore.exceptions import ClientError,ParamValidationError
 from main.models import TilesProcessed
 from .predict import classify
 
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DEEPFOREST')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DEEPFOREST')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DEEPFOREST')
+
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
+
+# AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DEEPFOREST')
+# AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DEEPFOREST')
+# AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DEEPFOREST')
 
 gdal.UseExceptions()
 gdal.SetConfigOption("AWS_REQUEST_PAYER",'requester')
@@ -151,20 +157,24 @@ def reprojection(geom,epsg_out,epsg_in=4326):
     geom_out = transform(project, geom)
     return geom_out
 
-def reproject_raster(raster,output='',verbose=False):
+def reproject_raster(raster,output='',verbose=True):#False):
+    print("REPROJECT START")
     target_sr = osr.SpatialReference()
     target_sr.ImportFromEPSG(4326)  
     name = f'{os.path.basename(raster).replace(".tif","")}-{int(time.time())}.tif'
 
     if output=='':
         output = f'/vsimem/REP_{name}'
-    
+    print("PRE VERBOSE")
     if verbose:
         print("Reprojecting...")
+        print(output)
         t1 = time.time()
+    print("WARP 1")
     gdal.Warp(output,raster,dstSRS=target_sr)
     if verbose:
         print("Reprojected in ",time.time()-t1,'seconds')
+    print("WARP 2")
     
     return output
 
@@ -187,17 +197,20 @@ def download_from_df(file):
     img_local = os.path.join('temp',key)
     if not os.path.exists(os.path.dirname(img_local)):
         os.makedirs(os.path.dirname(img_local))
+    print("IMGLOCAL",img_local)
 
     if not os.path.exists(img_local):
         s3.download_file(bucket,key, img_local)
+        print("DOWNLOAD READY")
     print("TIME ON FUNCTION",time.time()-t1)
     return img_local
 
 def merge_rasters(rasters, out_file, clip_polygon,download=True,verbose=False):
     if verbose:
         print("MERGE RASTERS")
-
+    print(rasters)
     rasters = [i.replace('s3:/','/vsis3') for i in rasters]
+    print(rasters)
     
     r = []
     if download:
@@ -223,19 +236,23 @@ def merge_rasters(rasters, out_file, clip_polygon,download=True,verbose=False):
     else:
         rasters_processed = []
         for raster in rasters:
-            out = reproject_raster(raster)
+            out = reproject_raster(raster,verbose=verbose)
             rasters_processed.append(out)
         
         temp = f'temp/MERGE_{int(time.time())}.tif'
+        print("PROCESSING MOSAIC")
         mosaic(rasters_processed,temp)
+        print("MOSAICADO")
 
         gdal.Warp(out_file,
                   temp,
                   outputBounds=clip_polygon,
                   resampleAlg='cubic',
                   format='GTiff')
+        print("WARP")
         
         os.remove(temp)
+        print("REMOVE")
     
     if verbose:
         print("TIME ON FUNCTION",time.time()-t1)
@@ -281,6 +298,7 @@ def download_file(title,s3path,download=True,verbose=False):
 
 def get_data(date,bounds,verbose=False,product="forestmask"):
     if verbose:
+        print("#"*50)
         print("GET DATA")
         
     t1 = time.time()
@@ -317,13 +335,17 @@ def get_data(date,bounds,verbose=False,product="forestmask"):
     if verbose:
         t2 = time.time()-t1
         print('Time to get the data: ',time.strftime('%H:%M:%S', time.gmtime(t2)))
-        print("#"*50)
-        print(ready,toprocess)
-        print("#"*50)
+        print("Dataset ready:",ready)
+        print("Dataset to process:",toprocess)
+        print("$"*50)
+
     return (ready,toprocess)
 
 def check_area(geom,metric='km2'):
-    m = {'km2':1/1_000_000,'ha':1/10_000}
+    m = {
+        'km2':1/1_000_000,
+        'ha':1/10_000
+        }
     prjin = pyproj.CRS.from_epsg(4326)
     prjout = pyproj.Proj(proj='aea',lat_1=geom.bounds[1],lat_2=geom.bounds[3]).crs
     project = pyproj.Transformer.from_crs(prjin, prjout, always_xy=True).transform
@@ -332,6 +354,18 @@ def check_area(geom,metric='km2'):
     if metric in m:
         area = area*m[metric]
     return area
+
+def get_mask(key,expiration=1200):
+
+    try:
+        response = s3.generate_presigned_url('get_object',
+                        Params={'Bucket': AWS_STORAGE_BUCKET_NAME,
+                                'Key': key},
+                        ExpiresIn=expiration)
+    except (ClientError,ParamValidationError):
+        return None
+    else:
+        return response
 
 def process(
             date_requested,
@@ -342,12 +376,12 @@ def process(
             verbose=False,
             product='forestmask'
 ):
+    
     bounding_box = shapely_loads(bounding_box)
     
     data = get_data(date_requested,bounding_box,verbose=verbose)
     if data is None:
         error_message = "Error with the request"
-        print(error_message)
         return error_message
     (ready,toprocess) = data
 
@@ -367,28 +401,14 @@ def process(
         dt = datetime.datetime.strptime(dt,'%Y%m%dT%H%M%S')
 
         name = os.path.basename(os.path.dirname(file))
-        TilesProcessed.update_from_s3(product)
+        tiles_processed = TilesProcessed.update_from_s3(product)        
 
     if verbose:
         print(images, output, bounding_box.bounds)
     output_local = os.path.join('temp',output)
     if not os.path.exists(os.path.dirname(output_local)):
         os.makedirs(os.path.dirname(output_local))
-    merge_rasters(images, output_local, bounding_box.bounds)
-
+    merge_rasters(images, output_local, bounding_box.bounds,verbose=verbose)
     if verbose:
         print(output_local, AWS_STORAGE_BUCKET_NAME ,output)
     s3.upload_file(output_local, AWS_STORAGE_BUCKET_NAME ,output)
-
-
-def get_mask(key,expiration=1200):
-
-    try:
-        response = s3.generate_presigned_url('get_object',
-                        Params={'Bucket': AWS_STORAGE_BUCKET_NAME,
-                                'Key': key},
-                        ExpiresIn=expiration)
-    except (ClientError,ParamValidationError):
-        return None
-    else:
-        return response

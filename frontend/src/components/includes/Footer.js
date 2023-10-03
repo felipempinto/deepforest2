@@ -26,7 +26,7 @@ return (
     </div>
   </div>
   <div className="container footer-text">
-    <p>© 2022 My Website</p>
+    <p>© 2023 Deep Forest</p>
   </div>
 </footer>
 );

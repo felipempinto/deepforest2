@@ -4,12 +4,13 @@ export const homepage = createAsyncThunk(
   'home',
   async (_,thunkAPI) =>{
 	try {
-		const res = await fetch('/api/products',{
-			method:'GET',
-			headers:{
-				Accept:'application/json',
-			},
-		});
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/main/`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      });
     
 		const data = await res.json()
 		
@@ -32,14 +33,14 @@ export const tiles = createAsyncThunk(
       date2,
     });
     try {
-      const res = await fetch('/api/tiles', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/main/tiles/`,{
         method: 'POST',
         headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Content-Type':'application/json',
         },
         body,
-      });
+    });
       const data = await res.json();
 
       if (res.status === 200) {
@@ -57,7 +58,7 @@ export const downloadTiles = createAsyncThunk(
   'tiles/download',
   async ({ productId }, thunkAPI) => {
     const state = thunkAPI.getState();
-    const token = state.auth.token; // assuming the JWT token is stored in the state under auth.token
+    const token = state.auth.token; 
     const headers = {
       'Authorization': `Bearer ${token}`,
     };
@@ -79,6 +80,7 @@ export const downloadTiles = createAsyncThunk(
     }
   }
 );
+
 const mainSlice = createSlice({
   name: 'main',
   initialState: {

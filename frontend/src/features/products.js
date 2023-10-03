@@ -1,16 +1,25 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import Cookies from 'js-cookie';
 
 export const models = createAsyncThunk(
   'products/models',
   async (thunkAPI) => {
     try {
-      const res = await fetch('/api/products/models/', {
+      // const res = await fetch('/api/products/models/', {
+      //   method: 'GET',
+      //   headers: {
+      //     Accept: 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/models/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
           'Content-Type': 'application/json',
         },
-      });
+        });
       const data = await res.json();
 
       if (res.status === 200) {
@@ -30,13 +39,14 @@ export const getRequests = createAsyncThunk(
   'products/request/user',
   async (thunkAPI) => {
     try {
-      const res = await fetch('/api/products/request/user/', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/user/`, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
           'Content-Type': 'application/json',
         },
-      });
+        });
       const data = await res.json();
 
       if (res.status === 200) {
@@ -55,7 +65,7 @@ export const deleteRequest = createAsyncThunk(
 	'requests/delete',
 	async (id, thunkAPI) => {
 	  try {
-		const res = await fetch(`/api/products/requests/delete/${id}`, {
+		const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/delete/${id}`, {
 		  method: 'DELETE',
 		  headers: {
 			Accept: 'application/json',
@@ -64,16 +74,12 @@ export const deleteRequest = createAsyncThunk(
 		});
   
 		if (res.ok) {
-		  // Deletion was successful
-      console.log('JOIA')
 		  return id;
 		} else {
 		  const data = await res.json();
-      console.log('SOCORRO2')
 		  return thunkAPI.rejectWithValue(data);
 		}
 	  } catch (err) {
-      console.log('SOCORRO')
 		return thunkAPI.rejectWithValue(err.response.data);
 	  }
 	}
@@ -83,7 +89,6 @@ export const request = createAsyncThunk(
   'products/request',
   async ({pth,bounds,date,userId},thunkAPI) => {
 
-    // console.log(pth,bounds,date,);
     const body = JSON.stringify({
       'pth':pth,
       'date_requested':date,
@@ -92,14 +97,23 @@ export const request = createAsyncThunk(
   });
 
     try {
-      const res = await fetch('/api/products/request/', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
           'Content-Type': 'application/json',
         },
         body,
-      });
+        });
+      // const res = await fetch('/api/products/request/', {
+      //   method: 'POST',
+      //   headers: {
+      //     Accept: 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body,
+      // });
       const data = await res.json();
 
       if (res.status === 200) {
@@ -119,14 +133,25 @@ export const geojsondata = createAsyncThunk(
   'products/geojsondata',
   async (geojsonData,thunkAPI) => {
     try {
-      const res = await fetch('/api/products/geojsondata/', {
-        method: 'POST',
+      // const res = await fetch('/api/products/geojsondata/', {
+      //   method: 'POST',
+      //   headers: {
+      //     Accept: 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(geojsonData),
+      // });
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/geojsondata/`, {
+        method: 'GET',
         headers: {
           Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(geojsonData),
-      });
+            // body,
+            body: JSON.stringify(geojsonData),
+        });
+
       const data = await res.json();
 
       if (res.status === 200) {

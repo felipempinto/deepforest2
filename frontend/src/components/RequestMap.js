@@ -48,7 +48,6 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     const product = products.find((p) => p.id === productId);
     setSelectedProduct(product);
   };
-  console.log("REPEAT")
 
   useEffect(() => {
     M.Collapsible.init(collapsibleRef.current, {});
@@ -175,7 +174,7 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
             <p><strong>Last Modified: </strong>{cvtDate(geojson.last_modified)}</p>
             <p><strong>Size: </strong>{formatBytes(geojson.size)}</p>
             <a className='center-align' href={geojson.mask_url} download={`${geojson.name}.png`}>
-              <i class="material-icons">download</i>
+              <i className="material-icons">download</i>
             </a>
           </div>
         </li>

@@ -134,18 +134,20 @@ def requestprocess(self):
     config_file = self.pth.parameters.url
     user = self.user.username
     date = self.date_requested.strftime("%Y%m%d")
-    unique_id = uuid.uuid4().hex 
+    unique_id = uuid.uuid4().hex
 
     output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
     
-    process(
+    a = process(
         date,
         self.bounds.wkt,
         pth,
         output,
         config_file,
-        product=product
+        product=product,
+        verbose=True
     )
+    print(a)
     if self.name=='':
         self.name = os.path.basename(output).replace('.tif','')
     self.done = True
@@ -165,6 +167,11 @@ class RequestProcess(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return self.bounds.geojson
+    
+    def geojson(self):
+        return self.bounds.geojson
 
     def save(self, *args, **kwargs):
         super(RequestProcess,self).save(*args, **kwargs)
@@ -178,6 +185,10 @@ class RequestProcess(models.Model):
                 args=(self,),
                 job_timeout=50000
                 )
+            print("#"*50)
+            print("JOB")
+            print(job)
+            print("#"*50)
             
 
     def get_mask(self,expiration=1200):

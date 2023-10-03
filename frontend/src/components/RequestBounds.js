@@ -48,8 +48,6 @@ const Map = ({ filteredProduct }) => {
   const dateRef = useRef(null);
   const navigate = useNavigate();
   
-  // console.log(geojsonPolygon);
-  
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -110,39 +108,12 @@ const Map = ({ filteredProduct }) => {
     // layer.addTo(featureGroupRef.current);
     const wktPolygon = layer.toGeoJSON().geometry;
     const wktString = parse.stringify(wktPolygon);
-    console.log(wktString);
+    // console.log(wktString);
 
     setPolygon(wktString);
-    console.log(polygon);
+    // console.log(polygon);
   };
 
-  // const handleFileUpload = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = async (e) => {
-  //       const content = e.target.result;
-  //       const geojsonData = JSON.parse(content);
-
-  //       try {
-  //         const action = await dispatch(geojsondata(geojsonData));
-  //         const { payload, error } = action;
-  
-  //         if (!error) {
-  //           setGeojsonData(data);
-  //           console.log(payload); // Handle successful response
-  //         } else {
-  //           console.log(error); // Handle error response
-  //         }
-  //       } catch (err) {
-  //         console.log(err); // Handle network or other errors
-  //       }
-            
-            
-  //     };
-  //     reader.readAsText(file);
-  //   }
-  // };
   useEffect(() => {
     fitBounds();
   }, [fitBounds]);
@@ -164,8 +135,6 @@ const Map = ({ filteredProduct }) => {
         <label htmlFor="date-picker" data-tooltip="We will select the closest ones if there is no image in the date selected" >Select the date:</label>
         <input ref={dateRef} type="text" id="date-picker" className="datepicker"/>
       </div>
-      {/* <label>Select the date</label>
-      <input type="text" class="datepicker"/> */}
       <div className='section'>
       <h3 className="center">Select a location <i className='material-icons tooltipped' data-position="bottom" data-tooltip={textLocation}>help</i></h3>
       <button className='btn tooltipped' data-position="top" data-tooltip={textLocationTrain} onClick={handleToggleGeojson}>
@@ -187,7 +156,6 @@ const Map = ({ filteredProduct }) => {
             </LayersControl.BaseLayer>
           ))}
         </LayersControl>
-        {/* {geojsonPolygon && <GeoJSON data={geojsonPolygon} />} */}
         {geojsonPolygon && geojsonEnabled && (
         <GeoJSON data={geojsonPolygon} style={{ color: 'red' }} />
       )}
@@ -208,13 +176,6 @@ const Map = ({ filteredProduct }) => {
           />
         </FeatureGroup>
       </MapContainer>
-      {/* <div>
-        <input type="file" accept=".geojson" ref={fileInputRef} onChange={handleFileUpload} />
-      </div> */}
-
-      {/* <div className='center section'>  
-        <a href='#!' className='btn' onClick={handleRequest}>Submit</a>
-      </div> */}
       <div className='center section'>
         <button className='btn' onClick={handleRequest} disabled={submitDisabled}>
           {submitDisabled ? 'Submitting...' : 'Submit'}
@@ -274,19 +235,21 @@ function RequestBounds() {
     M.FormSelect.init(selectVersionRef.current, {});
   }, [filteredVersions]);
 
-  console.log(isAuthenticated,loading,user)
-  if (!isAuthenticated && !loading && user === null)
-      return <Navigate to='/login'/>;
+  // TODO
+  // create the way to check if user is authenticated
+
+  // console.log(isAuthenticated,loading,user)
+  // if (!isAuthenticated && !loading && user === null)
+  //     return <Navigate to='/login'/>;
   return (
     <>
     <NavbarContainer/>
     <div className='container'>
       <h1 className='center'>Request new basemap</h1>
 
-      <div class="input-field col s12">
-        <select onChange={handleProductSelect}  ref={selectProductRef}>
-          <option value="" disabled selected>Choose the product</option>
-
+      <div className="input-field col s12">
+        <select defaultValue={""} onChange={handleProductSelect}  ref={selectProductRef}>
+          <option value="" disabled>Choose the product</option>
           {
             uniqueProducts.map((product, i) => (
               <option key={i} value={product}>{product}</option>
@@ -297,7 +260,10 @@ function RequestBounds() {
 
       {selectedProduct && (<>{selectVersion}</>)}
         
-      {selectedVersion && <Map key={filteredProduct?.id} filteredProduct={filteredProduct} />}
+      {
+        selectedVersion && 
+        <Map key={filteredProduct?.id} filteredProduct={filteredProduct} />
+      }
     </div>
     </>
   );

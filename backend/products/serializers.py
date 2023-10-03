@@ -18,6 +18,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
 
     # pth = ModelsTrainedSerializer()
     mask_url = serializers.SerializerMethodField()
+    geojson = serializers.SerializerMethodField()
 
     def get_fields(self):
         fields = super().get_fields()
@@ -30,6 +31,10 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         model = RequestProcess
         fields = '__all__'
         #['name','date_requested','bounds', 'pth']
+    
+    def get_geojson(self,obj):
+        geojson = obj.bounds.geojson
+        return geojson
 
     def get_mask_url(self, obj):
         mask_url = obj.get_mask()

@@ -1,16 +1,35 @@
-import {useEffect,useRef} from 'react';
+import {
+  useEffect,
+  useRef,
+  // useState 
+} from 'react';
 import { NavLink,Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../features/user';
 import M from 'materialize-css';
+// import { AuthCheck } from "../includes/Auth";
+// import { Logout } from '../Logout';
+import { logout } from '../../features/user';
 import './Navbar.css'
 
 function NavbarComponent() {
   const ref = useRef(null);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-  console.log(user)
 	const { isAuthenticated } = useSelector(state => state.user);
+  // const [isAuthenticated,setIsAuthenticated] = useState(false);
+
+
+  // const isAuthenticated = AuthCheck('')
+  // console.log(isAuthenticated);
+  // useEffect(() => {
+    // AuthCheck('')
+    // setIsAuthenticated(AuthCheck(''));
+    // async function checkAuthentication() {
+    //   setIsAuthenticated(await AuthCheck(''));
+    // }
+
+    // checkAuthentication();
+  // }, []); 
 
   useEffect(() => {
     const elem = ref.current;
@@ -22,9 +41,6 @@ function NavbarComponent() {
         });
   }, []);
 
-
-  // const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-
   const authlinks = (
     <>
       <li className="nav-item">
@@ -34,7 +50,12 @@ function NavbarComponent() {
         <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
       </li>
       <li className='nav-item'>
-				<a className='nav-link' href='#!' onClick={() => dispatch(logout())}>
+				<a 
+          className='nav-link' 
+          href='#!' 
+          // onClick={Logout()}
+          onClick={() => dispatch(logout())}
+          >
 					Logout
 				</a>
 			</li>
@@ -49,15 +70,16 @@ function NavbarComponent() {
   );
 
   const picture = user.user?.profile_picture ?? '/Default_pfp.svg';
-  console.log(user)
-  
+  // const picture = 'Default_pfp.svg'
+
+
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
     <div className="container-fluid">
       <Link className="navbar-brand" to="/">
         <img className="img-logo" src="/Logo.png" alt="Deep Forest Logo" />
       </Link>
-      <ul id="dropdown1" class="dropdown-content">
+      <ul id="dropdown1" className="dropdown-content">
         {isAuthenticated ? authlinks : guestLinks}
       </ul>
       <ul id="nav-mobile" className="right hide-on-med-and-down">

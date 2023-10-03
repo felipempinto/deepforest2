@@ -62,15 +62,17 @@ ROOT_URLCONF = 'backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',  # replace with your React app URL
+    'http://localhost:8000',
     # 'http://localhost:5000',
 ]
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        "DIRS": [
-            # os.path.join(BASE_DIR, "build")
-            ],
+        'DIRS': [os.path.join(BASE_DIR, "build")],
+        # "DIRS": [
+        #     # os.path.join(BASE_DIR, "build")
+        #     ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -180,6 +182,10 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     STATIC_URL = '/static/'
 
+# STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+  os.path.join(BASE_DIR, "build/static"),
+]
     # if DEBUG:
     #     STATIC_URL = '/static/'
     #     STATIC_ROOT = 'staticfiles'
@@ -231,3 +237,30 @@ SIMPLE_JWT = {
   }
 
 
+# # TODO:
+# # prepare loging for Django-RQ:
+# # https://github.com/rq/django-rq#configuring-logging
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "rq_console": {
+#             "format": "%(asctime)s %(message)s",
+#             "datefmt": "%H:%M:%S",
+#         },
+#     },
+#     "handlers": {
+#         "rq_console": {
+#             "level": "DEBUG",
+#             "class": "rq.logutils.ColorizingStreamHandler",
+#             "formatter": "rq_console",
+#             "exclude": ["%(asctime)s"],
+#         },
+#     },
+#     'loggers': {
+#         "rq.worker": {
+#             "handlers": ["rq_console", "sentry"],
+#             "level": "DEBUG"
+#         },
+#     }
+# }

@@ -10,6 +10,24 @@ import { getRequests,deleteRequest } from '../features/products';
 import { formatDistanceToNow } from 'date-fns';
 // import M from 'materialize-css';
 
+
+function exportGeoJSONAsFile(geoJSONText, fileName) {
+  const blob = new Blob([geoJSONText], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  
+  document.body.appendChild(a);
+  a.click();
+  
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
+
 const Requests = () => {
     const { isAuthenticated, user, loading } = useSelector(state => state.user);
 
@@ -20,29 +38,14 @@ const Requests = () => {
     const formatRelativeTime = (dateString) => {
         return formatDistanceToNow(new Date(dateString), { addSuffix: true });
       };
-    
-      // dispatch(actionCreator('233'))
-      //     .then(unwrapResult)
-      //     .then((result) => {
-      //       console.log(result); // => 233
-      //     })
-      //     .catch((error) => {
-      //       console.error(error); // if there is an error
-      //     });
-      
 
     const handleDeleteRequest = (requestId) => {
         dispatch(deleteRequest(requestId))
           .then((action) => {
             
-            // Check if the request was successfully deleted
             if (action.meta.requestStatus === 'fulfilled') {
-              console.log("A");
-              // Reload the page to update the request list
               window.location.reload();
             } else {
-              console.log("B");
-              // Handle error if the request deletion failed
               console.error('Failed to delete request');
             }
           })
@@ -52,34 +55,6 @@ const Requests = () => {
           });
       };
 
-
-      // function handleDeleteRequest(requestId) {
-      //   // Send DELETE request to the backend
-      //   fetch(`/api/products/requests/delete/${requestId}`, {
-      //     method: 'DELETE'
-      //   })
-      //     .then(response => {
-      //       // Check if the request was successfully deleted
-      //       console.log(response)
-      //       if (response.ok) {
-      //         // Reload the page to update the request list
-      //         console.log("DELETAR")
-      //         window.location.reload();
-      //       } else {
-      //         // Handle error if the request deletion failed
-      //         // window.location.reload();
-      //         console.error('Failed to delete request');
-      //       }
-      //     })
-      //     .catch(error => {
-      //       console.error('Error occurred while deleting request:', error);
-      //     });
-      // }
-
-      // const handleDownload = (event, maskUrl) => {
-      //   event.preventDefault();
-      //   window.location.href = maskUrl;
-      // };
 
     const handleDownload = (maskUrl) => {
         const link = document.createElement('a');
@@ -101,9 +76,14 @@ const Requests = () => {
       })
     
     const requests = useSelector(state => state.product.requests); 
-
-    if (!isAuthenticated && !loading && user === null)
+    
+    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
+    console.log(!isAuthenticated,!loading,user === null)
+    console.log(!isAuthenticated && !loading && user === null)
+    if (!isAuthenticated && !loading && user === null){
+      console.log("VSF")
       return <Navigate to='/login'/>;
+    }
 
     const text = 'The processing usually takes from 30 minutes to 1h'
     return (
@@ -114,7 +94,8 @@ const Requests = () => {
         <table className="highlight">
         <thead>
           <tr>
-            <th>Name</th>
+            {/* <th>Name</th> */}
+            <th>Requested bounds</th>
             <th>Product</th>
             <th>Version</th>
             <th>Date Requested</th>
@@ -127,7 +108,12 @@ const Requests = () => {
         <tbody>
           {requests.map((request) => (
             <tr key={request.id}>
-              <td>{request.name}</td>
+              {/* <td>{request.name}</td> */}
+              <td>
+              <button onClick={() => exportGeoJSONAsFile(request.geojson, `${request.name}_bounds.geojson`)}>
+                Export GeoJSON
+              </button>
+              </td>
               <td>{request.pth.product}</td>
               <td>{request.pth.version}</td>
               <td>{formatDate(request.date_requested)}</td>
@@ -135,32 +121,19 @@ const Requests = () => {
                 {
                 request.done === false ? 
                 (
-                <div class="progress"><div class="indeterminate"></div></div> ): 
+                <div className="progress"><div className="indeterminate"></div></div> ): 
                 (
                 <div className='center'>
                     <Link to={request.mask_url} target='_blank' onClick={() => handleDownload(request.mask_url)}>
-                      Download {request.done}
+                      <i className='material-icons'>download</i> {request.done}
                     </Link>
                 </div>
-                // <div className='center'>
-                //   <a href={request.mask_url} download>Download {request.done}</a>
-                // </div>
-                // <div className='center'>
-                //   <button onClick={() => handleDownload(request.mask_url)}>Download {request.done}</button>
-                // </div>
-                // <div className='center'>
-                //   <a href={request.mask_url} onClick={(event) => handleDownload(event, request.mask_url)}>
-                //     Download {request.done}
-                //   </a>
-                // </div>
-                // <div className='center'><a href=handleDownload download>Download {request.done}</a></div>
                 )}
               </td>
               <td>{formatRelativeTime(request.created_at)}</td>
               <td>{formatRelativeTime(request.updated_at)}</td>
-              {/* <td><a href='/api/products/requests/delete/{request.id}'><i className='material-icons'>delete</i></a></td> */}
-              {/* <td><a href={`/api/products/requests/delete/${request.id}`}><i className='material-icons'>delete</i></a></td> */}
               <td>
+                {request.id}
                 <a href="#" onClick={() => handleDeleteRequest(request.id)}>
                   <i className='material-icons'>delete</i>
                 </a>

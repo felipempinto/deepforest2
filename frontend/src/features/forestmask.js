@@ -4,7 +4,8 @@ export const imagelocations = createAsyncThunk(
   'forestmask/imagelocations',
   async (_,thunkAPI) =>{
 	try {
-		const res = await fetch('/api/forestmask/images-location',{
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/forestmask/images-location/`,{
+		// const res = await fetch('/api/forestmask/images-location',{
 			method:'GET',
 			headers:{
 				Accept:'application/json',

@@ -16,7 +16,7 @@ import datetime
 
 from users.models import User
 
-gdal.SetConfigOption('AWS_REGION', 'us-east-2')
+gdal.SetConfigOption('AWS_REGION', settings.AWS_S3_REGION_NAME)#'us-east-2')
 gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)
 gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY',settings.AWS_SECRET_ACCESS_KEY)
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
@@ -87,7 +87,7 @@ class TilesProcessed(models.Model):
 
     @classmethod
     def update_from_s3(cls, product):
-        bucket_name = 'deepforestbucket'
+        bucket_name = BUCKET#'deepforestbucket'
         prefix = f'{product}/outputs/tiles/sentinel2/'
 
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
