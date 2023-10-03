@@ -8,22 +8,15 @@ import 'leaflet/dist/leaflet.css';
 
 import { store } from './store';
 
-// const root = ReactDOM.createRoot(document.getElementById('root'));
-// root.render(
-//   // <React.StrictMode>
-//   // </React.StrictMode> 
-//   <React>
-//     <Provider store={store}>
-//       <App />
-//     </Provider>
-//   </React>
-// );
-
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  // <React.StrictMode>
+  // </React.StrictMode> 
+  <React>
     <Provider store={store}>
       <App />
-    </Provider>,
-  document.getElementById('root')
+    </Provider>
+  </React>
 );
 
 reportWebVitals();
