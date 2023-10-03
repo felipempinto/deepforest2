@@ -17,6 +17,8 @@ ALLOWED_HOSTS = [
     'https://*.deepforest.app',
     'v2.deepforest.app',
     'https://*.v2.deepforest.app',
+    'http://localhost:8000',
+    "http://127.0.0.1:8000",
 ]
 if os.environ['LOCAL'] == 'True':
     ALLOWED_HOSTS.append( '127.0.0.1',)
