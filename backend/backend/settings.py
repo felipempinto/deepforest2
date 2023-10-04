@@ -191,7 +191,7 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, "build/static"),
+  #os.path.join(BASE_DIR, "build/static"),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
     # if DEBUG:

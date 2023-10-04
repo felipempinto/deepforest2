@@ -39,26 +39,26 @@ s3_client = boto3.client('s3',
                          config=my_config,
                          )
 
-def get_bounds(ds):
-    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
-    width, height = ds.RasterXSize, ds.RasterYSize
-    xmax = xmin + width * xpixel
-    ymin = ymax + height * ypixel
-    poly = Polygon(
-            [
-                [xmin,ymax],
-                [xmax,ymax],
-                [xmax,ymin],
-                [xmin,ymin]
-            ]
-        )
+# def get_bounds(ds):
+#     xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
+#     width, height = ds.RasterXSize, ds.RasterYSize
+#     xmax = xmin + width * xpixel
+#     ymin = ymax + height * ypixel
+#     poly = Polygon(
+#             [
+#                 [xmin,ymax],
+#                 [xmax,ymax],
+#                 [xmax,ymin],
+#                 [xmin,ymin]
+#             ]
+#         )
 
-    wgs84 = pyproj.CRS('EPSG:4326')
-    utm = ds.GetProjection()
+#     wgs84 = pyproj.CRS('EPSG:4326')
+#     utm = ds.GetProjection()
 
-    project = pyproj.Transformer.from_crs(utm, wgs84,  always_xy=True).transform
-    poly = transform(project, poly)
-    return poly
+#     project = pyproj.Transformer.from_crs(utm, wgs84,  always_xy=True).transform
+#     poly = transform(project, poly)
+#     return poly
 
 def get_upload_pth(instance, filename):
     return f"models/{instance.product}/pth/{filename}"
@@ -90,6 +90,12 @@ def read_text_file_from_s3(url):
     file_contents = response.text
     return file_contents
 
+def content_to_multi(content):
+
+    multi = GEOSGeometry(multi.wkt)
+
+    return multi
+
 class ModelsTrained(models.Model):
     version = models.CharField(max_length=20)
     description = models.TextField(null=True,blank=True)
@@ -109,23 +115,33 @@ class ModelsTrained(models.Model):
     def save(self):
         super(ModelsTrained, self).save()
         if self.poly is None:
-            
-            polys = []
 
-            # with open(self.file_locations.url) as f:
             content = read_text_file_from_s3(self.file_locations.url)
-            files = content.split('\n')
-            files = [i for i in files if i.replace(' ','')!='']
-            for file in files:
-                ds = gdal.Open(file)
-                bounds = get_bounds(ds)
-                polys.append(bounds)
-
-            multi = MultiPolygon(polys)
-            multi = GEOSGeometry(multi.wkt)#ogr.CreateGeometryFromWkt(bounds)
+            print("CONTENT")
+            print(content)
+            
+            # multi = content_to_multi(content)
+            multi = GEOSGeometry(content)
 
             self.poly = GEOSGeometry(multi)
             self.save()
+            
+            # polys = []
+
+            # # with open(self.file_locations.url) as f:
+            # content = read_text_file_from_s3(self.file_locations.url)
+            # files = content.split('\n')
+            # files = [i for i in files if i.replace(' ','')!='']
+            # for file in files:
+            #     ds = gdal.Open(file)
+            #     bounds = get_bounds(ds)
+            #     polys.append(bounds)
+
+            # multi = MultiPolygon(polys)
+            # multi = GEOSGeometry(multi.wkt)#ogr.CreateGeometryFromWkt(bounds)
+
+            # self.poly = GEOSGeometry(multi)
+            # self.save()
 
 def requestprocess(self):
     v = self.pth.version
