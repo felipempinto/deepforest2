@@ -57,7 +57,7 @@ import React, {
       <div className="parallax-container">
         <div className="parallax">
           {/* <img alt="img1" src="michele-purin-uWJo5rEhvo4-unsplash.jpg" /> */}
-          <img alt="img1" src={process.env.PUBLIC_URL+"michele-purin-uWJo5rEhvo4-unsplash.jpg"}/>
+          <img alt="img1" src={process.env.PUBLIC_URL+"/michele-purin-uWJo5rEhvo4-unsplash.jpg"}/>
         </div>
         <div className="center-align valign-wrapper parallax-text-container">
           <h1 className="white-text">Deep Forest</h1>
@@ -92,7 +92,7 @@ import React, {
       <div className="parallax-container">
         <div className="parallax">
           {/* <img alt="img2" src="IMG_2694.JPG" /> */}
-          <img alt="img1" src={process.env.PUBLIC_URL+"IMG_2694.JPG"}/>
+          <img alt="img1" src={process.env.PUBLIC_URL+"/IMG_2694.JPG"}/>
         </div>
       </div>
   

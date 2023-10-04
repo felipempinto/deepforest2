@@ -69,7 +69,7 @@ function NavbarComponent() {
     </>
   );
 
-  const picture = user.user?.profile_picture ?? '/Default_pfp.svg';
+  const picture = user.user?.profile_picture ?? process.env.PUBLIC_URL + '/Default_pfp.svg';
   // const picture = 'Default_pfp.svg'
 
 
@@ -77,7 +77,7 @@ function NavbarComponent() {
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
     <div className="container-fluid">
       <Link className="navbar-brand" to="/">
-        <img className="img-logo" src="/Logo.png" alt="Deep Forest Logo" />
+        <img className="img-logo" src={process.env.PUBLIC_URL + "/Logo.png"} alt="Deep Forest Logo" />
       </Link>
       <ul id="dropdown1" className="dropdown-content">
         {isAuthenticated ? authlinks : guestLinks}
