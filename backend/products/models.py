@@ -90,17 +90,12 @@ def read_text_file_from_s3(url):
     file_contents = response.text
     return file_contents
 
-def content_to_multi(content):
-
-    multi = GEOSGeometry(multi.wkt)
-
-    return multi
-
 class ModelsTrained(models.Model):
     version = models.CharField(max_length=20)
     description = models.TextField(null=True,blank=True)
     product = models.ForeignKey(Product,on_delete=models.CASCADE)
     pth = models.FileField(upload_to=get_upload_pth, null=True, blank=True)
+    pth_path = models.CharField(max_length=200,null=True,blank=True)
     poly = models.MultiPolygonField(null=True, blank=True)
     train_csv = models.FileField(upload_to=get_upload_files, null=True, blank=True)
     test_csv = models.FileField(upload_to=get_upload_files, null=True, blank=True)
