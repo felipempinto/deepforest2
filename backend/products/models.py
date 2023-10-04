@@ -104,6 +104,22 @@ class ModelsTrained(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
+    def get_pth(self,expiration=1200):
+        try:
+            pth = self.pth.url
+        except ValueError:
+            try:
+                response = s3_client.generate_presigned_url('get_object',
+                                                        Params={'Bucket': BUCKET,
+                                                                'Key': self.pth_path},
+                                                        ExpiresIn=expiration)
+            except (ClientError,ParamValidationError):
+                return None
+            else:
+                return response
+        # else:
+        return pth
+
     def __str__(self):
         return f'{self.product.name} version {self.version}'
 
@@ -141,7 +157,8 @@ class ModelsTrained(models.Model):
 def requestprocess(self):
     v = self.pth.version
     product = self.pth.product.name.lower().replace(' ','')
-    pth = self.pth.pth.url
+    pth = self.pth.get_pth()
+
     config_file = self.pth.parameters.url
     user = self.user.username
     date = self.date_requested.strftime("%Y%m%d")
@@ -196,10 +213,6 @@ class RequestProcess(models.Model):
                 args=(self,),
                 job_timeout=50000
                 )
-            print("#"*50)
-            print("JOB")
-            print(job)
-            print("#"*50)
             
 
     def get_mask(self,expiration=1200):
