@@ -77,11 +77,7 @@ const Requests = () => {
     
     const requests = useSelector(state => state.product.requests); 
     
-    console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4")
-    console.log(!isAuthenticated,!loading,user === null)
-    console.log(!isAuthenticated && !loading && user === null)
     if (!isAuthenticated && !loading && user === null){
-      console.log("VSF")
       return <Navigate to='/login'/>;
     }
 

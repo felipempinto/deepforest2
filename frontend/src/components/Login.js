@@ -2,7 +2,8 @@ import React, {
     // useEffect, 
     useState 
 } from "react";
-
+// import { Navigate} from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import NavbarComponent from "./includes/Navbar";
 import M from 'materialize-css';
 import './Login.css'
@@ -15,13 +16,13 @@ import {
   login
 } from '../features/user';
 
-
 const Login = () => {
     const [formData,setFormData] = useState({
         username:'',
         password:'',
     });
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     
     const onSubmit = e => {
       e.preventDefault();
@@ -31,14 +32,12 @@ const Login = () => {
           if (data.meta.requestStatus==='rejected') {
             // setLoginError(data.payload.detail);
           } else {
-            console.log("SUCESS")
-            // M.toast({html: 'I am a toast!'})     
             M.toast(
-              {html: "IDAFSDFADFASDASDVASDV", 
-               classes: 'orange rounded', 
-               displayLength:10000
-              }
-               );
+              {html: "Login sucessful", 
+               classes: 'orange rounded',
+               displayLength:5000});
+            // return <Navigate to='/request'/>;
+            navigate("/request");
           }        
         })
         .catch(error => {

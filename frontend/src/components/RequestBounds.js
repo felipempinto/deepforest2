@@ -239,8 +239,8 @@ function RequestBounds() {
   // create the way to check if user is authenticated
 
   // console.log(isAuthenticated,loading,user)
-  // if (!isAuthenticated && !loading && user === null)
-  //     return <Navigate to='/login'/>;
+  if (!isAuthenticated && !loading && user === null)
+      return <Navigate to='/login'/>;
   return (
     <>
     <NavbarContainer/>

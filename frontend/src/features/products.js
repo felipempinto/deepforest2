@@ -50,7 +50,6 @@ export const getRequests = createAsyncThunk(
       const data = await res.json();
 
       if (res.status === 200) {
-        console.log(res)
         return data;
       } else {
         return thunkAPI.rejectWithValue(data);
