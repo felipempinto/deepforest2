@@ -13,5 +13,8 @@ urlpatterns = [
     path('tiles/', views.tiles_list, name='tiles_list'),
     path('tiles/download/<int:tile_id>/', views.DownloadTileView.as_view(), name='download_tile'),
     path('tiles/update/', views.tiles_update, name='tiles_update'),
+    #GAMBIARRA
+    path('update_tiles_from_s3/', views.UpdateTilesFromS3.as_view(), name='update_tiles_from_s3'), 
+    path('tiles/<str:name>/', views.RetrieveTile.as_view(), name='retrieve_tile_by_name'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

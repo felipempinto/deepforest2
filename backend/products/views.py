@@ -25,7 +25,6 @@ class RequestProcessRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIV
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
 
-
 class RequestProcessUserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RequestProcessSerializer

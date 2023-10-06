@@ -88,6 +88,7 @@ class TilesProcessed(models.Model):
     @classmethod
     def update_from_s3(cls, product):
         bucket_name = BUCKET#'deepforestbucket'
+        print('BUCKET',BUCKET)
         prefix = f'{product}/outputs/tiles/sentinel2/'
 
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
@@ -126,8 +127,8 @@ class TilesProcessed(models.Model):
                     tile.poly = poly
 
                     tile.save()
-        except KeyError:
-            pass
+        except KeyError as e:
+            print(e)
 
 
 

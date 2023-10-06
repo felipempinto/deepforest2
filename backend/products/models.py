@@ -195,8 +195,8 @@ class RequestProcess(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.bounds.geojson
+    # def __str__(self):
+    #     return self.
     
     def geojson(self):
         return self.bounds.geojson
@@ -207,12 +207,12 @@ class RequestProcess(models.Model):
     # def save(self):
     #     super(RequestProcess, self).save()
 
-        if not self.done:
-            job = django_rq.enqueue(
-                requestprocess,
-                args=(self,),
-                job_timeout=50000
-                )
+        # if not self.done:
+        #     job = django_rq.enqueue(
+        #         requestprocess,
+        #         args=(self,),
+        #         job_timeout=50000
+        #         )
             
 
     def get_mask(self,expiration=1200):
