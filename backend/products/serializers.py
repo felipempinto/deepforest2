@@ -6,7 +6,9 @@ import shapely.wkt as wkt
 from shapely.geometry import MultiPolygon
 
 from .models import ModelsTrained, RequestProcess
-from .download_and_process import check_area
+from .utils import check_area
+# from .download_and_process import check_area
+
 
 class ModelsTrainedSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField()

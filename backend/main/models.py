@@ -74,6 +74,9 @@ class TilesProcessed(models.Model):
         verbose_name = 'Tile'
         verbose_name_plural = 'Tiles'
 
+    def __str__(self) -> str:
+        return self.name
+
     def get_mask(self,location,expiration=1200):
         try:
             response = s3.generate_presigned_url('get_object',

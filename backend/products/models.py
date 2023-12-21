@@ -20,7 +20,7 @@ from datetime import datetime
 
 from users.models import User
 from main.models import Product,TilesProcessed
-from .download_and_process import process
+# from .download_and_process import process
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
 
@@ -79,7 +79,7 @@ class TrainModel(models.Model):
     model = models.CharField(max_length=20,default='unet')
     encoder = models.CharField(max_length=50,default='resnet101')
     loss = models.CharField(max_length=50,default='dice')
-    optimizer = models.CharField(max_length=50,default='adam')
+    optimizer = models.CharField(max_length=50,default='adamw')
 
 
 def read_text_file_from_s3(url):
@@ -87,8 +87,15 @@ def read_text_file_from_s3(url):
     response = requests.get(url)
     response.raise_for_status()  # Check if the request was successful
 
-    file_contents = response.text
+    file_contents = response.json()
     return file_contents
+
+# class Locations(models.Model):
+#     title = models.CharField(max_length=100,null=True, blank=True)
+#     geometry = models.PolygonField()
+#     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+#     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
 
 class ModelsTrained(models.Model):
     version = models.CharField(max_length=20)
@@ -124,18 +131,43 @@ class ModelsTrained(models.Model):
         return f'{self.product.name} version {self.version}'
 
     def save(self):
+        
         super(ModelsTrained, self).save()
         if self.poly is None:
+            import json
+            from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 
             content = read_text_file_from_s3(self.file_locations.url)
             print("CONTENT")
-            print(content)
-            
-            # multi = content_to_multi(content)
-            multi = GEOSGeometry(content)
+            print(type(content))
 
+            geoms = []
+            for ft in content["features"]:
+                geom_str = json.dumps(ft['geometry'])
+                geom = GEOSGeometry(geom_str)
+                geoms.append(geom)
+            multi = MultiPolygon(geoms)
             self.poly = GEOSGeometry(multi)
             self.save()
+            
+                # try:
+                #     if isinstance(geom, MultiPolygon):
+                #         continue
+                #     elif isinstance(geom, Polygon):
+                #         geom = MultiPolygon([geom])
+                #     else:
+                #         raise TypeError(
+                #             '{} not acceptable for this model'.format(geom.geom_type)
+                #         )
+                # except TypeError as e:
+                #     print(e)
+
+            
+            # # multi = content_to_multi(content)
+            # multi = GEOSGeometry(content)
+
+            # self.poly = GEOSGeometry(multi)
+            # self.save()
             
             # polys = []
 
@@ -154,35 +186,35 @@ class ModelsTrained(models.Model):
             # self.poly = GEOSGeometry(multi)
             # self.save()
 
-def requestprocess(self):
-    v = self.pth.version
-    product = self.pth.product.name.lower().replace(' ','')
-    pth = self.pth.get_pth()
+# def requestprocess(self):
+#     v = self.pth.version
+#     product = self.pth.product.name.lower().replace(' ','')
+#     pth = self.pth.get_pth()
 
-    config_file = self.pth.parameters.url
-    user = self.user.username
-    date = self.date_requested.strftime("%Y%m%d")
-    unique_id = uuid.uuid4().hex
+#     config_file = self.pth.parameters.url
+#     user = self.user.username
+#     date = self.date_requested.strftime("%Y%m%d")
+#     unique_id = uuid.uuid4().hex
 
-    output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
+#     output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
     
-    a = process(
-        date,
-        self.bounds.wkt,
-        pth,
-        output,
-        config_file,
-        product=product,
-        verbose=True
-    )
-    print(a)
-    if self.name=='':
-        self.name = os.path.basename(output).replace('.tif','')
-    self.done = True
-    self.mask = output
-    self.save()
+#     a = process(
+#         date,
+#         self.bounds.wkt,
+#         pth,
+#         output,
+#         config_file,
+#         product=product,
+#         verbose=True
+#     )
+#     print(a)
+#     if self.name=='':
+#         self.name = os.path.basename(output).replace('.tif','')
+#     self.done = True
+#     self.mask = output
+#     self.save()
 
-    #TilesProcessed.update_from_s3()
+#     #TilesProcessed.update_from_s3()
 
 class RequestProcess(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)

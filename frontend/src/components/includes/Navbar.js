@@ -32,7 +32,7 @@ function NavbarComponent() {
         });
     
     const sideElems = side.current;
-    const options = {} // edge: 'right' };
+    const options = {} 
     M.Sidenav.init(sideElems, options);
 
     if (isAuthenticated && user.user) {
@@ -42,10 +42,6 @@ function NavbarComponent() {
       });
     }
   }, [isAuthenticated, user]);
-    
-  // }, []);
-
-
 
   const authlinks = (
     <>

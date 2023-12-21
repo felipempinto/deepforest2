@@ -81,3 +81,4 @@ class UserDeleteView(generics.DestroyAPIView):
             return Response(status=204)
         else:
             return Response({'detail': 'You do not have permission to delete this user.'}, status=403)
+        
