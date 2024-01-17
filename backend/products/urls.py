@@ -9,4 +9,5 @@ urlpatterns = [
     path('requests/user/', views.RequestProcessUserListView.as_view(), name='requests-user-list'),  
     path('requests/delete/<int:pk>/', views.RequestProcessDeleteView.as_view(), name='request-delete'),
     path('geojsondata/', views.GeoJSONUploadView.as_view(), name='geojson-upload'),
+    path('train/', views.TrainList.as_view(), name='train'),
 ]

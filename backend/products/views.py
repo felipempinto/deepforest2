@@ -3,7 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import ModelsTrained, RequestProcess
-from .serializers import ModelsTrainedSerializer, RequestProcessSerializer,GeoJSONSerializer
+from .serializers import *
+
+class TrainList(APIView):
+    def get(self, request):
+        train = TrainModel.objects.all()
+        print(train)
+        serializer = TrainDatasetSerializer(train, many=True)
+        return Response(serializer.data)
 
 class ModelsTrainedListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]

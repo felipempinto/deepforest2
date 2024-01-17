@@ -5,11 +5,16 @@ from django.contrib.gis import geos
 import shapely.wkt as wkt
 from shapely.geometry import MultiPolygon
 
-from .models import ModelsTrained, RequestProcess
+from .models import ModelsTrained, RequestProcess,TrainModel
 from .utils import check_area
 # from .download_and_process import check_area
 
 
+class TrainDatasetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainModel
+        fields = '__all__'
+        
 class ModelsTrainedSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField()
     class Meta:

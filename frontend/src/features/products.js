@@ -1,6 +1,30 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import Cookies from 'js-cookie';
 
+export const train = createAsyncThunk(
+  'train',
+  async (_,thunkAPI) =>{
+	try {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/train/`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      });
+    
+		const data = await res.json()
+		
+		if (res.status===200){
+			return data
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
 export const models = createAsyncThunk(
   'products/models',
   async (thunkAPI) => {
@@ -168,6 +192,7 @@ export const geojsondata = createAsyncThunk(
 const productSlice = createSlice({
   name: 'product',
   initialState: {
+    train: [],
     models: [],
     geojsondata:[],
     requests:[],
@@ -189,6 +214,17 @@ const productSlice = createSlice({
         state.loading = false;
       })
       .addCase(models.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(train.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(train.fulfilled, (state, action) => {
+        state.train = action.payload;
+        state.loading = false;
+      })
+      .addCase(train.rejected, (state, action) => {
         state.error = action.error.message;
         state.loading = false;
       })

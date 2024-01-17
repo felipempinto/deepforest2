@@ -9,7 +9,8 @@ URLS = [
     'dashboard/',
     'request/',
     'map/',
-    'requests/'
+    'requests/',
+    'products/'
 ]
 
 f = lambda x:path(x, TemplateView.as_view(template_name='index.html'))

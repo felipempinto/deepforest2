@@ -12,6 +12,7 @@ import RequestBounds from './components/RequestBounds';
 import Requests from './components/Requests';
 
 import { useCookies } from 'react-cookie';
+import Products from './components/Products';
 
 function App() {
   const [
@@ -41,6 +42,7 @@ function App() {
         <Route path="/request" exact element={<RequestBounds />} />
         <Route path="/map" exact element={<RequestMap />} />
         <Route path="/requests" exact element={<Requests />}/>
+        <Route path="/products" exact element={<Products />}/>
       </Routes>
     </Router>
   );

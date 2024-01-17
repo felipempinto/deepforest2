@@ -19,15 +19,19 @@ ALLOWED_HOSTS = [
     'https://*.v2.deepforest.app',
     'http://localhost:8000',
     "http://127.0.0.1:8000",
+    'http://localhost:3000',
+    "http://127.0.0.1:3000",
 ]
-if os.environ['LOCAL'] == 'True':
-    ALLOWED_HOSTS.append( '127.0.0.1',)
-    ALLOWED_HOSTS.append( 'localhost',)
+# if os.environ['LOCAL'] == 'True':
+ALLOWED_HOSTS.append( '127.0.0.1',)
+ALLOWED_HOSTS.append( 'localhost',)
     
 
 CSRF_TRUSTED_ORIGINS = [
     'https://deepforest.app',
     'https://v2.deepforest.app',
+    'http://localhost:3000',
+    "http://127.0.0.1:3000",
                         ]
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 # CSRF_TRUSTED_ORIGINS = ['https://*.mydomain.com','https://*.127.0.0.1']
@@ -65,12 +69,19 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # replace with your React app URL
+    'http://localhost:3000',
+    "http://127.0.0.1:3000",
     'http://localhost:8000',
     "http://127.0.0.1:8000",
+    
     # 'http://localhost:5000',
 ]
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 TEMPLATES = [
     {
