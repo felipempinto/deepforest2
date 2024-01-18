@@ -1,7 +1,10 @@
-from rest_framework import generics,status
+from rest_framework import generics,status,viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+import pandas as pd
+
 from .models import ModelsTrained, RequestProcess
 from .serializers import *
 
@@ -16,6 +19,10 @@ class ModelsTrainedListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = ModelsTrained.objects.all()
     serializer_class = ModelsTrainedSerializer
+
+class ModelsTrainedDataViewSet(viewsets.ModelViewSet):
+    queryset = ModelsTrained.objects.all()
+    serializer_class = ModelsTrainedDataSerializer
 
 class ModelsTrainedRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]

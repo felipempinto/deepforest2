@@ -47,7 +47,43 @@ export const models = createAsyncThunk(
       const data = await res.json();
 
       if (res.status === 200) {
-        console.log(res)
+        // console.log(res)
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
+
+
+export const modelsCsv = createAsyncThunk(
+  'products/modelsCSV',
+  async (thunkAPI) => {
+    try {
+      // const res = await fetch('/api/products/models/', {
+      //   method: 'GET',
+      //   headers: {
+      //     Accept: 'application/json',
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      // const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/models/csv-data/`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/models-trained/`, {
+        
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        });
+      const data = await res.json();
+
+      if (res.status === 200) {
+        // console.log(res)
         return data;
       } else {
         return thunkAPI.rejectWithValue(data);
@@ -194,6 +230,7 @@ const productSlice = createSlice({
   initialState: {
     train: [],
     models: [],
+    modelsCSV: [],
     geojsondata:[],
     requests:[],
     loading: false,
@@ -214,6 +251,17 @@ const productSlice = createSlice({
         state.loading = false;
       })
       .addCase(models.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
+      })
+      .addCase(modelsCsv.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(modelsCsv.fulfilled, (state, action) => {
+        state.modelsCSV = action.payload;
+        state.loading = false;
+      })
+      .addCase(modelsCsv.rejected, (state, action) => {
         state.error = action.error.message;
         state.loading = false;
       })

@@ -13,6 +13,7 @@ import pyproj
 from botocore.exceptions import ClientError,ParamValidationError
 from botocore.config import Config
 import boto3
+import pandas as pd
 
 import uuid
 import os
@@ -126,6 +127,23 @@ class ModelsTrained(models.Model):
                 return response
         # else:
         return pth
+    
+    def read_data(self):
+        df_train = pd.read_csv(self.train_csv)
+        df_test = pd.read_csv(self.test_csv)
+        data = {
+            "x":df_train["x"],
+            "loss_train":df_train["loss"],
+            "loss_test":df_train["loss"],
+            "acc_train":df_test["acc"],
+            "acc_test":df_test["acc"],
+                }
+        df = pd.DataFrame(data)
+        return df.to_dict()
+
+    # def read_test(self):
+    #     df = pd.read_csv(self.test_csv)
+    #     return df.to_dict()
 
     def __str__(self):
         return f'{self.product.name} version {self.version}'

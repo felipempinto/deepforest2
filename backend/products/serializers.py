@@ -14,12 +14,44 @@ class TrainDatasetSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainModel
         fields = '__all__'
-        
+
 class ModelsTrainedSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField()
     class Meta:
         model = ModelsTrained
         fields = '__all__'
+
+class ModelsTrainedDataSerializer(serializers.ModelSerializer):
+    product = serializers.StringRelatedField()
+    # train_data = serializers.SerializerMethodField()
+    # test_data = serializers.SerializerMethodField()
+    data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ModelsTrained
+        exclude = ("pth_path",)
+
+    def get_data(self, obj):
+        return obj.read_data()
+    
+    # def get_train_data(self, obj):
+    #     return obj.read_train()
+
+    # def get_test_data(self, obj):
+    #     return obj.read_test()
+
+# # This one is separated to be able to show data in the /products page.
+# class ModelsTrainedDataSerializer(serializers.ModelSerializer):
+#     id = serializers.IntegerField()
+#     model_data = ModelsTrainedSerializer()
+#     parsed_data = serializers.ListField()
+
+#     def to_representation(self, instance):
+#         return {
+#             'id': instance['id'],
+#             'model_data': ModelsTrainedDataSerializer(instance['model_data']).data,
+#             'parsed_data': instance['parsed_data'],
+#         }
 
 class RequestProcessSerializer(serializers.ModelSerializer):
 
