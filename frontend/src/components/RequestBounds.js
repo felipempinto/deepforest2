@@ -241,6 +241,7 @@ function RequestBounds() {
   // console.log(isAuthenticated,loading,user)
   if (!isAuthenticated && !loading && user === null)
       return <Navigate to='/login'/>;
+
   return (
     <>
     <NavbarContainer/>
