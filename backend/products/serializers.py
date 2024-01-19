@@ -25,14 +25,14 @@ class ModelsTrainedDataSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField()
     # train_data = serializers.SerializerMethodField()
     # test_data = serializers.SerializerMethodField()
-    data = serializers.SerializerMethodField()
+    # data = serializers.SerializerMethodField()
 
     class Meta:
         model = ModelsTrained
         exclude = ("pth_path",)
 
-    def get_data(self, obj):
-        return obj.read_data()
+    # def get_data(self, obj):
+    #     return obj.read_data()
     
     # def get_train_data(self, obj):
     #     return obj.read_train()

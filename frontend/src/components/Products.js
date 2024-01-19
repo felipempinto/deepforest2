@@ -15,9 +15,14 @@ import {
   Legend,
 } from "recharts";
 
+import merge from 'lodash/merge';
+
+
 const Products = () => {
+  const combinedData = [];
   const [data1, setData1] = useState([]);
   const [data2, setData2] = useState([]);
+  const [data, setData] = useState([]);
   const [window,setWindow] = useState(10);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [selectedVersion, setSelectedVersion] = useState("");
@@ -28,6 +33,25 @@ const Products = () => {
 
   const dispatch = useDispatch();
   const productsData = useSelector((state) => state.product.modelsCSV);
+
+
+  const combineDatasets = (data1, data2) => {
+    const combinedData = [];
+  
+    for (let i = 0; i < Math.max(data1.length, data2.length); i++) {
+      const combinedItem = {
+        x: i,  // Using a common index
+        trainLoss: data1[i]?.loss || null,
+        trainAcc: data1[i]?.acc || null,
+        testLoss: data2[i]?.loss || null,
+        testAcc: data2[i]?.acc || null,
+      };
+  
+      combinedData.push(combinedItem);
+    }
+  
+    return combinedData;
+  };
 
   useEffect(() => {
     dispatch(homepage());
@@ -49,27 +73,14 @@ const Products = () => {
       const response = await fetch(csvURL);
       const csvData = await response.text();
 
-      // Papa.parse(csvData, {
-      //   header: true,
-      //   dynamicTyping: true,
-      //   complete: (result) => {
-      //     setData(result.data);
-      //   },
-      //   error: (error) => {
-      //     console.error('Error parsing CSV:', error.message);
-      //   },
-      // });
+
       Papa.parse(csvData, {
         header: true,
         dynamicTyping: true,
         complete: (result) => {
-          const data = result.data;
+          // const data = result.data;
           const columnsToAverage = ['loss', 'acc'];
-          // const windowSize = 100;
-          const filteredData = calculateMovingAverages(data, columnsToAverage, 
-            // windowSize
-            window
-            );
+          const filteredData = calculateMovingAverages(result.data, columnsToAverage, window);
   
           setData(filteredData);
         },
@@ -77,6 +88,20 @@ const Products = () => {
           console.error('Error parsing CSV:', error.message);
         },
       });
+      // Papa.parse(csvData, {
+      //   header: true,
+      //   dynamicTyping: true,
+      //   complete: (result) => {
+      //     const newData = result.data;
+      //     const columnsToAverage = ['loss', 'acc'];
+      //     const filteredData = calculateMovingAverages(newData, columnsToAverage, window);
+      //     const mergedData = merge(data, filteredData); 
+      //     setData(mergedData);
+      //   },
+      //   error: (error) => {
+      //     console.error('Error parsing CSV:', error.message);
+      //   },
+      // });
     } catch (error) {
       console.error('Error fetching/parsing CSV:', error.message);
     }
@@ -107,6 +132,7 @@ const Products = () => {
     }
   }, [productsData]);
 
+
   const handleProductSelect = (event) => {
     const selectedProduct = event.target.value;
     setSelectedProduct(selectedProduct);
@@ -123,8 +149,6 @@ const Products = () => {
     (product) => product.product === selectedProduct
     );  
 
-
-
   const selectVersion = (
     <div className="input-field col s12">
       <select
@@ -140,9 +164,15 @@ const Products = () => {
     </div>
   );
 
+  useEffect(() => {
+    if (data1.length > 0 || data2.length > 0) {
+      const combinedData = combineDatasets(data1, data2);
+      setData(combinedData);
+    }
+  }, [data1, data2]);
+
   const graphs = 
   <div>
-    {/* <h1>Graphs</h1> */}
     
     <label>choose window from moving average</label>
     <p className="range-field">
@@ -208,6 +238,39 @@ const Products = () => {
       </div>
     </div>
   )}  
+
+{/* {
+// (data1.length > 0 && data2.length > 0)
+(data.length>0)
+ && (
+    <div className="charts-container">
+      <div className="chart">
+        <LineChart
+          width={800}
+          height={400}
+          data={data} //combinedData}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <XAxis dataKey="x" />
+          <YAxis />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Tooltip />
+          <Legend />
+
+          <Line type="monotone" dataKey="trainLoss" stroke="#8884d8" name="Train Loss" />
+          <Line type="monotone" dataKey="trainAcc" stroke="#82ca9d" name="Train Accuracy" />
+          <Line type="monotone" dataKey="testLoss" stroke="#ff0000" name="Test Loss" />
+          <Line type="monotone" dataKey="testAcc" stroke="#00ff00" name="Test Accuracy" />
+        </LineChart>
+      </div>
+    </div>
+  )
+  } */}
 </div>
 
   return (
@@ -229,37 +292,9 @@ const Products = () => {
 
       {selectedProduct && (<>{selectVersion}</>)}
         
-      {
-        selectedVersion && 
-        // <Map key={filteredProduct?.id} filteredProduct={filteredProduct} />
-        graphs
-      }
+      {selectedVersion && graphs}
     </div>
     </>
-    // <>
-    //   <NavbarComponent />
-    //   {/* <h1 className='center'>Request new basemap</h1> */}
-
-    //   {/* <div className="col s12"> */}
-    //     <select defaultValue={""} onChange={handleProductSelect}  ref={selectProductRef}>
-    //       <option value="" disabled>Choose the product</option>
-    //       {
-    //         uniqueProducts.map((product, i) => (
-    //           <option key={i} value={product}>{product}</option>
-    //         ))
-    //       }
-    //     </select>
-
-
-    //     {selectedProduct && (<>{selectVersion}</>)}
-        
-    //     {
-    //       selectedVersion && 
-    //       {graphs}
-    //     }
-    //   {/* </div> */}
-    //   {/* {graphs} */}
-    // </>
   );
 };
 
