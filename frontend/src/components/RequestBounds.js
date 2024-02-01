@@ -101,17 +101,48 @@ const Map = ({ filteredProduct }) => {
     navigate('/requests');
   }, [dispatch, filteredProduct.id, polygon, dateRef, user.id,navigate]);
   // }, [dispatch]);
-// }, [dispatch, filteredProduct.id, polygon, dateRef.current.value, user.id]);
 
   const onPolygonCreated = (e) => {
     const { layer } = e;
-    // layer.addTo(featureGroupRef.current);
+
+    if (featureGroupRef.current && featureGroupRef.current.getLayers().length > 1) {
+      M.toast({
+        html: 'Only single geometries are allowed.',
+        classes: 'red rounded',
+        displayLength: 5000
+      });
+  
+      if (featureGroupRef.current) {
+        featureGroupRef.current.removeLayer(layer);
+      }
+  
+      return; 
+    }
+
+
+    const areaMetersSquared = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]); // Calculate area in square meters
+    const areaKilometersSquared = areaMetersSquared / 1000000; // Convert to square kilometers
+    
+    const maxArea = 110 * 110; // Maximum area in square kilometers
+    if (areaKilometersSquared > maxArea) {
+      const maxsize = `${110}x${110}`; // Max size string
+      const areasqkm = areaKilometersSquared.toFixed(2); // Rounded to 2 decimal places
+      M.toast({
+        html: `Area is larger than the maximum ${maxsize}, area requested: ${areasqkm} km²`,
+        classes: 'red rounded',
+        displayLength: 5000
+      });
+
+      if (featureGroupRef.current) {
+          featureGroupRef.current.clearLayers();
+        }
+  
+      return; // Stop execution
+    }
+
     const wktPolygon = layer.toGeoJSON().geometry;
     const wktString = parse.stringify(wktPolygon);
-    // console.log(wktString);
-
     setPolygon(wktString);
-    // console.log(polygon);
   };
 
   useEffect(() => {

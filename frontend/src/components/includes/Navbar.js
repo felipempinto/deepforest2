@@ -84,7 +84,7 @@ function NavbarComponent() {
       </ul>
       <ul id="nav-mobile" className="right hide-on-med-and-down">
         <li className="nav-item"><NavLink className="nav-link" to="/request">New Request</NavLink></li>
-        <li className="nav-item"><NavLink className="nav-link" to="/products">Producs</NavLink></li>
+        <li className="nav-item"><NavLink className="nav-link" to="/products">Products</NavLink></li>
         <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
         <li className="nav-link nav-item"><a className="dropdown-trigger nav-link" href='#!'ref={ref} data-target="dropdown1"><img className="img-profile" src={picture} alt="User" /></a></li>
       </ul>
@@ -105,7 +105,7 @@ function NavbarComponent() {
         </li>
 
         <li><NavLink className="nav-link" to="/request">New Request</NavLink></li>
-        <li className="nav-item"><NavLink className="nav-link" to="/products">Producs</NavLink></li>
+        <li className="nav-item"><NavLink className="nav-link" to="/products">Products</NavLink></li>
         <li><NavLink className="nav-link" to="/map">Samples</NavLink></li>
         <li><div className="divider"></div></li>
         {authlinks}
