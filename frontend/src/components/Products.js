@@ -14,7 +14,10 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-
+import { 
+  Navigate,
+  // Link
+} from 'react-router-dom';
 import merge from 'lodash/merge';
 
 
@@ -34,6 +37,7 @@ const Products = () => {
   const dispatch = useDispatch();
   const productsData = useSelector((state) => state.product.modelsCSV);
 
+  const { isAuthenticated, user, loading } = useSelector(state => state.user);
 
   const combineDatasets = (data1, data2) => {
     const combinedData = [];
@@ -61,12 +65,24 @@ const Products = () => {
   useEffect(()=>{
     M.FormSelect.init(selectProductRef.current, {});
     M.FormSelect.init(selectVersionRef.current, {});
+
+    // let parallaxElems = document.querySelectorAll('.parallax');
+    // M.Parallax.init(parallaxElems);
   })
+  
+  useEffect(() => {
+    if (productsData.length > 0) {
+      fetchAndParseCSV(productsData[0].train_csv, setData1);
+      fetchAndParseCSV(productsData[0].test_csv, setData2);
+    }
+  }, [productsData]);
 
   useEffect(() => {
-    let parallaxElems = document.querySelectorAll('.parallax');
-    M.Parallax.init(parallaxElems);
-  }, []);
+    if (data1.length > 0 || data2.length > 0) {
+      const combinedData = combineDatasets(data1, data2);
+      setData(combinedData);
+    }
+  }, [data1, data2]);
 
   const fetchAndParseCSV = async (csvURL, setData) => {
     try {
@@ -125,12 +141,7 @@ const Products = () => {
     }).slice(windowSize - 1);
   };
 
-  useEffect(() => {
-    if (productsData.length > 0) {
-      fetchAndParseCSV(productsData[0].train_csv, setData1);
-      fetchAndParseCSV(productsData[0].test_csv, setData2);
-    }
-  }, [productsData]);
+  
 
 
   const handleProductSelect = (event) => {
@@ -164,12 +175,17 @@ const Products = () => {
     </div>
   );
 
-  useEffect(() => {
-    if (data1.length > 0 || data2.length > 0) {
-      const combinedData = combineDatasets(data1, data2);
-      setData(combinedData);
+  
+
+  if (!isAuthenticated && !loading && user === null){
+    M.toast({
+        html: 'Please, sign in first.',
+        classes: 'red rounded',
+        displayLength: 5000
+      });
+      return <Navigate to='/login'/>;
     }
-  }, [data1, data2]);
+
 
   const graphs = 
   <div>

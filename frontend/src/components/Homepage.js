@@ -78,7 +78,7 @@ import React, {
               {Object.entries(versions).map(([key, value]) => (
                 <div key={key} className={"col s12 m3"}>
                   <div className={`card ${key === 'Version 0.0.2' ? 'blue-grey darken-3 z-depth-5' : 'blue-grey darken-1'}`}>
-                    <div className="card-content white-text" style={{ height: '600px' }}>
+                    <div className="card-content white-text" >
                       <span className="card-title">{key}</span>
                       <p>{value}</p>
                     </div>
@@ -112,6 +112,7 @@ import React, {
               <div className="card-reveal">
                 <span className="card-title grey-text text-darken-4">{product.name}<i className="material-icons right">close</i></span>
                 <p>
+                  {/* {product} */}
                   {product.description}
                 </p>
               </div>

@@ -49,9 +49,7 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
     setSelectedProduct(product);
   };
 
-  useEffect(() => {
-    M.Collapsible.init(collapsibleRef.current, {});
-
+  const initDatePickers = ()=>{
     M.Datepicker.init(startDateRef.current, {
       format: 'yyyy-mm-dd',
       container:document.body,
@@ -69,11 +67,22 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
       maxDate: new Date(), 
       minDate: new Date(1900, 0, 1),
     });
+  }
+
+  useEffect(() => {
+    M.Collapsible.init(collapsibleRef.current, {});
+
+    initDatePickers()
+    
   }, []);
 
   const handleBackClick = ()=>{
     setFormSubmitted(false);
+    startDateRef.current = null;
+    endDateRef.current = null;
+    initDatePickers();
     dispatch(resetTiles())
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAA")
   }
 
   const handleFormSubmit = (event) => {
@@ -104,53 +113,65 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
   }
 
   const tab1 = <>
-    <div className='section'>
-      <form onSubmit={handleFormSubmit}>
-        <div className="container section">
-          <h2>Search for free products:</h2>
+  <div className=''>
+    <form onSubmit={handleFormSubmit} className="form-container">
+      <div className="">
+        <h4 className="form-heading">Search for Free Products:</h4>
 
-          <label htmlFor="product-select">Select a product:</label>
-          <select id="product-select" className="select-class" value={selectedProduct ? selectedProduct.id : ''} onChange={handleProductChange}>
-            <option value="">-- Select a product --</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
-              </option>
-            ))}
-          </select>
-          <div className='date-section'>
-          <div>
+        <select
+          id="product-select"
+          className="select-class"
+          value={selectedProduct ? selectedProduct.id : ''}
+          onChange={handleProductChange}
+        >
+          <option value="">-- Select a product --</option>
+          {products.map((product) => (
+            <option key={product.id} value={product.id}>
+              {product.name}
+            </option>
+          ))}
+        </select>
+        
+        <div className='date-section'>
+          <div className="date-input">
             <label htmlFor="start-date-picker">Start Date:</label>
-            <input ref={startDateRef} type="text" className="datepicker my-datepicker" />
+            <input 
+                   ref={startDateRef} 
+                   type="text" 
+                   className="datepicker my-datepicker" 
+                   />
           </div>
-          <div>
+          <div className="date-input">
             <label htmlFor="end-date-picker">End Date:</label>
             <input ref={endDateRef} type="text" className="datepicker my-datepicker" />
           </div>
-          </div>
         </div>
-        <button 
-            type="submit" 
-            className="waves-effect waves-light btn align-center" 
-            id="submit-button" 
-            disabled={formSubmitted}>
-              Submit
-        </button>
-      </form>
-      {geojsons.length === 0 && formSubmitted && (
+      </div>
+      
+      <button
+        type="submit"
+        className="submit-button"
+        disabled={formSubmitted}
+      >
+        Submit
+      </button>
+    </form>
+
+    {geojsons.length === 0 && formSubmitted && (
       <div className='center'>
-        <p className='center' style={{ color: 'red' }}>
+        <p className='error-message'>
           No images found.
         </p>
-        <button 
-            className="waves-effect waves-light btn white" 
-            onClick={() => setFormSubmitted(false)}>
-              Dismiss
+        <button
+          className="dismiss-button"
+          onClick={() => setFormSubmitted(false)}
+        >
+          Dismiss
         </button>
       </div>
     )}
-    </div>
-  </>
+  </div>
+</>
 
   var tab2 = <>
   <div className='container'>

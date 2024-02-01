@@ -26,7 +26,7 @@
   max-height: 600px;
   min-width: 260px;
   color: #868fa0;
-  background-color: black;
+  background-color: rgb(7, 7, 7);
   left: 10px;
   right: 10px;
   top: 10px;
@@ -71,12 +71,6 @@
   margin: 0 auto;
   font-size: 1.2rem;
   padding: 0.8rem 1.5rem;
-}
-
-.datepicker-modal {
-  max-height: 395px !important;
-  height: 100% !important;
-
 }
 
 
@@ -165,4 +159,83 @@ button#submit-button {
 .ul-collapsible{
   /* color:darkorange; */
   max-height: 300px;
+}
+
+
+
+
+
+
+
+.form-container {
+  max-width: 400px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #727272;
+  border-radius: 5px;
+}
+
+.form-heading {
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #020202;
+}
+
+.select-class {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.date-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.date-input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.my-datepicker {
+  width: 100%;
+  padding: 10px;
+}
+
+.submit-button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #020202;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.center {
+  text-align: center;
+}
+
+.error-message {
+  color: red;
+  margin-bottom: 10px;
+}
+
+.dismiss-button {
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dismiss-button:hover {
+  background-color: #f2f2f2;
 }

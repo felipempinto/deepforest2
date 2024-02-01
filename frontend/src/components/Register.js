@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { register } from '../features/user';
 import NavbarComponent from './includes/Navbar';
 import { Navigate } from 'react-router-dom';
+import M from 'materialize-css';
 
 function Register() {
   const dispatch = useDispatch();
@@ -25,9 +26,17 @@ function Register() {
         e.preventDefault();
         dispatch(register({username,email,password,password2}))
         .then(data=>{
-          console.log(data);
           if (data.meta.requestStatus==='rejected') {
-            setRegisterError(data.payload.username || data.payload.email || data.payload.error || data.payload.non_field_errors);
+            // setRegisterError(data.payload.username || data.payload.email || data.payload.error || data.payload.non_field_errors);
+            const errors = Object.values(data.payload).flat();
+              setRegisterError(errors.join(' '));
+              errors.forEach(error => {
+                M.toast({
+                  html: error,
+                  classes: 'red rounded',
+                  displayLength: 10000
+                });
+              })
           } else {
             console.log("SUCESS")          
           }        

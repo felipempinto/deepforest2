@@ -26,15 +26,21 @@ const Login = () => {
     
     const onSubmit = e => {
       e.preventDefault();
-      // dispatch(login({ username, password }))
       dispatch(login(formData))
         .then(data => {
           if (data.meta.requestStatus==='rejected') {
-            // setLoginError(data.payload.detail);
+            const errors = Object.values(data.payload).flat();
+            errors.forEach(error => {
+              M.toast({
+                html: error,
+                classes: 'red rounded',
+                displayLength: 10000
+              });
+            })
           } else {
             M.toast(
               {html: "Login sucessful", 
-               classes: 'orange rounded',
+               classes: 'green rounded',
                displayLength:5000});
             // return <Navigate to='/request'/>;
             navigate("/request");

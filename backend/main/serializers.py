@@ -8,7 +8,8 @@ from users.models import User as CustomUser
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('id','name','image','url')
+        # fields = ('id','name','image','url')
+        fields = "__all__"
 
 # from django.contrib.auth import get_user_model
 
