@@ -57,41 +57,44 @@ const Login = () => {
 
     return (
     <>
-      <NavbarComponent />
-      <div className="center">
-        <h4>
-            Login
-        </h4>
-      </div>
-      <div className="section container center">
-        <div className="z-depth-3 green lighten-5 row login-position" >
-
-          <form className="col s12" onSubmit={onSubmit}>
-            <div className='row'>
-              <div className='col s12'></div>
-            </div>
-
-            <div className='row'>
-              <div className='input-field col s12'>
-                <input className='validate' type='text' name='username' id='username' onChange={onChange}/>
-                <label htmlFor='email'>Enter your username</label>
-              </div>
-            </div>
-
-            <div className='row'>
-              <div className='input-field col s12'>
-                <input className='validate' type='password' name='password' id='password' onChange={onChange}/>
-                <label htmlFor='password'>Enter your password</label>
-              </div>
-              <label className="label-forgot">
-				<a className='pink-text' href='#!'><b>Forgot Password?</b></a>
-			  </label>
-            </div>
-            <br/>
+      
+      <div className="background-image" style={{ 
+          backgroundImage: `url(${process.env.PUBLIC_URL + '/IMG_1497.JPG'})` 
+        }}>
+        <div className="section container center">
+          <div className="z-depth-3 green lighten-5 row login-position" >
+            <a href="/"><img src={process.env.PUBLIC_URL + "/Logo.png"} alt="Deep Forest Logo" /></a>
+            <form className="col s12" onSubmit={onSubmit}>
               <div className='row'>
-                <button type='submit' className='col s12 btn btn-large waves-effect green'>Login</button>
+                <div className='col s12'></div>
               </div>
-          </form>
+
+              <div className='row'>
+                <div className='input-field col s12'>
+                  <input className='validate' type='text' name='username' id='username' onChange={onChange}/>
+                  <label htmlFor='email'>Enter your username</label>
+                </div>
+              </div>
+
+              <div className='row'>
+                <div className='input-field col s12'>
+                  <input className='validate' type='password' name='password' id='password' onChange={onChange}/>
+                  <label htmlFor='password'>Enter your password</label>
+                </div>
+                <label className="label-forgot">
+          <a className='pink-text' href='#!'><b>Forgot Password?</b></a>
+          </label>
+              </div>
+              <br/>
+                <div className='row'>
+                  <button 
+                    type='submit' 
+                    className='col s12 btn btn-large waves-effect green login-button'>
+                      Login
+                  </button>
+                </div>
+            </form>
+          </div>
         </div>
       </div>
     </>

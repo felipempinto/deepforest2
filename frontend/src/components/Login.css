@@ -2,8 +2,29 @@
     display: inline-block; 
     padding: 32px 48px 0px 48px; 
     border: 1px solid #EEE;
+    border-radius: 50px;
+    opacity: 0.7;
+
+}
+
+.login-button{
+    border: 5px;
+    /* border-radius: 5px; */
 }
 
 .label-forgot{
     float: right;
 }
+
+.background-image {
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    overflow:hidden;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+  

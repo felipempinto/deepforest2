@@ -104,7 +104,9 @@ import React, {
           <div key={product.id} className="col s12 m6">
             <div className="card">
               <div className="card-image waves-effect waves-block waves-light">
-                <img alt='img3' className='img-card' src={product.image}   />  
+                <a href='/products'>
+                  <img alt='img3' className='img-card' src={product.image}   />  
+                </a>
               </div>
               <div className="card-content">
                 <span className="card-title activator grey-text text-darken-4">{product.name}<i className="material-icons right">more_horiz</i></span>
