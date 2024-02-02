@@ -13,6 +13,7 @@ import Requests from './components/Requests';
 
 import { useCookies } from 'react-cookie';
 import Products from './components/Products';
+import VisualizeMap from './components/VisualizeData';
 
 function App() {
   const [
@@ -43,6 +44,7 @@ function App() {
         <Route path="/map" exact element={<RequestMap />} />
         <Route path="/requests" exact element={<Requests />}/>
         <Route path="/products" exact element={<Products />}/>
+        <Route path="/viewdata" exact element={<VisualizeMap />}/>
       </Routes>
     </Router>
   );

@@ -3,6 +3,7 @@ import M from 'materialize-css/dist/js/materialize.min.js';
 import React, { useState,useEffect,useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import MapComponent from './MapComponent.js'
 import { 
     MapContainer, 
     TileLayer, 
@@ -11,6 +12,7 @@ import {
     LayersControl,
     Popup 
 } from 'react-leaflet';
+
 import { homepage } from '../features/main'
 import './RequestMap.css';
 import "react-datepicker/dist/react-datepicker.css";
@@ -321,13 +323,29 @@ function RequestMap() {
         <SideNavComponent products={products} geojsons={tiles} geojsonColors={geojsonColors} setGeojsonColors={setGeojsonColors}/>
       </div>
       <button onClick={handleBackClick} className="waves-effect waves-light btn" id="back-button">Back</button>
-      <button 
-        onClick={toggleSidebar} 
-        className="waves-effect waves-light btn" 
-        id="button-toggle-side-nav"><i className="material-icons">menu</i></button>
+      <button onClick={toggleSidebar} className="waves-effect waves-light btn" id="button-toggle-side-nav"><i className="material-icons">menu</i></button>
     </>
   );
 }
 
-export default RequestMap;
+
+const VisualizeMap = ()=>{
+
+    const [rasters,setRasters] = useState([])
+    const [geojsons,setGeojsons] = useState([])
+
+
+    return (
+        <>
+            <MapComponent
+                rasters={rasters}
+                geojsons={geojsons}
+                setRasters={setRasters}
+                setGeoJSONs={setGeojsons}
+            />
+        </>
+    )
+}
+
+export default VisualizeMap;
 

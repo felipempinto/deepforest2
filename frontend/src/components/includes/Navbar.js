@@ -76,6 +76,9 @@ function NavbarComponent() {
       <li className="nav-item">
         <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
       </li>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/viewdata">View requests</NavLink>
+      </li>
       <li className='nav-item'>
 				<a 
           className='nav-link' 

@@ -1,0 +1,24 @@
+.sidenav-button {
+    position: absolute;
+    z-index: 400;
+    top: 20px;
+    right: 20px;
+    background-color:rgb(255, 255, 255);
+  }
+
+
+  .sidenav-container {
+    position: fixed;
+    /* top: 65px; */
+    bottom: 0;
+    width: 300px;
+    overflow: hidden; 
+}
+
+#slide-out {
+  overflow: hidden;
+}
+
+.collapsible{
+  background-color: white;
+}
