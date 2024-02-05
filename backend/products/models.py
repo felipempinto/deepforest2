@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
 import django_rq
 
-from osgeo import gdal
+from osgeo import gdal, osr
 from shapely.geometry import MultiPolygon,Polygon,shape
 from shapely.ops import transform
 import pyproj
@@ -22,6 +22,10 @@ from datetime import datetime
 from users.models import User
 from main.models import Product,TilesProcessed
 # from .download_and_process import process
+
+from PIL import Image
+from django.core.files import File
+import io
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
 
@@ -233,6 +237,17 @@ class ModelsTrained(models.Model):
 #     self.save()
 
 #     #TilesProcessed.update_from_s3()
+            
+def get_mask_by_url(url,expiration=1200):
+        try:
+            response = s3_client.generate_presigned_url('get_object',
+                                                    Params={'Bucket': BUCKET,
+                                                            'Key': url},
+                                                    ExpiresIn=expiration)
+        except (ClientError,ParamValidationError):
+            return None
+        else:
+            return response
 
 class RequestProcess(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)
@@ -244,9 +259,6 @@ class RequestProcess(models.Model):
     date_requested = models.DateTimeField(default=datetime.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # def __str__(self):
-    #     return self.
     
     def geojson(self):
         return self.bounds.geojson
@@ -254,24 +266,62 @@ class RequestProcess(models.Model):
     def save(self, *args, **kwargs):
         super(RequestProcess,self).save(*args, **kwargs)
 
-    # def save(self):
-    #     super(RequestProcess, self).save()
-
-        # if not self.done:
-        #     job = django_rq.enqueue(
-        #         requestprocess,
-        #         args=(self,),
-        #         job_timeout=50000
-        #         )
-            
-
     def get_mask(self,expiration=1200):
-        try:
-            response = s3_client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': BUCKET,
-                                                            'Key': self.mask},
-                                                    ExpiresIn=expiration)
-        except (ClientError,ParamValidationError):
-            return None
-        else:
-            return response
+        return get_mask_by_url(self.mask,expiration=expiration)
+        # try:
+        #     response = s3_client.generate_presigned_url('get_object',
+        #                                             Params={'Bucket': BUCKET,
+        #                                                     'Key': self.mask},
+        #                                             ExpiresIn=expiration)
+        # except (ClientError,ParamValidationError):
+        #     return None
+        # else:
+        #     return response
+    
+
+
+def get_bounds(ds):
+    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
+    width, height = ds.RasterXSize, ds.RasterYSize
+    xmax = xmin + width * xpixel
+    ymin = ymax + height * ypixel
+    poly = Polygon([[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]])
+    proj = osr.SpatialReference(wkt=ds.GetProjection())
+    epsg = proj.GetAttrValue('AUTHORITY', 1)
+    if int(epsg) != 4326:
+
+        wgs84 = pyproj.CRS('EPSG:4326')
+        utm = ds.GetProjection()
+
+        project = pyproj.Transformer.from_crs(
+            utm, wgs84, always_xy=True
+        ).transform
+        poly = transform(project, poly)
+
+    return poly.bounds
+        
+class RequestVisualization(models.Model):
+    request = models.ForeignKey(RequestProcess,on_delete=models.CASCADE)
+    png = models.FileField(blank=True,null=True)
+    bounds = models.CharField(max_length=200,blank=True,null=True)
+
+    def get_png(self,expiration=1200):
+        return get_mask_by_url(self.png,expiration=expiration)
+    
+
+    def save(self):
+        NAME = self.request.mask
+        super(RequestVisualization, self).save()
+        if self.bounds is None:
+            img = gdal.Open(self.request.get_mask())
+            ar = img.ReadAsArray()
+
+            bounds = get_bounds(img)
+            im1 = Image.fromarray(ar)
+            with io.BytesIO() as buffer:
+                im1.save(buffer, format='PNG')
+                image_data = buffer.getvalue()
+            filename = NAME.replace('.tif', '.png')[1:]
+
+            self.bounds = ','.join([str(i) for i in bounds])
+            self.png.save(filename, File(io.BytesIO(image_data)))

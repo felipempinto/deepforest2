@@ -2,6 +2,7 @@ import 'materialize-css/dist/css/materialize.min.css';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import React, { useState,useEffect,useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { visualization } from '../features/products.js';
 import { useNavigate } from 'react-router-dom';
 import MapComponent from './MapComponent.js'
 import { 
@@ -18,7 +19,21 @@ import './RequestMap.css';
 import "react-datepicker/dist/react-datepicker.css";
 import { tiles,resetTiles } from '../features/main'
 import tileLayersData from './tileLayers.json';
+// var parse = require('wellknown');
 var parse = require('wellknown');
+
+export const parseGeoJSON = (data) => {
+  return data.map(item => ({
+    type: 'Feature',
+    geometry: parse(item.geojson.split(';')[1]),
+    properties: {
+      id: item.id,
+      name: item.name,
+      attributes: item.attributes,
+    },
+  }));       
+};
+
 
 
 function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors }) {
@@ -330,18 +345,49 @@ function RequestMap() {
 
 
 const VisualizeMap = ()=>{
+    const dispatch = useDispatch();
+    const [data,setData] = useState([]);
 
-    const [rasters,setRasters] = useState([])
-    const [geojsons,setGeojsons] = useState([])
+    useEffect(() => {
+        dispatch(visualization())
+            .then(dataset => {
+              
+              const dataMap = {};
+                dataset.payload.forEach(item => {
+                    const { id, png, request: { bounds: geojsonBounds }, bounds: rasterBounds } = item;
+                    if (!dataMap[id]) {
+                        dataMap[id] = {};
+                    }
+                    const tileCoordinates = rasterBounds.split(',').map(Number);
+
+                    const [xmin, ymin, xmax, ymax] = tileCoordinates;
+                    const bounds = [[ymin, xmin], [ymax, xmax]];
+
+                    dataMap[id] = {
+                        id: id,
+                        raster: png, 
+                        rasterBounds: bounds,
+                        rasterEnabled:true,
+                        geojson: parse(geojsonBounds),
+                        geojsonEnabled: true,
+                    };
+                });
+
+                const dataArray = Object.values(dataMap);
+                setData(dataArray);
+            })
+            .catch(error => {
+                console.error('Error fetching visualization data:', error);
+            });
+    }, [dispatch]);
+
 
 
     return (
         <>
             <MapComponent
-                rasters={rasters}
-                geojsons={geojsons}
-                setRasters={setRasters}
-                setGeoJSONs={setGeojsons}
+                data={data}
+                setData={setData}
             />
         </>
     )

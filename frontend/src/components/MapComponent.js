@@ -1,10 +1,14 @@
-import { 
+import React from 'react';
+import {
     MapContainer,
-    LayersControl,
     TileLayer,
+    ZoomControl,
+    LayersControl,
     GeoJSON,
-    Popup
-        } from "react-leaflet"
+    ImageOverlay,
+    ScaleControl,
+    Popup,
+  } from 'react-leaflet';
 import './MapComponent.css';
 import tileLayersData from './tileLayers.json';
 import M from 'materialize-css/dist/js/materialize.min.js';
@@ -21,19 +25,23 @@ function formatBytes(bytes, decimals = 2) {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
   }
 
-const SideNav = ({data})=>{
-    // console.log(data)
+const SideNav = ({data,setData})=>{
 
     const [isSideNavOpen,setIsSideNavOpen] = useState(true)
 
     useEffect(()=>{
-        var options = {}
-        const sidenav = document.querySelectorAll('.sidenav');
-        M.Sidenav.init(sidenav, options);
-
-        const collapsible = document.querySelectorAll('.collapsible');
-        M.Collapsible.init(collapsible, options);
-    },[])
+        const initializeMaterialize = () => {
+            var options = {};
+            const sidenav = document.querySelectorAll('.sidenav');
+            M.Sidenav.init(sidenav, options);
+    
+            const collapsible = document.querySelectorAll('.collapsible');
+            M.Collapsible.init(collapsible, options);
+        };
+    
+        // Delay initialization by 500 milliseconds
+        setTimeout(initializeMaterialize, 500);
+    },[]);
 
     const handleToggleButton = ()=>{
         const elem = document.getElementById("slide-out");
@@ -51,47 +59,148 @@ const SideNav = ({data})=>{
         
     }
 
-    return (
-    <div>
-        <ul id="slide-out" className="sidenav  sidenav-container">
-            <h5>Your data:</h5>
-            { data &&
-                data.map((item,index)=>{
-                    return(
-                    <>
-                    <div className="collapsible">
-                        <li key={index}>
-                            <div 
-                                className="collapsible-header">
-                                <i className="material-icons">filter_drama</i>
-                                {item.name}
-                            </div>
-                            <div 
-                                className="collapsible-body">
-                                    <span>Lorem ipsum dolor sit amet.</span>
-                            </div>
-                        </li>
-                        </div>
-                    </>
-                )}
-                )
+    const handleRasterCheckboxChange = (id, checked) => {
+        setData(data.map(item => {
+            if (item.id === id) {
+                return { ...item, rasterEnabled: checked };
             }
-            
-        </ul>
-        <a 
-            id="sidenav-toggle" 
-            href="#" 
-            onClick={handleToggleButton}
-            data-target="slide-out" 
-            className="sidenav-trigger sidenav-button btn"
+            return item;
+        }));
+    };
+
+    const handleGeojsonCheckboxChange = (id, checked) => {
+        setData(data.map(item => {
+            if (item.id === id) {
+                return { ...item, geojsonEnabled: checked };
+            }
+            return item;
+        }));
+    };
+    return (
+        <div>
+            <ul id="slide-out" className="sidenav  sidenav-container">
+                <h5>Your data:</h5>
+                {data &&
+                    data.map((item, index) => (
+                        <React.Fragment key={`collapsible-${index}`}>
+                            <div className="collapsible">
+                                <li key={`list-item-${index}`}>
+                                    <div className="collapsible-header">
+                                        <i className="material-icons">filter_drama</i>
+                                        {item.id}
+                                    </div>
+                                    <div className="collapsible-body">
+                                        <table>
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <label>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.rasterEnabled}
+                                                                onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)} />
+                                                            <span>Raster</span>
+                                                        </label>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        <label>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={item.geojsonEnabled}
+                                                                onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
+                                                            <span>GeoJSON</span>
+                                                        </label>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </li>
+                            </div>
+                        </React.Fragment>
+                    ))}
+            </ul>
+            <a
+                id="sidenav-toggle"
+                href="#"
+                onClick={handleToggleButton}
+                data-target="slide-out"
+                className="sidenav-trigger sidenav-button btn"
             >
-            <i className="material-icons">menu</i>
-        </a>
-    </div>
-)
+                <i className="material-icons">menu</i>
+            </a>
+        </div>
+    );
+
+//     return (
+//     <div>
+//         <ul id="slide-out" className="sidenav  sidenav-container">
+//             <h5>Your data:</h5>
+//             { data &&
+//                 data.map((item,index)=>{
+//                     return(
+//                     <>
+//                         <div className="collapsible">
+//                             <li key={index}>
+//                                 <div 
+//                                     className="collapsible-header">
+//                                     <i className="material-icons">filter_drama</i>
+//                                     {item.id}
+//                                 </div>
+//                                 <div 
+//                                     className="collapsible-body">
+//                                     <table >
+//                                         <tbody>
+//                                             <tr>
+//                                                 <td>
+//                                                     <label>
+//                                                         <input 
+//                                                             type="checkbox" 
+//                                                             checked={item.rasterEnabled}
+//                                                             onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)}/>
+//                                                         <span>Raster</span>
+//                                                     </label>
+//                                                 </td>
+//                                             </tr>
+//                                             <tr>
+//                                                 <td>
+//                                                     <label>
+//                                                         <input 
+//                                                             type="checkbox" 
+//                                                             checked={item.geojsonEnabled}
+//                                                             onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)}/>
+//                                                         <span>GeoJSON</span>
+//                                                     </label>
+//                                                 </td>
+//                                             </tr>
+//                                         </tbody>
+//                                     </table>
+//                                 </div>
+//                             </li>
+//                         </div>
+//                     </>
+//                 )}
+//                 )
+//             }
+            
+//         </ul>
+//         <a 
+//             id="sidenav-toggle" 
+//             href="#" 
+//             onClick={handleToggleButton}
+//             data-target="slide-out" 
+//             className="sidenav-trigger sidenav-button btn"
+//             >
+//             <i className="material-icons">menu</i>
+//         </a>
+//     </div>
+// )
 }
 
-const MapComponent = ({rasters,geojsons,setRasters,setGeoJSONs})=>{
+// const MapComponent = ({rasters,geojsons,setRasters,setGeoJSONs,data,setData})=>{
+const MapComponent = ({data,setData})=>{
 
     const tileLayers = tileLayersData.map((layer) => ({
         key: layer.key,
@@ -99,18 +208,12 @@ const MapComponent = ({rasters,geojsons,setRasters,setGeoJSONs})=>{
         url: layer.url,
       }));
 
-    
-    const data = [
-        {id:1,name:"Data 1"},
-        {id:2,name:"Data 2"},
-    ]
-
     return <>
     <MapContainer 
             className='map-container' 
             center={[51.505, -0.09]} 
             zoom={5} 
-            zoomControl={false} 
+            zoomControl={false}
             maxZoom={20} 
             minZoom={2}>
             <LayersControl position="bottomright">
@@ -120,47 +223,30 @@ const MapComponent = ({rasters,geojsons,setRasters,setGeoJSONs})=>{
                 </LayersControl.BaseLayer>
             ))}
             </LayersControl>
-            {geojsons && geojsons.map((geojson, i) => (
-                <GeoJSON 
-                    id={`geojson-${i}`} 
-                    key={i} 
-                    data={geojson} 
-                    // style={{ color: geojsonColors[tiles[i].id] }}
-                    >
-                    <Popup>
-                    <div className="popup-content">
-                        <table>
-                        <tbody>
-                            <tr>
-                            <td>Name:</td>
-                            <td>{geojson.properties.name}</td>
-                            </tr>
-                            <tr>
-                            <td>Product:</td>
-                            <td>{geojson.properties.product}</td>
-                            </tr>
-                            <tr>
-                            <td>Date:</td>
-                            <td>{geojson.properties.date_image}</td>
-                            </tr>
-                            <tr>
-                            <td>Size:</td>
-                            <td>{formatBytes(geojson.properties.size)}</td>
-                            </tr>
-                        </tbody>
-                        </table>
-                        {geojson.properties.mask_url &&
-                        <a className="btn waves-effect waves-light my-btn-class" href={geojson.properties.mask_url} download>
-                            Download
-                        </a>}
-                    </div>
-                    </Popup>
-                </GeoJSON>
-        ))}
 
-        {rasters}
+            {data && data.map((item, i) => (
+                <React.Fragment key={`map-item-${i}`}>
+                    {item.rasterEnabled && (
+                        <ImageOverlay
+                            url={item.raster}
+                            bounds={item.rasterBounds}
+                            zIndex={1000}
+                            key={`raster-${i}`}
+                        />
+                    )}
+                    {item.geojsonEnabled && (
+                        <GeoJSON
+                            id={`geojson-${i}`}
+                            key={`geojson-${i}`}
+                            data={item.geojson}
+                        />
+                    )}
+                    
+                </React.Fragment>
+            ))}
         <SideNav
             data={data}
+            setData={setData}
         />
         </MapContainer>
     </>

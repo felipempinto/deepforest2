@@ -225,6 +225,32 @@ export const geojsondata = createAsyncThunk(
   }
 );
 
+export const visualization = createAsyncThunk(
+  "products/visual",
+  async (thunkAPI) => {    
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/request-visualizations/`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${Cookies.get('access_token')}`,
+          'Content-Type': 'application/json',
+        },
+        });
+
+      const data = await res.json();
+
+      if (res.status === 200) {
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+)
+
 const productSlice = createSlice({
   name: 'product',
   initialState: {
@@ -233,6 +259,7 @@ const productSlice = createSlice({
     modelsCSV: [],
     geojsondata:[],
     requests:[],
+    visualization:[],
     loading: false,
     error: null,
   },
@@ -311,7 +338,20 @@ const productSlice = createSlice({
       .addCase(getRequests.rejected, (state, action) => {
         state.error = action.error.message;
         state.loading = false;
+      })
+      .addCase(visualization.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(visualization.fulfilled, (state, action) => {
+        state.visualization = action.payload;
+        state.loading = false;
+      })
+      .addCase(visualization.rejected, (state, action) => {
+        state.error = action.error.message;
+        state.loading = false;
       });
+      
   },
 });
 
