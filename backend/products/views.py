@@ -51,8 +51,16 @@ class RequestProcessListCreateView(generics.ListCreateAPIView):
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
 
+from rest_framework import permissions
+
+class IsProcessingUser(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        print("ADMIN",request.user.username)
+        permission = request.user.username == "admin"
+        return permission
+
 class RequestProcessRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsProcessingUser]
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
 

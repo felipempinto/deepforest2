@@ -52,6 +52,9 @@ class ModelsTrainedDataSerializer(serializers.ModelSerializer):
 #             'model_data': ModelsTrainedDataSerializer(instance['model_data']).data,
 #             'parsed_data': instance['parsed_data'],
 #         }
+        
+class GeoJSONSerializer(serializers.Serializer):
+    geojsonData = serializers.JSONField()
 
 class RequestProcessSerializer(serializers.ModelSerializer):
 
@@ -63,7 +66,17 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         request = self.context.get('request')
         if request and request.method == 'GET':
-            fields['pth'] = ModelsTrainedSerializer()
+            # fields['pth'] = ModelsTrainedSerializer()
+
+
+            #GAMBIARRA MODE
+            if request.user.username=="admin":
+                print("USER IS ADMIN (message from products.serializers.py)")
+                fields['pth'] = ModelsTrainedSerializer()
+            else:
+                print("USER IS NOT ADMIN (message from products.serializers.py)")
+
+
         return fields
 
     class Meta:
@@ -104,16 +117,11 @@ class RequestProcessSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
-
-class GeoJSONSerializer(serializers.Serializer):
-    geojsonData = serializers.JSONField()
-
-
-
-class RequestProcessSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RequestProcess
-        fields = ('id', 'name', 'pth', 'mask', 'user', 'done', 'bounds', 'date_requested', 'created_at', 'updated_at')
+#TODO: Add this again if needed or change the one above.
+# class RequestProcessSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = RequestProcess
+#         fields = ('id', 'name', 'pth', 'mask', 'user', 'done', 'bounds', 'date_requested', 'created_at', 'updated_at')
 
 class RequestVisualizationSerializer(serializers.ModelSerializer):
     request = RequestProcessSerializer()

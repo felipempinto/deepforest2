@@ -133,73 +133,8 @@ const SideNav = ({data,setData})=>{
             </a>
         </div>
     );
-
-//     return (
-//     <div>
-//         <ul id="slide-out" className="sidenav  sidenav-container">
-//             <h5>Your data:</h5>
-//             { data &&
-//                 data.map((item,index)=>{
-//                     return(
-//                     <>
-//                         <div className="collapsible">
-//                             <li key={index}>
-//                                 <div 
-//                                     className="collapsible-header">
-//                                     <i className="material-icons">filter_drama</i>
-//                                     {item.id}
-//                                 </div>
-//                                 <div 
-//                                     className="collapsible-body">
-//                                     <table >
-//                                         <tbody>
-//                                             <tr>
-//                                                 <td>
-//                                                     <label>
-//                                                         <input 
-//                                                             type="checkbox" 
-//                                                             checked={item.rasterEnabled}
-//                                                             onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)}/>
-//                                                         <span>Raster</span>
-//                                                     </label>
-//                                                 </td>
-//                                             </tr>
-//                                             <tr>
-//                                                 <td>
-//                                                     <label>
-//                                                         <input 
-//                                                             type="checkbox" 
-//                                                             checked={item.geojsonEnabled}
-//                                                             onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)}/>
-//                                                         <span>GeoJSON</span>
-//                                                     </label>
-//                                                 </td>
-//                                             </tr>
-//                                         </tbody>
-//                                     </table>
-//                                 </div>
-//                             </li>
-//                         </div>
-//                     </>
-//                 )}
-//                 )
-//             }
-            
-//         </ul>
-//         <a 
-//             id="sidenav-toggle" 
-//             href="#" 
-//             onClick={handleToggleButton}
-//             data-target="slide-out" 
-//             className="sidenav-trigger sidenav-button btn"
-//             >
-//             <i className="material-icons">menu</i>
-//         </a>
-//     </div>
-// )
 }
 
-// const MapComponent = ({rasters,geojsons,setRasters,setGeoJSONs,data,setData})=>{
 const MapComponent = ({data,setData})=>{
 
     const tileLayers = tileLayersData.map((layer) => ({
@@ -230,7 +165,7 @@ const MapComponent = ({data,setData})=>{
                         <ImageOverlay
                             url={item.raster}
                             bounds={item.rasterBounds}
-                            zIndex={1000}
+                            // zIndex={1000}
                             key={`raster-${i}`}
                         />
                     )}
@@ -239,6 +174,7 @@ const MapComponent = ({data,setData})=>{
                             id={`geojson-${i}`}
                             key={`geojson-${i}`}
                             data={item.geojson}
+                            // style={{ zIndex: 20000 }}
                         />
                     )}
                     

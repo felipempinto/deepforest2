@@ -299,6 +299,32 @@ def get_bounds(ds):
         poly = transform(project, poly)
 
     return poly.bounds
+
+import numpy as np
+
+def convert_color(img_array):
+    if np.max(img_array) > 1:
+        img_array /= np.max(img_array)
+
+    unique_values = np.unique(img_array)
+    if len(unique_values) > 2 or (0 in unique_values and 1 not in unique_values):
+        color_map = {
+            0: (0, 0, 0),  
+            1: (0, 255, 0),  
+            2: (0, 0, 255),  
+            3: (255, 255, 0),
+            4: (255, 0, 255) 
+        }
+    else:
+        color_map = {
+            0: (0, 0, 0, 0),  
+            1: (0, 255, 0, 255)
+        }
+
+    rgb_image = np.zeros((*img_array.shape, 3 if len(color_map[0]) == 3 else 4), dtype=np.uint8)
+    for val, color in color_map.items():
+        rgb_image[img_array == val] = color
+    return rgb_image
         
 class RequestVisualization(models.Model):
     request = models.ForeignKey(RequestProcess,on_delete=models.CASCADE)
@@ -315,6 +341,8 @@ class RequestVisualization(models.Model):
         if self.bounds is None:
             img = gdal.Open(self.request.get_mask())
             ar = img.ReadAsArray()
+
+            ar = convert_color(ar)
 
             bounds = get_bounds(img)
             im1 = Image.fromarray(ar)
