@@ -113,7 +113,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         user = request.user if request else None
 
         validated_data['user'] = user
-        print("RUNNING WITH THE FOLLOWING DATA:",validated_data)
+        # print("RUNNING WITH THE FOLLOWING DATA:",validated_data)
 
         return super().create(validated_data)
 
