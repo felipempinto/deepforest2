@@ -150,7 +150,9 @@ RQ_QUEUES = {
     }
 }
 
-redis_url = urlparse.urlparse(os.environ.get('REDISTOGO_URL', 'redis://localhost:6379'))
+redis_url = urlparse.urlparse(
+    os.environ.get('REDISTOGO_URL', 'redis://localhost:6379')
+    )
 
 CACHES = {
     'default': {
@@ -173,6 +175,8 @@ EMAIL_PORT = 587
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
+
+AWS_RUN_PROCESSING_WITH_EC2 = True
 
 AWS_S3_FILE_OVERWRITE = False
 
