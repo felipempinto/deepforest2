@@ -31,7 +31,7 @@ function App() {
         console.error('Error:', error);
       }
     });
-  }, [dispatch]);
+  }, [dispatch,cookies.refresh_token]);
 
   return (
     <Router>
