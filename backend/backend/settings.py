@@ -16,22 +16,33 @@ DEBUG = os.environ.get("DEBUG")=='True'
 LOCAL = os.environ.get("LOCAL")=="True"
 # ALLOWED_HOSTS = []
 
+testes = [
+    f"teste{i}"
+    for i in range(1,11)
+]
+
 ALLOWED_HOSTS = [
     'deepforest.app',
     'https://*.deepforest.app',
     'v2.deepforest.app',
     'https://*.v2.deepforest.app',
-    'http://localhost:8000',
-    "http://127.0.0.1:8000",
-    'http://localhost:3000',
-    "http://127.0.0.1:3000",
-    "test2.deepforest.app"
-    'https://*.test2.deepforest.app',
+    # "test2.deepforest.app",
+    # 'https://*.test2.deepforest.app',
 ]
-# if os.environ['LOCAL'] == 'True':
-ALLOWED_HOSTS.append( '127.0.0.1',)
-ALLOWED_HOSTS.append( 'localhost',)
-    
+if os.environ['LOCAL'] == 'True':
+    ALLOWED_HOSTS.append( '127.0.0.1')
+    ALLOWED_HOSTS.append( 'localhost')
+    ALLOWED_HOSTS.append('http://localhost:8000')
+    ALLOWED_HOSTS.append("http://127.0.0.1:8000")
+    ALLOWED_HOSTS.append('http://localhost:3000')
+    ALLOWED_HOSTS.append("http://127.0.0.1:3000")
+
+if os.environ["TESTING"]=="True":
+    for i in testes:
+        ALLOWED_HOSTS.append(f"{i}.deepforest.app")
+        ALLOWED_HOSTS.append(f'https://*.{i}.deepforest.app')
+
+print(ALLOWED_HOSTS)
 
 CSRF_TRUSTED_ORIGINS = [
     'https://deepforest.app',
