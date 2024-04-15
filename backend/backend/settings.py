@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import mimetypes
 
 dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
-print(dotenv_path)
 load_dotenv(dotenv_path)
 
 mimetypes.add_type("text/css", ".css", True)
@@ -26,6 +25,8 @@ ALLOWED_HOSTS = [
     "http://127.0.0.1:8000",
     'http://localhost:3000',
     "http://127.0.0.1:3000",
+    "test2.deepforest.app"
+    'https://*.test2.deepforest.app',
 ]
 # if os.environ['LOCAL'] == 'True':
 ALLOWED_HOSTS.append( '127.0.0.1',)
