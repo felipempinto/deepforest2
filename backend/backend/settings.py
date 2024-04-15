@@ -5,7 +5,9 @@ from urllib import parse as urlparse
 from dotenv import load_dotenv
 import mimetypes
 
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+print(dotenv_path)
+load_dotenv(dotenv_path)
 
 mimetypes.add_type("text/css", ".css", True)
 
