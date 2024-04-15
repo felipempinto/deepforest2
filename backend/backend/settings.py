@@ -2,7 +2,10 @@ from pathlib import Path
 import os
 from datetime import timedelta
 from urllib import parse as urlparse
+from dotenv import load_dotenv
 import mimetypes
+
+load_dotenv()
 
 mimetypes.add_type("text/css", ".css", True)
 
