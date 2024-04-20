@@ -2,6 +2,7 @@ import boto3
 import paramiko
 import os,time
 from django.conf import settings
+import json
 
 def get_aws(name):
     if name=="ec2":
@@ -31,11 +32,17 @@ def stop_instance(instance):
     ec2.stop_instances(InstanceIds=instance)
 
 def get_name(inst):
-    # inst = ['i-0414e78255d655284']
 
     client = get_aws("ec2")
-    # response = client.describe_instances(InstanceIds = [inst[0].instance_id])
+    #TODO: 
+    # Não ta conseguindo encontrar a instancia se ela é parada após essa
+    # função ser chamada, precisa encontrar uma solução.
+
     response = client.describe_instances(InstanceIds = inst)
+    # with open('dataAAA.json', 'w') as f:
+    #     a = json.dumps(response, indent=4, sort_keys=True, default=str)
+    #     json.dump(a, f)
+        
     foo = response['Reservations'][0]['Instances'][0]['NetworkInterfaces'][0]['Association']['PublicDnsName']
     return foo
 
@@ -46,13 +53,21 @@ def get_name(inst):
 # -> Instance stopped
 
 
-def run_on_instance(verbose=True):
+def process(
+        date,
+        bounds,
+        pth,
+        output,
+        config_file,
+        product,
+        verbose=True
+        ):
+
     # s3 = get_aws("s3")
     ec2 = get_aws("ec2")
 
     # bucket = settings.AWS_STORAGE_BUCKET_NAME
     pem = 'Forestmaskkeys.pem'
-
 
     instance_id = ['i-0414e78255d655284']
 
@@ -67,9 +82,10 @@ def run_on_instance(verbose=True):
     if verbose:
         print(f"Running: {response_status}, Stopping: {response_stopping}")
 
-    if response_status:
-        waiter = ec2.get_waiter('instance_stopped')
-        waiter.wait(InstanceIds=instance_id)
+    #TODO: PROBLEMA COM SE A INSTANCIA TA LIGADA
+    # if response_status:
+    #     waiter = ec2.get_waiter('instance_stopped')
+    #     waiter.wait(InstanceIds=instance_id)
 
     while response_stopping:
         if verbose:
@@ -102,13 +118,29 @@ def run_on_instance(verbose=True):
             pkey=privkey
         )
         except paramiko.ssh_exception.NoValidConnectionsError:
-            print("Error, waiting 10 seconds")
+            print("Error with ssh connection, waiting 10 seconds")
+            time.sleep(10)
+        except KeyError:
+            print("Error with the response keys (probably recently closed), waiting 10 seconds")
             time.sleep(10)
         else:
             break
 
+    # EXPECTED INPUT FORMAT
+
+    # 20240318 
+    # SRID=4326;MULTIPOLYGON (((-51.47644 -27.412157, -51.784058 -27.684896, -51.410522 -27.869582, -51.124878 -27.548611, -51.47644 -27.412157))) 
+    # https://deepforestweb.s3.amazonaws.com/models/v0.0.0/forestmask/net.pth?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240420%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240420T155705Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=cd4566604169e1f41ebd094361dd93e6f9445da439be4589981416e4fe7a7cf2 
+    # processed/1/forestmask/0.0.0/20240318/e6c8ba83534c4a31b82ea2a6ec1decdf.tif 
+    # https://deepforestweb.s3.amazonaws.com/static/models/Forest%20Mask/files/commandline_args_TU2SWoX.json?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240420%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240420T155705Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=631563e0bdf927ed81af37c9c86f74d1ae590a14a43d036ac674b36f40f44c16 
+    # forestmask
+
+    arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product}'
+    print(arguments)
+
     stdin, stdout, stderr = ssh.exec_command(
-        f'python3 deepforest_remote_process/process_datasets.py'
+        # f'python3 deepforest_remote_process/process_datasets.py'
+        f'python3 deepforest_remote_process/process_selected.py {arguments}'
         )
     
     error = stderr.read().decode('utf-8')
@@ -117,11 +149,8 @@ def run_on_instance(verbose=True):
         return
         # raise Exception(f'Error while trying to create forestmask:\n{error}')
 
-    print("AAAAAAAA")
     stdin.flush()
-    print("B"*50)
     data = stdout.read().splitlines()
-    print("C"*50)
     final = None
     for line in data:
         
@@ -129,7 +158,6 @@ def run_on_instance(verbose=True):
         print(line,l)
         if l.endswith('.tif'):
             final = l
-    print("D"*50)
 
     ssh.close()
     # os.remove(pem)
@@ -142,5 +170,5 @@ def run_on_instance(verbose=True):
 
     
 
-run_on_instance()
+# run_on_instance()
 

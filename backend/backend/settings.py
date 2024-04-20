@@ -17,7 +17,7 @@ LOCAL = os.environ.get("LOCAL")=="True"
 # ALLOWED_HOSTS = []
 
 testes = [
-    f"teste{i}"
+    f"test{i}"
     for i in range(1,11)
 ]
 
@@ -42,7 +42,7 @@ if os.environ["TESTING"]=="True":
         ALLOWED_HOSTS.append(f"{i}.deepforest.app")
         ALLOWED_HOSTS.append(f'https://*.{i}.deepforest.app')
 
-print(ALLOWED_HOSTS)
+# print(ALLOWED_HOSTS)
 
 CSRF_TRUSTED_ORIGINS = [
     'https://deepforest.app',
@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    "django_rq",
     'corsheaders',
     'main',
     'users',
@@ -69,7 +70,6 @@ INSTALLED_APPS = [
     'storages',
     'rest_framework',
     'rest_framework_simplejwt',
-    "django_rq",
     # 'rest_framework_simplejwt.token_blacklist',
 ]
 

@@ -21,6 +21,7 @@ from datetime import datetime
 
 from users.models import User
 from main.models import Product,TilesProcessed
+from .processing import process
 # from .download_and_process import process
 
 from PIL import Image
@@ -208,35 +209,35 @@ class ModelsTrained(models.Model):
             # self.poly = GEOSGeometry(multi)
             # self.save()
 
-# def requestprocess(self):
-#     v = self.pth.version
-#     product = self.pth.product.name.lower().replace(' ','')
-#     pth = self.pth.get_pth()
+def requestprocess(self):
+    v = self.pth.version
+    product = self.pth.product.name.lower().replace(' ','')
+    pth = self.pth.get_pth()
 
-#     config_file = self.pth.parameters.url
-#     user = self.user.username
-#     date = self.date_requested.strftime("%Y%m%d")
-#     unique_id = uuid.uuid4().hex
+    config_file = self.pth.parameters.url
+    user = self.user.username
+    date = self.date_requested.strftime("%Y%m%d")
+    unique_id = uuid.uuid4().hex
 
-#     output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
+    output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
     
-#     a = process(
-#         date,
-#         self.bounds.wkt,
-#         pth,
-#         output,
-#         config_file,
-#         product=product,
-#         verbose=True
-#     )
-#     print(a)
-#     if self.name=='':
-#         self.name = os.path.basename(output).replace('.tif','')
-#     self.done = True
-#     self.mask = output
-#     self.save()
+    a = process(
+        date,
+        self.bounds.wkt,
+        pth,
+        output,
+        config_file,
+        product=product,
+        verbose=True
+    )
+    print(a)
+    if self.name=='':
+        self.name = os.path.basename(output).replace('.tif','')
+    self.done = True
+    self.mask = output
+    self.save()
 
-#     #TilesProcessed.update_from_s3()
+    TilesProcessed.update_from_s3(product)
             
 def get_mask_by_url(url,expiration=1200):
         try:
@@ -265,6 +266,8 @@ class RequestProcess(models.Model):
 
     def save(self, *args, **kwargs):
         super(RequestProcess,self).save(*args, **kwargs)
+        if not self.done:
+            job = django_rq.enqueue(requestprocess,args=(self,))
 
     def get_mask(self,expiration=1200):
         return get_mask_by_url(self.mask,expiration=expiration)
