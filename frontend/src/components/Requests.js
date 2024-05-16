@@ -81,6 +81,30 @@ const Requests = () => {
       return <Navigate to='/login'/>;
     }
 
+    const statusButton = (request)=>{
+
+      const status = request.status
+
+      if (status=="PROCESSING") {
+        return <div className="progress"><div className="indeterminate"></div></div> 
+      } else if (status=="DONE") {
+        return <>
+        <div className='center'>
+            <Link to={request.mask_url} target='_blank' onClick={() => handleDownload(request.mask_url)}>
+              <i className='material-icons'>download</i> {request.done}
+            </Link>
+        </div>
+        </>
+      } else if (status=="ERROR") {
+        return <div className='tooltipped' data-position="bottom" data-tooltip="There was an error with your processing!"> 
+                <i className="material-icons">error</i>
+               </div> 
+      } else {
+        
+      }
+
+    }
+
     const text = 'The processing usually takes from 30 minutes to 1h'
     return (
     <>
@@ -114,7 +138,8 @@ const Requests = () => {
               <td>{request.pth.version}</td>
               <td>{formatDate(request.date_requested)}</td>
               <td>
-                {
+                {statusButton(request)}
+                {/* {
                 request.done === false ? 
                 (
                 <div className="progress"><div className="indeterminate"></div></div> ): 
@@ -124,7 +149,7 @@ const Requests = () => {
                       <i className='material-icons'>download</i> {request.done}
                     </Link>
                 </div>
-                )}
+                )} */}
               </td>
               <td>{formatRelativeTime(request.created_at)}</td>
               <td>{formatRelativeTime(request.updated_at)}</td>

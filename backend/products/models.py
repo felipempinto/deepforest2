@@ -21,7 +21,7 @@ from datetime import datetime
 
 from users.models import User
 from main.models import Product,TilesProcessed
-from .processing import process
+from .processing import process,send_emails
 # from .download_and_process import process
 
 from PIL import Image
@@ -29,6 +29,7 @@ from django.core.files import File
 import io
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
+EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
 
 my_config = Config(
     region_name = settings.AWS_S3_REGION_NAME,
@@ -221,21 +222,40 @@ def requestprocess(self):
 
     output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
     
-    a = process(
-        date,
-        self.bounds.wkt,
-        pth,
-        output,
-        config_file,
-        product=product,
-        verbose=True
-    )
-    print(a)
-    if self.name=='':
-        self.name = os.path.basename(output).replace('.tif','')
-    self.done = True
-    self.mask = output
+    try:
+        process_output = process(
+            date,
+            self.bounds.wkt,
+            pth,
+            output,
+            config_file,
+            product=product,
+            verbose=True
+        )
+    except Exception as e:
+        tp = "error"
+        error_message = e
+        self.status="ERROR"
+        self.done = True
+        
+    else:
+        error_message = ""
+        tp = "sucess"
+        if self.name=='':
+            self.name = os.path.basename(output).replace('.tif','')
+        self.done = True
+        self.status = "DONE"
+        self.mask = output
     self.save()
+    
+    time_difference = self.updated_at-self.created_at
+
+    hours = time_difference.seconds // 3600
+    minutes = (time_difference.seconds % 3600) // 60
+    seconds = time_difference.seconds % 60
+    process_time = f"Total time of processing: {hours} hours, {minutes} minutes, {seconds} seconds"
+
+    send_emails(self.user,EMAIL_HOST_USER,date,tp=tp,e=error_message,users=["admin","user"],processtime = process_time)
 
     TilesProcessed.update_from_s3(product)
             
@@ -250,6 +270,13 @@ def get_mask_by_url(url,expiration=1200):
         else:
             return response
 
+
+STATUS_CHOICES = (
+    ("PROCESSING","Processing"),
+    ("DONE","Done"),
+    ("ERROR","Error"),
+)
+
 class RequestProcess(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)
     pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
@@ -257,6 +284,7 @@ class RequestProcess(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     done = models.BooleanField(default=False)
     bounds = models.MultiPolygonField(null=True, blank=True)
+    status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
     date_requested = models.DateTimeField(default=datetime.now, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -267,7 +295,7 @@ class RequestProcess(models.Model):
     def save(self, *args, **kwargs):
         super(RequestProcess,self).save(*args, **kwargs)
         if not self.done:
-            job = django_rq.enqueue(requestprocess,args=(self,))
+            job = django_rq.enqueue(requestprocess,args=(self,),timeout=99999)
 
     def get_mask(self,expiration=1200):
         return get_mask_by_url(self.mask,expiration=expiration)

@@ -91,11 +91,11 @@ class TilesProcessed(models.Model):
     @classmethod
     def update_from_s3(cls, product):
         bucket_name = BUCKET#'deepforestbucket'
-        print('BUCKET',BUCKET)
+        # print('BUCKET',BUCKET)
         prefix = f'{product}/outputs/tiles/sentinel2/'
 
         response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-        print(response)
+        # print(response)
 
         try:
             for obj in response['Contents']:

@@ -2,7 +2,10 @@ import boto3
 import paramiko
 import os,time
 from django.conf import settings
+from django.core.mail import send_mail
 import json
+
+EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
 
 def get_aws(name):
     if name=="ec2":
@@ -126,49 +129,66 @@ def process(
         else:
             break
 
-    # EXPECTED INPUT FORMAT
-
-    # 20240318 
-    # SRID=4326;MULTIPOLYGON (((-51.47644 -27.412157, -51.784058 -27.684896, -51.410522 -27.869582, -51.124878 -27.548611, -51.47644 -27.412157))) 
-    # https://deepforestweb.s3.amazonaws.com/models/v0.0.0/forestmask/net.pth?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240420%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240420T155705Z&X-Amz-Expires=1200&X-Amz-SignedHeaders=host&X-Amz-Signature=cd4566604169e1f41ebd094361dd93e6f9445da439be4589981416e4fe7a7cf2 
-    # processed/1/forestmask/0.0.0/20240318/e6c8ba83534c4a31b82ea2a6ec1decdf.tif 
-    # https://deepforestweb.s3.amazonaws.com/static/models/Forest%20Mask/files/commandline_args_TU2SWoX.json?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240420%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240420T155705Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=631563e0bdf927ed81af37c9c86f74d1ae590a14a43d036ac674b36f40f44c16 
-    # forestmask
-
     arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product}'
-    print(arguments)
 
     stdin, stdout, stderr = ssh.exec_command(
-        # f'python3 deepforest_remote_process/process_datasets.py'
-        f'python3 deepforest_remote_process/process_selected.py {arguments}'
+        # f'python3 deepforest_remote_process/process_selected.py {arguments}'
+        # f'python3 deepforest_remote_process/test.py s' #FOR SUCESS
+        f'python3 deepforest_remote_process/test.py e' #FOR ERROR
         )
-    
     error = stderr.read().decode('utf-8')
     if error!='':
-        print(error)
-        return
-        # raise Exception(f'Error while trying to create forestmask:\n{error}')
+        raise Exception(error)
 
     stdin.flush()
     data = stdout.read().splitlines()
     final = None
+
     for line in data:
-        
         l = line.decode('utf-8')
-        print(line,l)
         if l.endswith('.tif'):
             final = l
-
     ssh.close()
-    # os.remove(pem)
 
     if not response:
         print("Stopping instance")
         ec2.stop_instances(InstanceIds=instance_id)
-    
+    else:
+        print("instance not stopped")
+        send_mail(
+            "Ec2 instance is turned on",
+            "Be careful, the instance is on, it may cause you higher expenses",
+            EMAIL_HOST_USER,
+            [EMAIL_HOST_USER],
+            fail_silently=False,
+        )
     return final
 
-    
 
 # run_on_instance()
 
+
+def get_messages(tp,us,date,user,e="",process_time=""):
+    if tp=="error" and us=="admin":
+        return f'You are receiving this message because there was a problem while processing a request, take a look at the error message:\n\n{e}\n\ndate = {date}\nuser = {user.username}'
+    elif tp=="error" and us=="user":
+        return f"There was an error with your processing, we will check and get back to you\n\nWe are working on solving the problem as soon as possible."        
+    elif tp=="sucess" and us=="admin":
+        return f"The processing was succeed for user {user.username}\n\n{process_time}"
+    elif tp=="sucess" and us=="user":
+        return f"Your process is Done, you can check it by acessing:\n\nhttps://deepforest.app/requests\n\n{process_time}\n\nWhy this takes so long?\nThe most optimized way to do this would cost too much "
+    else:
+        raise TypeError(f"User or Type provided are not correct, please check: type={tp} user={us}")
+    
+
+def send_emails(user,admin_email,date,tp="error",e="",users=["admin","user"],processtime=""):
+    
+    for us in users:
+        emailto = admin_email if us=="admin" else user.email
+        send_mail(
+            f"DEEPFOREST: {tp} while processing",
+            get_messages(tp,us,date,user,e=e,process_time=processtime),
+            admin_email,
+            [emailto],
+            fail_silently=False,
+        )
