@@ -157,15 +157,30 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = os.environ.get("REDIS_PORT")
+REDIS_USER = os.environ.get("REDIS_USERNAME")
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
 RQ_QUEUES = {
     'default': {
-        'HOST': 'localhost',
-        'PORT': 6379,
-        'DB': 0,
+        'HOST': REDIS_HOST,#"redis-16127.c91.us-east-1-3.ec2.redns.redis-cloud.com",#'localhost',
+        'PORT': REDIS_PORT,#"16127",#6379,
+        'DB': 0,#"FelipeMatheus-free-db",#0,
         'DEFAULT_TIMEOUT': 7200,
+        'USERNAME': REDIS_USER,#'some-user',
+        'PASSWORD': REDIS_PASSWORD,#'some-password',
     }
 }
+
+
+# RQ_QUEUES = {
+#     'default': {
+#         'HOST': 'localhost',
+#         'PORT': 6379,
+#         'DB': 0,
+#         'DEFAULT_TIMEOUT': 7200,
+#     }
+# }
 
 redis_url = urlparse.urlparse(
     os.environ.get('REDISTOGO_URL', 'redis://localhost:6379')
