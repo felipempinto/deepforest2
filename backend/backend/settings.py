@@ -217,50 +217,40 @@ AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_LOCATION = 'static'
 AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
-# #TODO:
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# ## Use S3 again, for now it's breaking and I don't know the reason.
-# USE_S3 = False#os.getenv('USE_S3_DF_WEBSITE') == 'True'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 
-# if USE_S3:
-
-#     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-#     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'    
-#     # STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    
-#     STATIC_URL = f'https://{AWS_STORAGE_BUCKET_NAME}/{AWS_LOCATION}/'
-#     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-# else:
-#     # STATIC_URL = '/staticfiles/'
-#     # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#     STATIC_ROOT = os.path.join(BASE_DIR, "static")
-#     STATIC_URL = '/static/'
-
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-  #os.path.join(BASE_DIR, "build/static"),
-]
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-    # if DEBUG:
-    #     STATIC_URL = '/static/'
-    #     STATIC_ROOT = 'staticfiles'
-    #     STATICFILES_DIRS = (
-    #         os.path.join(BASE_DIR, "static"),
-    #     )
-
-# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-# STATICFILES_DIRS = [
-#   # Tell Django where to look for React's static files (css, js)
-#   os.path.join(BASE_DIR, "build","static"),
-# ]
-
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-# # STATICFILES_DIRS = (os.path.join('../frontend','static','build'),)
-# STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
-
-# settings.py
+STATICFILES_LOCATION = 'static'
+MEDIAFILES_LOCATION = 'media'
+MEDIA_ROOT = "build"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR,'build')
+S3_URL = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+STATIC_ROOT = 'https://%s/%s/static/' % (AWS_S3_CUSTOM_DOMAIN,STATICFILES_LOCATION)
+
+STORAGES = {
+    "default": {"BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'},
+    "staticfiles": {"BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'},
+    "OPTIONS": {
+        "bucket_name": AWS_STORAGE_BUCKET_NAME,
+        "region_name": AWS_S3_REGION_NAME,
+        "signature_version": AWS_S3_SIGNATURE_VERSION,
+},
+}
+
+# # #TODO:
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
+# STATIC_URL = '/static/'
+# STATICFILES_DIRS = [
+#   #os.path.join(BASE_DIR, "build/static"),
+# ]
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+
+# # settings.py
+# MEDIA_URL = "/media/"
+# MEDIA_ROOT = os.path.join(BASE_DIR,'build')
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -270,8 +260,6 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework.authentication.BasicAuthentication'
     ],
 }
 
@@ -290,31 +278,3 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
   }
 
-
-# # TODO:
-# # prepare loging for Django-RQ:
-# # https://github.com/rq/django-rq#configuring-logging
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "formatters": {
-#         "rq_console": {
-#             "format": "%(asctime)s %(message)s",
-#             "datefmt": "%H:%M:%S",
-#         },
-#     },
-#     "handlers": {
-#         "rq_console": {
-#             "level": "DEBUG",
-#             "class": "rq.logutils.ColorizingStreamHandler",
-#             "formatter": "rq_console",
-#             "exclude": ["%(asctime)s"],
-#         },
-#     },
-#     'loggers': {
-#         "rq.worker": {
-#             "handlers": ["rq_console", "sentry"],
-#             "level": "DEBUG"
-#         },
-#     }
-# }
