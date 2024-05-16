@@ -208,24 +208,17 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
 
-AWS_RUN_PROCESSING_WITH_EC2 = True
-
 AWS_S3_FILE_OVERWRITE = False
 
 AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_SIGNATURE_VERSION = "s3v4"
-AWS_LOCATION = 'static'
 AWS_URL = os.environ.get("AWS_URL_DF_WEBSITE")
 
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-
-STATICFILES_LOCATION = 'static'
-MEDIAFILES_LOCATION = 'media'
-MEDIA_ROOT = "build"
-MEDIA_URL = "/media/"
+AWS_LOCATION = 'static'
 S3_URL = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
-STATIC_URL = 'https://%s/%s/' % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
-STATIC_ROOT = 'https://%s/%s/static/' % (AWS_S3_CUSTOM_DOMAIN,STATICFILES_LOCATION)
+STATIC_URL = f'https://{S3_URL}/{AWS_LOCATION}/'
+AWS_S3_ENDPOINT_URL = "https://s3.us-east-2.amazonaws.com"
+# STATIC_ROOT = 'https://%s/%s/static/' % (AWS_S3_CUSTOM_DOMAIN,STATICFILES_LOCATION)
 
 STORAGES = {
     "default": {"BACKEND": 'storages.backends.s3boto3.S3Boto3Storage'},
@@ -236,21 +229,6 @@ STORAGES = {
         "signature_version": AWS_S3_SIGNATURE_VERSION,
 },
 }
-
-# # #TODO:
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-
-# STATIC_URL = '/static/'
-# STATICFILES_DIRS = [
-#   #os.path.join(BASE_DIR, "build/static"),
-# ]
-# STATIC_ROOT = os.path.join(BASE_DIR, "static")
-
-
-# # settings.py
-# MEDIA_URL = "/media/"
-# MEDIA_ROOT = os.path.join(BASE_DIR,'build')
 
 AUTH_USER_MODEL = 'users.User'
 
