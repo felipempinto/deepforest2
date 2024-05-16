@@ -132,9 +132,9 @@ def process(
     arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product}'
 
     stdin, stdout, stderr = ssh.exec_command(
-        # f'python3 deepforest_remote_process/process_selected.py {arguments}'
+        f'python3 deepforest_remote_process/process_selected.py {arguments}'
         # f'python3 deepforest_remote_process/test.py s' #FOR SUCESS
-        f'python3 deepforest_remote_process/test.py e' #FOR ERROR
+        # f'python3 deepforest_remote_process/test.py e' #FOR ERROR
         )
     error = stderr.read().decode('utf-8')
     if error!='':
