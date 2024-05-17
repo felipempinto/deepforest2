@@ -134,23 +134,11 @@ const Requests = () => {
                 Export GeoJSON
               </button>
               </td>
+
               <td>{request.pth.product}</td>
               <td>{request.pth.version}</td>
               <td>{formatDate(request.date_requested)}</td>
-              <td>
-                {statusButton(request)}
-                {/* {
-                request.done === false ? 
-                (
-                <div className="progress"><div className="indeterminate"></div></div> ): 
-                (
-                <div className='center'>
-                    <Link to={request.mask_url} target='_blank' onClick={() => handleDownload(request.mask_url)}>
-                      <i className='material-icons'>download</i> {request.done}
-                    </Link>
-                </div>
-                )} */}
-              </td>
+              <td>{statusButton(request)}</td>
               <td>{formatRelativeTime(request.created_at)}</td>
               <td>{formatRelativeTime(request.updated_at)}</td>
               <td>

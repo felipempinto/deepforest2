@@ -2,7 +2,7 @@ import React,{
     useEffect 
 } from 'react';
 import { useDispatch,useSelector } from 'react-redux';
-import NavbarComponent from './includes/Navbar';
+import NavbarComponent from '../components/includes/Navbar';
 
 import { Navigate } from 'react-router-dom';
 import { imagelocations } from '../features/forestmask';
