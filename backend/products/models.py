@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.db import connections, OperationalError
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -211,6 +212,7 @@ class ModelsTrained(models.Model):
             # self.save()
 
 def requestprocess(self):
+    print("STARTING REQUEST PROCESS")
     v = self.pth.version
     product = self.pth.product.name.lower().replace(' ','')
     pth = self.pth.get_pth()
@@ -221,8 +223,9 @@ def requestprocess(self):
     unique_id = uuid.uuid4().hex
 
     output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
-    
+
     try:
+        print("PROCESSING")
         process_output = process(
             date,
             self.bounds.wkt,
@@ -230,15 +233,19 @@ def requestprocess(self):
             output,
             config_file,
             product=product,
-            verbose=True
+            # verbose=True
         )
     except Exception as e:
+        print("OUT WITH ERROR")
         tp = "error"
-        error_message = e
+        error_message = str(e)
         self.status="ERROR"
         self.done = True
-        
+        self.name = os.path.basename(output).replace('.tif','')
+        # self.response = e
+        process_output = ""
     else:
+        print("END PROCESS")
         error_message = ""
         tp = "sucess"
         if self.name=='':
@@ -246,7 +253,21 @@ def requestprocess(self):
         self.done = True
         self.status = "DONE"
         self.mask = output
+        # self.response = process_output
+
+    self.response = {
+        "run":"False",
+    }
+    self.response["final"] = process_output
+    self.response["error"] = error_message
+    print("SAVE inside",self.response)
+
+    for conn in connections.all():
+        if not conn.is_usable():
+            conn.close()
+            conn.connect()
     self.save()
+    print("DONE SAVING inside")
     
     time_difference = self.updated_at-self.created_at
 
@@ -286,6 +307,7 @@ class RequestProcess(models.Model):
     bounds = models.MultiPolygonField(null=True, blank=True)
     status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
     date_requested = models.DateTimeField(default=datetime.now, blank=True)
+    response = models.JSONField(blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -293,7 +315,13 @@ class RequestProcess(models.Model):
         return self.bounds.geojson
 
     def save(self, *args, **kwargs):
+        print("PRESAVE",args,kwargs)
+        for conn in connections.all():
+            if not conn.is_usable():
+                conn.close()
+                conn.connect()
         super(RequestProcess,self).save(*args, **kwargs)
+        print("POSTSAVE")
         if not self.done:
             job = django_rq.enqueue(requestprocess,args=(self,),timeout=99999)
 

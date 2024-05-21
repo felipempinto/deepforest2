@@ -105,6 +105,13 @@ const Requests = () => {
 
     }
 
+    // const test = (request)=>{
+    //   console.log(request)
+    //   return <>
+    //     a
+    //   </>
+    // }
+
     const text = 'The processing usually takes from 30 minutes to 1h'
     return (
     <>
@@ -135,7 +142,10 @@ const Requests = () => {
               </button>
               </td>
 
-              <td>{request.pth.product}</td>
+              <td>
+                {/* {test(request)} */}
+                {request.pth.product}
+              </td>
               <td>{request.pth.version}</td>
               <td>{formatDate(request.date_requested)}</td>
               <td>{statusButton(request)}</td>

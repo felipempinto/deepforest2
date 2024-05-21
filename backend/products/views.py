@@ -51,6 +51,35 @@ class RequestProcessListCreateView(generics.ListCreateAPIView):
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
 
+    # def get_serializer_context(self):
+    #     print("Context is being set")
+    #     return {'request': self.request}
+
+    # def perform_create(self, serializer):
+    #     print("PERFORM CREATE CALLED")
+    #     # Here you can manually check if the data is valid
+    #     if not serializer.is_valid():
+    #         print("Data is not valid")
+    #         # If the data is not valid, you can raise an exception or return a response
+    #         raise Exception(serializer.errors)
+
+    #     print("Data is valid")
+    #     # Call save to create the instance
+    #     serializer.save()
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     if serializer.is_valid():
+    #         print("Data is valid in create method")
+    #     else:
+    #         print("Data is not valid in create method")
+    #         print(serializer.errors)
+
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
 from rest_framework import permissions
 
 class IsProcessingUser(permissions.BasePermission):

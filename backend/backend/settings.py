@@ -132,6 +132,14 @@ DATABASES = {
          'PASSWORD': os.environ.get('DB_PASSWORD_DF_WEBSITE'),
          'HOST': os.environ.get("DB_HOST_DF_WEBSITE"),
          'PORT': os.environ.get("DB_PORT_DF_WEBSITE"),#'5432',
+         'OPTIONS': {
+            'sslmode': 'require',
+            # 'connect_timeout': 3600,  # 10 minutes
+            # 'options': '-c statement_timeout=0',  # Disable statement timeout
+        },
+        'DISABLE_SERVER_SIDE_CURSORS': True,
+        "CONN_MAX_AGE":None,
+        "CONN_HEALTH_CHECKS":True,
     },
 }
 

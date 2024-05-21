@@ -23,18 +23,42 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
 
 class ModelsTrainedDataSerializer(serializers.ModelSerializer):
     product = serializers.StringRelatedField()
+    # train_data = serializers.SerializerMethodField()
+    # test_data = serializers.SerializerMethodField()
+    # data = serializers.SerializerMethodField()
 
     class Meta:
         model = ModelsTrained
         exclude = ("pth_path","pth")
 
+    # def get_data(self, obj):
+    #     return obj.read_data()
+    
+    # def get_train_data(self, obj):
+    #     return obj.read_train()
 
+    # def get_test_data(self, obj):
+    #     return obj.read_test()
+
+# # This one is separated to be able to show data in the /products page.
+# class ModelsTrainedDataSerializer(serializers.ModelSerializer):
+#     id = serializers.IntegerField()
+#     model_data = ModelsTrainedSerializer()
+#     parsed_data = serializers.ListField()
+
+#     def to_representation(self, instance):
+#         return {
+#             'id': instance['id'],
+#             'model_data': ModelsTrainedDataSerializer(instance['model_data']).data,
+#             'parsed_data': instance['parsed_data'],
+#         }
+        
 class GeoJSONSerializer(serializers.Serializer):
     geojsonData = serializers.JSONField()
 
 class RequestProcessSerializer(serializers.ModelSerializer):
 
-    pth = ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
+    # pth = ModelsTrainedSerializer()
     mask_url = serializers.SerializerMethodField()
     geojson = serializers.SerializerMethodField()
 
@@ -42,7 +66,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         request = self.context.get('request')
         if request and request.method == 'GET':
-            # fields['pth'] = ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
+            fields['pth'] = ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
 
 
             #GAMBIARRA MODE
@@ -58,7 +82,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestProcess
         fields = '__all__'
-
+    
     def get_geojson(self,obj):
         geojson = obj.bounds.geojson
         return geojson
@@ -76,7 +100,6 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         multi = MultiPolygon([poly])
 
         try:
-            # return GEOSGeometry(value)
             return GEOSGeometry(multi.wkt)
         except (ValueError, TypeError, GEOSException) as e:
             raise serializers.ValidationError(str(e))
@@ -89,6 +112,12 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         # print("RUNNING WITH THE FOLLOWING DATA:",validated_data)
 
         return super().create(validated_data)
+
+#TODO: Add this again if needed or change the one above.
+# class RequestProcessSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = RequestProcess
+#         fields = ('id', 'name', 'pth', 'mask', 'user', 'done', 'bounds', 'date_requested', 'created_at', 'updated_at')
 
 class RequestVisualizationSerializer(serializers.ModelSerializer):
     request = RequestProcessSerializer()
