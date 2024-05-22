@@ -158,7 +158,8 @@ def run_process(
     
     error = stderr.read().decode('utf-8')
     if error!='':
-        raise Exception(error)
+        print("Returning on error")
+        # raise Exception(error)
 
     stdin.flush()
     data = stdout.read().splitlines()
