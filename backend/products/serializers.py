@@ -5,7 +5,7 @@ from django.contrib.gis import geos
 import shapely.wkt as wkt
 from shapely.geometry import MultiPolygon
 
-from .models import ModelsTrained, RequestProcess,TrainModel,RequestVisualization
+from .models import ModelsTrained, RequestProcess,TrainModel#,RequestVisualization
 from .utils import check_area
 # from .download_and_process import check_area
 
@@ -55,6 +55,24 @@ class ModelsTrainedDataSerializer(serializers.ModelSerializer):
         
 class GeoJSONSerializer(serializers.Serializer):
     geojsonData = serializers.JSONField()
+
+class VisualRequestProcessSerializer(serializers.ModelSerializer):
+
+    mask_url = serializers.SerializerMethodField()
+    geojson = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RequestProcess
+        fields = ["bounds","png","bounds_png","mask_url","geojson"]
+
+    def get_mask_url(self, obj):
+        mask_url = obj.get_mask()
+        return mask_url
+    
+    def get_geojson(self,obj):
+        geojson = obj.bounds.geojson
+        return geojson
+
 
 class RequestProcessSerializer(serializers.ModelSerializer):
 
@@ -119,25 +137,25 @@ class RequestProcessSerializer(serializers.ModelSerializer):
 #         model = RequestProcess
 #         fields = ('id', 'name', 'pth', 'mask', 'user', 'done', 'bounds', 'date_requested', 'created_at', 'updated_at')
 
-class RequestVisualizationSerializer(serializers.ModelSerializer):
-    request = RequestProcessSerializer()
+# class RequestVisualizationSerializer(serializers.ModelSerializer):
+#     request = RequestProcessSerializer()
 
-    class Meta:
-        model = RequestVisualization
-        fields = ('id', 'request', 'png', 'bounds')
+#     class Meta:
+#         model = RequestVisualization
+#         fields = ('id', 'request', 'png', 'bounds')
 
-    def create(self, validated_data):
-        request_data = validated_data.pop('request')
-        request = RequestProcess.objects.create(**request_data)
-        visualization = RequestVisualization.objects.create(request=request, **validated_data)
-        return visualization
+#     def create(self, validated_data):
+#         request_data = validated_data.pop('request')
+#         request = RequestProcess.objects.create(**request_data)
+#         visualization = RequestVisualization.objects.create(request=request, **validated_data)
+#         return visualization
 
-    def update(self, instance, validated_data):
-        request_data = validated_data.pop('request')
-        request_serializer = RequestProcessSerializer(instance.request, data=request_data)
-        if request_serializer.is_valid():
-            request_serializer.save()
-        instance.png = validated_data.get('png', instance.png)
-        instance.bounds = validated_data.get('bounds', instance.bounds)
-        instance.save()
-        return instance
+#     def update(self, instance, validated_data):
+#         request_data = validated_data.pop('request')
+#         request_serializer = RequestProcessSerializer(instance.request, data=request_data)
+#         if request_serializer.is_valid():
+#             request_serializer.save()
+#         instance.png = validated_data.get('png', instance.png)
+#         instance.bounds = validated_data.get('bounds', instance.bounds)
+#         instance.save()
+#         return instance

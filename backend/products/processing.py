@@ -139,12 +139,12 @@ def run_process(
     
 
     if mode=="production":
-        arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product}'
+        arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
         if verbose:
             print("ARGS")
             print(arguments)
             print("#"*50)
-        cmd = f'python3 deepforest_remote_process/process_selected.py {arguments}'
+        cmd = f'venv/bin/python3 deepforest_remote_process/process_selected.py {arguments}'
     elif mode == "test-error":
         cmd = f'python3 deepforest_remote_process/test.py e' #FOR ERROR
     elif mode == "test-sucess":
@@ -154,23 +154,29 @@ def run_process(
     stdin, stdout, stderr = ssh.exec_command( cmd )
     if verbose:
         print("PROCESSING DONE")
-        print(f"Total time of the processing: {datetime.timedelta(time.time()-t1)}")
     
     error = stderr.read().decode('utf-8')
     if error!='':
-        print("Returning on error")
-        # raise Exception(error)
+        # print("Returning on error")
+        #TODO:
+        # TQDM is passing here, if run using this ssh command, 
+        # DO NOT USE TQDM
+        raise Exception(error)
+    print(f"Total time of the processing: {datetime.timedelta(time.time()-t1)}")
 
     stdin.flush()
+    print("flush")
     data = stdout.read().splitlines()
+    print("read")
     final = None
+    print("READING DATA FROM OUTPUTS INSIDE THE EC2")
 
     for line in data:
         l = line.decode('utf-8')
         if l.endswith('.tif'):
             final = l
     ssh.close()
-
+    print("END")
     return final,error
 
 
@@ -266,7 +272,8 @@ def run_process(
 
 def process(date,bounds,pth,output,config_file,product,verbose=True):
     instance_id = [
-        'i-0414e78255d655284',#TODO: Add this information in the .env file
+        # 'i-0414e78255d655284',#TODO: Add this information in the .env file
+        'i-0b0bbadd82e9f700d',
         # "",                 #Here you can add more instances copy
         ]
     print("A")
@@ -306,15 +313,42 @@ def get_messages(tp,us,date,user,e="",process_time=""):
     else:
         raise TypeError(f"User or Type provided are not correct, please check: type={tp} user={us}")
     
-
-def send_emails(user,admin_email,date,tp="error",e="",users=["admin","user"],processtime=""):
+EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
+def send_emails(
+        self,
+        tp,
+        error="",
+        # user,
+        # admin_email,
+        # date,
+        # tp="error",
+        # e="",
+        # users=["admin","user"],
+        # processtime=""
+        ):
     
+    time_difference = self.updated_at-self.created_at
+
+    hours = time_difference.seconds // 3600
+    minutes = (time_difference.seconds % 3600) // 60
+    seconds = time_difference.seconds % 60
+    process_time = f"Total time of processing: {hours} hours, {minutes} minutes, {seconds} seconds"
+
+    
+    users=["admin","user"]
     for us in users:
-        emailto = admin_email if us=="admin" else user.email
+        emailto = EMAIL_HOST_USER if us=="admin" else self.user.email
         send_mail(
             f"DEEPFOREST: {tp} while processing",
-            get_messages(tp,us,date,user,e=e,process_time=processtime),
-            admin_email,
+            get_messages(
+                tp,
+                us,
+                self.date,
+                self.user,
+                e=error,
+                process_time=process_time
+                ),
+            EMAIL_HOST_USER,
             [emailto],
             fail_silently=False,
         )

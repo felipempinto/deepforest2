@@ -1,78 +1,34 @@
 from django.contrib.gis.db import models
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connections, OperationalError
-from django.contrib.gis.geos import GEOSGeometry
-from django.core.exceptions import ValidationError
 from django.conf import settings
-from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.core.files import File
+# from django.contrib.humanize.templatetags.humanize import naturaltime
+
 import django_rq
 
-from osgeo import gdal, osr
-from shapely.geometry import MultiPolygon,Polygon,shape
-from shapely.ops import transform
-import pyproj
-
 from botocore.exceptions import ClientError,ParamValidationError
-from botocore.config import Config
-import boto3
 import pandas as pd
 
-import uuid
-import os
+import json
 from datetime import datetime
 
 from users.models import User
 from main.models import Product,TilesProcessed
-from .processing import process,send_emails
-# from .download_and_process import process
+from .utils import (
+    get_upload_files,
+    get_upload_pth,
+    requestprocess,
+    STATUS_CHOICES,
+    get_mask_by_url,
+    read_text_file_from_s3,
+    s3_client,
+    )
 
-from PIL import Image
-from django.core.files import File
-import io
+
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
-EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
 
-my_config = Config(
-    region_name = settings.AWS_S3_REGION_NAME,
-    signature_version = 's3v4',
-)
-
-gdal.SetConfigOption('AWS_REGION', 'us-east-2')
-gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)
-gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY',settings.AWS_SECRET_ACCESS_KEY)
-
-s3_client = boto3.client('s3',
-                         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-                         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-                         config=my_config,
-                         )
-
-# def get_bounds(ds):
-#     xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
-#     width, height = ds.RasterXSize, ds.RasterYSize
-#     xmax = xmin + width * xpixel
-#     ymin = ymax + height * ypixel
-#     poly = Polygon(
-#             [
-#                 [xmin,ymax],
-#                 [xmax,ymax],
-#                 [xmax,ymin],
-#                 [xmin,ymin]
-#             ]
-#         )
-
-#     wgs84 = pyproj.CRS('EPSG:4326')
-#     utm = ds.GetProjection()
-
-#     project = pyproj.Transformer.from_crs(utm, wgs84,  always_xy=True).transform
-#     poly = transform(project, poly)
-#     return poly
-
-def get_upload_pth(instance, filename):
-    return f"models/{instance.product}/pth/{filename}"
-
-def get_upload_files(instance, filename):
-    return f"models/{instance.product}/files/{filename}"
 
 class TrainModel(models.Model):
     path = models.CharField(max_length=200)
@@ -88,21 +44,6 @@ class TrainModel(models.Model):
     encoder = models.CharField(max_length=50,default='resnet101')
     loss = models.CharField(max_length=50,default='dice')
     optimizer = models.CharField(max_length=50,default='adamw')
-
-
-def read_text_file_from_s3(url):
-    import requests
-    response = requests.get(url)
-    response.raise_for_status()  # Check if the request was successful
-
-    file_contents = response.json()
-    return file_contents
-
-# class Locations(models.Model):
-#     title = models.CharField(max_length=100,null=True, blank=True)
-#     geometry = models.PolygonField()
-#     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-#     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
 
 
 class ModelsTrained(models.Model):
@@ -148,10 +89,6 @@ class ModelsTrained(models.Model):
         df = pd.DataFrame(data)
         return df.to_dict()
 
-    # def read_test(self):
-    #     df = pd.read_csv(self.test_csv)
-    #     return df.to_dict()
-
     def __str__(self):
         return f'{self.product.name} version {self.version}'
 
@@ -159,12 +96,8 @@ class ModelsTrained(models.Model):
         
         super(ModelsTrained, self).save()
         if self.poly is None:
-            import json
-            from django.contrib.gis.geos import GEOSGeometry, Polygon, MultiPolygon
 
             content = read_text_file_from_s3(self.file_locations.url)
-            print("CONTENT")
-            print(type(content))
 
             geoms = []
             for ft in content["features"]:
@@ -174,129 +107,6 @@ class ModelsTrained(models.Model):
             multi = MultiPolygon(geoms)
             self.poly = GEOSGeometry(multi)
             self.save()
-            
-                # try:
-                #     if isinstance(geom, MultiPolygon):
-                #         continue
-                #     elif isinstance(geom, Polygon):
-                #         geom = MultiPolygon([geom])
-                #     else:
-                #         raise TypeError(
-                #             '{} not acceptable for this model'.format(geom.geom_type)
-                #         )
-                # except TypeError as e:
-                #     print(e)
-
-            
-            # # multi = content_to_multi(content)
-            # multi = GEOSGeometry(content)
-
-            # self.poly = GEOSGeometry(multi)
-            # self.save()
-            
-            # polys = []
-
-            # # with open(self.file_locations.url) as f:
-            # content = read_text_file_from_s3(self.file_locations.url)
-            # files = content.split('\n')
-            # files = [i for i in files if i.replace(' ','')!='']
-            # for file in files:
-            #     ds = gdal.Open(file)
-            #     bounds = get_bounds(ds)
-            #     polys.append(bounds)
-
-            # multi = MultiPolygon(polys)
-            # multi = GEOSGeometry(multi.wkt)#ogr.CreateGeometryFromWkt(bounds)
-
-            # self.poly = GEOSGeometry(multi)
-            # self.save()
-
-def requestprocess(self):
-    print("STARTING REQUEST PROCESS")
-    v = self.pth.version
-    product = self.pth.product.name.lower().replace(' ','')
-    pth = self.pth.get_pth()
-
-    config_file = self.pth.parameters.url
-    user = self.user.username
-    date = self.date_requested.strftime("%Y%m%d")
-    unique_id = uuid.uuid4().hex
-
-    output = f'processed/{user}/{product}/{v}/{date}/{unique_id}.tif'
-
-    try:
-        print("PROCESSING")
-        process_output = process(
-            date,
-            self.bounds.wkt,
-            pth,
-            output,
-            config_file,
-            product=product,
-            # verbose=True
-        )
-    except Exception as e:
-        print("OUT WITH ERROR")
-        tp = "error"
-        error_message = str(e)
-        self.status="ERROR"
-        self.done = True
-        self.name = os.path.basename(output).replace('.tif','')
-        # self.response = e
-        process_output = ""
-    else:
-        print("END PROCESS")
-        error_message = ""
-        tp = "sucess"
-        if self.name=='':
-            self.name = os.path.basename(output).replace('.tif','')
-        self.done = True
-        self.status = "DONE"
-        self.mask = output
-        # self.response = process_output
-
-    self.response = {
-        "run":"False",
-    }
-    self.response["final"] = process_output
-    self.response["error"] = error_message
-    print("SAVE inside",self.response)
-
-    for conn in connections.all():
-        if not conn.is_usable():
-            conn.close()
-            conn.connect()
-    self.save()
-    print("DONE SAVING inside")
-    
-    time_difference = self.updated_at-self.created_at
-
-    hours = time_difference.seconds // 3600
-    minutes = (time_difference.seconds % 3600) // 60
-    seconds = time_difference.seconds % 60
-    process_time = f"Total time of processing: {hours} hours, {minutes} minutes, {seconds} seconds"
-
-    send_emails(self.user,EMAIL_HOST_USER,date,tp=tp,e=error_message,users=["admin","user"],processtime = process_time)
-
-    TilesProcessed.update_from_s3(product)
-            
-def get_mask_by_url(url,expiration=1200):
-        try:
-            response = s3_client.generate_presigned_url('get_object',
-                                                    Params={'Bucket': BUCKET,
-                                                            'Key': url},
-                                                    ExpiresIn=expiration)
-        except (ClientError,ParamValidationError):
-            return None
-        else:
-            return response
-
-
-STATUS_CHOICES = (
-    ("PROCESSING","Processing"),
-    ("DONE","Done"),
-    ("ERROR","Error"),
-)
 
 class RequestProcess(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)
@@ -308,6 +118,8 @@ class RequestProcess(models.Model):
     status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
     date_requested = models.DateTimeField(default=datetime.now, blank=True)
     response = models.JSONField(blank=True,null=True)
+    png = models.FileField(blank=True,null=True)
+    bounds_png = models.CharField(max_length=200,blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -315,100 +127,14 @@ class RequestProcess(models.Model):
         return self.bounds.geojson
 
     def save(self, *args, **kwargs):
-        print("PRESAVE",args,kwargs)
         for conn in connections.all():
             if not conn.is_usable():
                 conn.close()
                 conn.connect()
         super(RequestProcess,self).save(*args, **kwargs)
-        print("POSTSAVE")
         if not self.done:
             job = django_rq.enqueue(requestprocess,args=(self,),timeout=99999)
 
     def get_mask(self,expiration=1200):
-        return get_mask_by_url(self.mask,expiration=expiration)
-        # try:
-        #     response = s3_client.generate_presigned_url('get_object',
-        #                                             Params={'Bucket': BUCKET,
-        #                                                     'Key': self.mask},
-        #                                             ExpiresIn=expiration)
-        # except (ClientError,ParamValidationError):
-        #     return None
-        # else:
-        #     return response
-    
-
-
-def get_bounds(ds):
-    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
-    width, height = ds.RasterXSize, ds.RasterYSize
-    xmax = xmin + width * xpixel
-    ymin = ymax + height * ypixel
-    poly = Polygon([[xmin, ymax], [xmax, ymax], [xmax, ymin], [xmin, ymin]])
-    proj = osr.SpatialReference(wkt=ds.GetProjection())
-    epsg = proj.GetAttrValue('AUTHORITY', 1)
-    if int(epsg) != 4326:
-
-        wgs84 = pyproj.CRS('EPSG:4326')
-        utm = ds.GetProjection()
-
-        project = pyproj.Transformer.from_crs(
-            utm, wgs84, always_xy=True
-        ).transform
-        poly = transform(project, poly)
-
-    return poly.bounds
-
-import numpy as np
-
-def convert_color(img_array):
-    if np.max(img_array) > 1:
-        img_array /= np.max(img_array)
-
-    unique_values = np.unique(img_array)
-    if len(unique_values) > 2 or (0 in unique_values and 1 not in unique_values):
-        color_map = {
-            0: (0, 0, 0),  
-            1: (0, 255, 0),  
-            2: (0, 0, 255),  
-            3: (255, 255, 0),
-            4: (255, 0, 255) 
-        }
-    else:
-        color_map = {
-            0: (0, 0, 0, 0),  
-            1: (0, 255, 0, 255)
-        }
-
-    rgb_image = np.zeros((*img_array.shape, 3 if len(color_map[0]) == 3 else 4), dtype=np.uint8)
-    for val, color in color_map.items():
-        rgb_image[img_array == val] = color
-    return rgb_image
-        
-class RequestVisualization(models.Model):
-    request = models.ForeignKey(RequestProcess,on_delete=models.CASCADE)
-    png = models.FileField(blank=True,null=True)
-    bounds = models.CharField(max_length=200,blank=True,null=True)
-
-    def get_png(self,expiration=1200):
-        return get_mask_by_url(self.png,expiration=expiration)
-    
-
-    def save(self):
-        NAME = self.request.mask
-        super(RequestVisualization, self).save()
-        if self.bounds is None:
-            img = gdal.Open(self.request.get_mask())
-            ar = img.ReadAsArray()
-
-            ar = convert_color(ar)
-
-            bounds = get_bounds(img)
-            im1 = Image.fromarray(ar)
-            with io.BytesIO() as buffer:
-                im1.save(buffer, format='PNG')
-                image_data = buffer.getvalue()
-            filename = NAME.replace('.tif', '.png')[1:]
-
-            self.bounds = ','.join([str(i) for i in bounds])
-            self.png.save(filename, File(io.BytesIO(image_data)))
+        mask = get_mask_by_url(self.mask,expiration=expiration)
+        return mask 

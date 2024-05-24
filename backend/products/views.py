@@ -3,27 +3,27 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-import pandas as pd
-
 from .models import ModelsTrained, RequestProcess
 from .serializers import *
 
 class RequestVisualizationListCreateAPIView(generics.ListCreateAPIView):
-    serializer_class = RequestVisualizationSerializer
+    serializer_class = VisualRequestProcessSerializer#RequestVisualizationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return RequestVisualization.objects.filter(request__user=self.request.user)
+        # return RequestVisualization.objects.filter(request__user=self.request.user)
+        return RequestProcess.objects.filter(request__user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(request__user=self.request.user)
 
 class RequestVisualizationRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = RequestVisualizationSerializer
+    serializer_class = VisualRequestProcessSerializer#RequestVisualizationSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return RequestVisualization.objects.filter(request__user=self.request.user)
+        # return RequestVisualization.objects.filter(request__user=self.request.user)
+        return RequestProcess.objects.filter(request__user=self.request.user)
 
 class TrainList(APIView):
     def get(self, request):
