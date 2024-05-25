@@ -86,14 +86,9 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         if request and request.method == 'GET':
             fields['pth'] = ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
 
-
             #GAMBIARRA MODE
             if request.user.username=="admin":
-                print("USER IS ADMIN (message from products.serializers.py)")
                 fields['pth'] = ModelsTrainedSerializer()
-            else:
-                print("USER IS NOT ADMIN (message from products.serializers.py)")
-
 
         return fields
 
