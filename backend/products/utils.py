@@ -118,7 +118,6 @@ def convert_color(img_array):
 
 
 def create_visual(im,name,self):
-    print(im)
     img = gdal.Open(im)
     ar = img.ReadAsArray()
 
@@ -139,7 +138,6 @@ def create_visual(im,name,self):
 
 
 def requestprocess(self):
-    print("STARTING REQUEST PROCESS")
     v = self.pth.version
     product = self.pth.product.name.lower().replace(' ','')
     pth = self.pth.get_pth()
@@ -187,7 +185,6 @@ def requestprocess(self):
     # TilesProcessed.update_from_s3(product)
             
 def get_mask_by_url(url,expiration=1200):
-        print("URL",url)
         try:
             response = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': BUCKET,

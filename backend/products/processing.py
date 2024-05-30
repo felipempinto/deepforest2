@@ -105,7 +105,10 @@ def connect_with_ssh(pem,ec2_name):
             ssh.connect(
             ec2_name,
             username='ubuntu', 
-            pkey=privkey
+            pkey=privkey,
+            allow_agent=False,
+            banner_timeout=200,  # Increase timeout
+            timeout=200,
         )
         except paramiko.ssh_exception.NoValidConnectionsError:
             print("Error with ssh connection, waiting 10 seconds")
@@ -117,8 +120,6 @@ def connect_with_ssh(pem,ec2_name):
             time.sleep(10)
         else:
             break
-
-
     return ssh
 
 
@@ -136,8 +137,6 @@ def run_process(
         ):
     ssh = connect_with_ssh(pem,ec2_name)
 
-    
-
     if mode=="production":
         arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
         if verbose:
@@ -152,6 +151,11 @@ def run_process(
 
     t1 = time.time()
     stdin, stdout, stderr = ssh.exec_command( cmd )
+    stdin.flush()
+    stdout.flush()
+    stderr.flush()
+    print("Pre exit status")
+    stdout.channel.recv_exit_status()
     if verbose:
         print("PROCESSING DONE")
     
@@ -276,12 +280,12 @@ def process(date,bounds,pth,output,config_file,product,verbose=True):
         'i-0b0bbadd82e9f700d',
         # "",                 #Here you can add more instances copy
         ]
+    print(f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm')
     print("A")
     for inst in instance_id:
         ec2 = get_instance(inst)
         if ec2 is not None:
-            break
-
+            break    
     print("B")
     if ec2 is None:
         raise Exception("The instances are not ready to be used")
@@ -289,7 +293,17 @@ def process(date,bounds,pth,output,config_file,product,verbose=True):
     ec2,ec2_name = ec2
     print("C")
     try:
-        final,error = run_process(date,bounds,pth,output,config_file,product,ec2_name,verbose=verbose)
+        final,error = run_process(
+            date,
+            bounds,
+            pth,
+            output,
+            config_file,
+            product,
+            ec2_name,
+            verbose=verbose,
+            mode="production"
+            )
     except Exception as e:
         ec2.stop_instances(InstanceIds=instance_id)
         raise Exception(e)
@@ -343,7 +357,7 @@ def send_emails(
             get_messages(
                 tp,
                 us,
-                self.date,
+                self.date_requested,
                 self.user,
                 e=error,
                 process_time=process_time

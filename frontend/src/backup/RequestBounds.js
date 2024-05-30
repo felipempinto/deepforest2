@@ -11,8 +11,7 @@ import { MapContainer,
          LayersControl,
          GeoJSON,
          useMap,
-         FeatureGroup,
-         Popup
+         FeatureGroup
         } from 'react-leaflet';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
@@ -28,7 +27,6 @@ import {
   // Link
 } from 'react-router-dom';
 import tileLayersData from './tileLayers.json';
-import { loadingPage } from './Loading';
 var parse = require('wellknown');
 // import { geojsondata } from '../features/products';
 // var parse = require('wellknown');
@@ -59,8 +57,8 @@ const getFootprints = async (date1, date2, bbox) => {
       );
 
       if (response.status === 200) {
-          console.log('Data fetched successfully:');
-          return response;
+          console.log('Data fetched successfully:', response.data);
+          return response.data;
       } else if (response.status === 204) {
           console.warn('No images found for the provided period.');
       } else {
@@ -100,14 +98,26 @@ const getFootprints = async (date1, date2, bbox) => {
 
 const MiniMap = ({
   filteredProduct,
+  // polygon,
   setPolygon,
-  data,
+  // featureGroupRef,
+  // geojsonPolygon,
+  // geojsonEnabled,
+  // tileLayers,
+  // // onPolygonCreated,
+  // geojsonData,
+  
 })=>{
   const [geojsonEnabled, setGeojsonEnabled] = useState(true);
   const wktPolygon = filteredProduct?.poly;
   const geojsonPolygon = wktPolygon ? parse(wktPolygon) : null;
+  // const fileInputRef = useRef(null);
+  // const [polygon, setPolygon] = useState('');
   const [geojsonData, ] = useState(null);
   const featureGroupRef = useRef(null);
+
+  // const [polygon, setPolygon] = useState('');
+
 
   const handleToggleGeojson = () => {
     setGeojsonEnabled((prevEnabled) => !prevEnabled);
@@ -126,8 +136,12 @@ const MiniMap = ({
   
       if (featureGroupRef.current) {
         featureGroupRef.current.removeLayer(layer);
-      } 
-      return; }
+      }
+  
+      return; 
+    }
+
+
     const areaMetersSquared = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]); // Calculate area in square meters
     const areaKilometersSquared = areaMetersSquared / 1000000; // Convert to square kilometers
     
@@ -153,6 +167,8 @@ const MiniMap = ({
     setPolygon(wktString);
   };
 
+
+
   const fitBounds = useCallback((map) => {
     if (geojsonPolygon && map) {
       const bounds = L.geoJSON(geojsonPolygon).getBounds();
@@ -164,6 +180,7 @@ const MiniMap = ({
     fitBounds();
   }, [fitBounds]);
 
+
   const MapComponent = () => {
     const map = useMap();
     fitBounds(map); 
@@ -173,27 +190,8 @@ const MiniMap = ({
     return null; 
   };
 
+
   const textLocationTrain = 'Locations used during the training phase'
-
-
-  const onEachFeature = (feature, layer) => {
-    if (feature.properties) {
-      // const { title, ContentType, ContentLength, PublicationDate, Checksum } = feature.properties;
-      // const { title, ContentType, ContentLength, PublicationDate} = feature.properties;
-      const {Name,OriginDate,ContentLength,Footprint} = feature.properties
-      // const md5Checksum = Checksum.find(c => c.Algorithm === 'MD5')?.Value;
-      // <p><strong>Checksum (MD5):</strong> ${md5Checksum}</p>
-      const popupContent = `
-        <div>
-          <p>${Name}</p>
-          <p><strong>Date:</strong> ${new Date(OriginDate).toLocaleString()}</p>
-          <p><strong>Footprint:</strong> ${Footprint}</p>
-          <p><strong>Content Length:</strong> ${ContentLength}</p>
-        </div>
-      `;
-      layer.bindPopup(popupContent);
-    }
-  };
 
   return (
     <>
@@ -222,17 +220,8 @@ const MiniMap = ({
       ))}
     </LayersControl>
     {geojsonPolygon && geojsonEnabled && (
-    <GeoJSON id="locations" data={geojsonPolygon} style={{ color: 'red' }} />
+    <GeoJSON data={geojsonPolygon} style={{ color: 'red' }} />
   )}
-    {/* <GeoJSON data={data} style={{ color: 'blue' }} /> */}
-    {data && data.features && data.features.length > 0 && (
-          <GeoJSON 
-            id="data" 
-            data={data} 
-            style={{ color: 'yellow' }}  
-            onEachFeature={onEachFeature}  />
-        )}
-  
     <ZoomControl position="bottomright" />
     <MapComponent /> 
     <FeatureGroup ref={featureGroupRef}>
@@ -257,19 +246,31 @@ const MiniMap = ({
 
 
 const Map = ({ filteredProduct }) => {
+  // const [geojsonEnabled, setGeojsonEnabled] = useState(true);
+  // const wktPolygon = filteredProduct?.poly;
+  // const geojsonPolygon = wktPolygon ? parse(wktPolygon) : null;
+  // // const fileInputRef = useRef(null);
+  // // const [polygon, setPolygon] = useState('');
+  // const [submitDisabled,setSubmitDisabled] = useState(false)
+  // const [geojsonData, ] = useState(null);
+  // const featureGroupRef = useRef(null);
+
+
 
   const dateRef1 = useRef(null);
   const dateRef2 = useRef(null);
   const [submitDisabled,setSubmitDisabled] = useState(false)
-  const [wait,setWait] = useState(false);
   const [polygon, setPolygon] = useState('');
-  const [data,setData] = useState([]);
-  // const [selected,setSelected] = ({});
   // const navigate = useNavigate();
   
   // const dispatch = useDispatch();
 
   // const user = useSelector((state) => state.user.user); 
+
+  const handleSubmit = ()=>{
+
+    
+  }
 
   useEffect(() => {
     M.Datepicker.init(dateRef1.current, {
@@ -289,20 +290,15 @@ const Map = ({ filteredProduct }) => {
       maxDate: new Date(),
       minDate: new Date(1900, 0, 1),
     });
+    // const label = document.querySelector('label[for="date-picker"]');
+    // M.Tooltip.init(label, { tooltip: 'We will select the closest ones if there is no image in the date selected' });
     const tooltips = document.querySelectorAll('.tooltipped');
     M.Tooltip.init(tooltips);
-
-    var options = {}
-    var elems = document.querySelectorAll('select');
-    M.FormSelect.init(elems, options);
   // }, []);
   })
 
-
-
-  const handleGetData = useCallback( async () => {
-    setData([])
-    setSubmitDisabled(true); 
+  const handleGetData = useCallback(() => {
+    // setSubmitDisabled(true); //TODO: uncomment after testing
     
     // const pth = filteredProduct.id;
     const bounds = polygon;
@@ -310,26 +306,19 @@ const Map = ({ filteredProduct }) => {
     const date2 = dateRef2.current.value;
     // const userId = user.id;
     if (!bounds || !date1 || !date2) {
+      console.log(bounds,date1,date2);
       alert('Please complete all fields');
-      setSubmitDisabled(false)
+      // setSubmitDisabled(false)//TODO: uncomment after testing
       return;
     }
-
-    // setWait(true)
-    var response = await getFootprints(date1,date2,bounds)
-    var obj = JSON.parse(response.data);
-    setData(obj)
-    setSubmitDisabled(false)
-    // setWait(false)
-    // setData(response);
-    // var geojson = parse(response)
-
+    var response = getFootprints(date1,date2,bounds)
+    console.log(response)
     // console.log(pth,bounds,date1,date2,userId);
     // dispatch(request({pth,bounds,date,userId}))
     // navigate('/requests');
   }, [
-      filteredProduct.id,
       // dispatch, 
+      filteredProduct.id, 
       polygon, 
       dateRef1, 
       dateRef2, 
@@ -337,45 +326,109 @@ const Map = ({ filteredProduct }) => {
     ]);
 
 
-  // const selectImages = <>
-  // <div className="input-field col s12">
-  //   <select multiple>
-  //     <option value="" disabled selected>Choose your option</option>
-  //     <option value="1">{data}</option>
-  //     {/* {data.map((d,index)=>{
-  //       <option value={index}>{d}</option>
-  //     })} */}
-  //     {/* <option value="1">Option 1</option>
-  //     <option value="2">Option 2</option>
-  //     <option value="3">Option 3</option> */}
-  //   </select>
-  //   <label>Images to process</label>
-  // </div>
-  // </>
+  // const fitBounds = useCallback((map) => {
+  //   if (geojsonPolygon && map) {
+  //     const bounds = L.geoJSON(geojsonPolygon).getBounds();
+  //     map.fitBounds(bounds);
+  //   }
+  // },[geojsonPolygon]);
 
-  const selectImages =  ()=>{
-    console.log(data)
-    if (data && data.features && data.features.length > 0)
-    return(
-    <div className="input-field col s12">
-      <select multiple>
-        <option value="" disabled selected>Choose your option</option>
-        {data.features.map((feature, index) => (
-          <option key={index} value={index}>{feature.properties.Name}</option>
-        ))}
-      </select>
-      <label>Images to process</label>
-    </div>
+  // const handleToggleGeojson = () => {
+  //   setGeojsonEnabled((prevEnabled) => !prevEnabled);
+  // };
 
-      )
-  }
+  // const handleGetData = ()=>{}
+    // var response = getFootprints(date1,date2,bounds)
+
+
+
+  // const handleRequest = useCallback(() => {
+  //   // setSubmitDisabled(true); //TODO: uncomment after testing
+    
+  //   const pth = filteredProduct.id;
+  //   const bounds = polygon;
+  //   const date1 = dateRef1.current.value;
+  //   const date2 = dateRef2.current.value;
+  //   const userId = user.id;
+  //   if (!pth || !bounds || !date1 || !date2 || !userId) {
+  //     console.log(pth,bounds,date1,date2,userId);
+  //     alert('Please complete all fields');
+  //     // setSubmitDisabled(false)//TODO: uncomment after testing
+  //     return;
+  //   }
+  //   var response = getFootprints(date1,date2,bounds)
+  //   console.log(response)
+  //   // console.log(pth,bounds,date1,date2,userId);
+  //   // dispatch(request({pth,bounds,date,userId}))
+  //   // navigate('/requests');
+  // }, [
+  //     dispatch, 
+  //     filteredProduct.id, 
+  //     polygon, 
+  //     dateRef1, 
+  //     dateRef2, 
+  //     user.id,navigate
+  //   ]);
+  // }, [dispatch]);
+
+  // const onPolygonCreated = (e) => {
+  //   const { layer } = e;
+
+  //   if (featureGroupRef.current && featureGroupRef.current.getLayers().length > 1) {
+  //     M.toast({
+  //       html: 'Only single geometries are allowed.',
+  //       classes: 'red rounded',
+  //       displayLength: 5000
+  //     });
   
+  //     if (featureGroupRef.current) {
+  //       featureGroupRef.current.removeLayer(layer);
+  //     }
   
+  //     return; 
+  //   }
+
+
+  //   const areaMetersSquared = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]); // Calculate area in square meters
+  //   const areaKilometersSquared = areaMetersSquared / 1000000; // Convert to square kilometers
+    
+  //   const maxArea = 110 * 110; // Maximum area in square kilometers
+  //   if (areaKilometersSquared > maxArea) {
+  //     const maxsize = `${110}x${110}`; // Max size string
+  //     const areasqkm = areaKilometersSquared.toFixed(2); // Rounded to 2 decimal places
+  //     M.toast({
+  //       html: `Area is larger than the maximum ${maxsize}, area requested: ${areasqkm} km²`,
+  //       classes: 'red rounded',
+  //       displayLength: 5000
+  //     });
+
+  //     if (featureGroupRef.current) {
+  //         featureGroupRef.current.clearLayers();
+  //       }
   
+  //     return; // Stop execution
+  //   }
+
+  //   const wktPolygon = layer.toGeoJSON().geometry;
+  //   const wktString = parse.stringify(wktPolygon);
+  //   setPolygon(wktString);
+  // };
+
+  // useEffect(() => {
+  //   fitBounds();
+  // }, [fitBounds]);
+
+  // const MapComponent = () => {
+  //   const map = useMap();
+  //   fitBounds(map); 
+  //   if (geojsonData) {
+  //     L.geoJSON(geojsonData).addTo(map);
+  //   }
+  //   return null; 
+  // };
 
   const textLocation = 'You can draw a polygon by selecting the polygon icon in the top right corner of the map'
   return (
-
     <div>
       <div className='row'>
         <div className='col s6'>
@@ -405,44 +458,72 @@ const Map = ({ filteredProduct }) => {
                data-tooltip={textLocation}>help
             </i>
       </h3>
+      {/* <button 
+        className='btn tooltipped' 
+        data-position="top" 
+        data-tooltip={textLocationTrain} 
+        onClick={handleToggleGeojson}
+      >
+        {geojsonEnabled ? 'Disable locations' : 'Enable locations'}
+      </button> */}
       </div>
       <MiniMap
         setPolygon={setPolygon}
         filteredProduct={filteredProduct}
-        data={data}
       />
 
-    {
-    data && data.features && data.features.length > 0 ? 
-    <>
-      {selectImages()}
+      {/* // featureGroupRef={featureGroupRef}
+      // geojsonPolygon={geojsonPolygon}
+      // geojsonEnabled={geojsonEnabled}
+      // tileLayers={tileLayers}
+      // // onPolygonCreated={onPolygonCreated}
+      // geojsonData={geojsonData} */}
+      
+      {/* <MapContainer
+        className="map-container map-container-request"
+        center={[51.505, -0.09]}
+        zoom={5}
+        zoomControl={false}
+        maxZoom={20}
+        minZoom={2}
+      >
+        <LayersControl position="bottomright">
+          {tileLayers.map((layer) => (
+            <LayersControl.BaseLayer checked name={layer.name} key={layer.key}>
+              <TileLayer url={layer.url} />
+            </LayersControl.BaseLayer>
+          ))}
+        </LayersControl>
+        {geojsonPolygon && geojsonEnabled && (
+        <GeoJSON data={geojsonPolygon} style={{ color: 'red' }} />
+      )}
+        <ZoomControl position="bottomright" />
+        <MapComponent /> 
+        <FeatureGroup ref={featureGroupRef}>
+          <EditControl
+            position="topright"
+            draw={{
+              rectangle: false,
+              circle: false,
+              marker: false,
+              polyline: false,
+              circlemarker: false,
+            }}
+            featureGroup={featureGroupRef.current}
+            onCreated={onPolygonCreated}
+          />
+        </FeatureGroup>
+      </MapContainer> */}
       <div className='center section'>
         <button 
           className='btn' 
-          onClick={()=>setData([])}
-        >
-          Clear Search
-        </button>
-        <button 
-          className='btn blue' 
-          // onClick={()=>setData([])}
-        >
-          Submit 
-        </button>
-      </div>
-    </>:
-      <div className='center section'>
-        <button 
-          className='btn' 
-          onClick={handleGetData}
+          onClick={handleGetData}//handleRequest} 
           disabled={submitDisabled}
         >
-          {submitDisabled ? 'Searching...' : 'Search'}
+          {submitDisabled ? 'Submitting...' : 'Submit'}
         </button>
-      </div>}
+      </div>
     </div>
-    
-    
   );
 };
 

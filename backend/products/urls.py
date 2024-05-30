@@ -18,4 +18,5 @@ urlpatterns = [
     path('train/', views.TrainList.as_view(), name='train'),
     path('request-visualizations/', views.RequestVisualizationListCreateAPIView.as_view(), name='request-visualization-list-create'),
     path('request-visualizations/<int:pk>/', views.RequestVisualizationRetrieveUpdateDestroyAPIView.as_view(), name='request-visualization-retrieve-update-destroy'),
+    path('get_data',views.GetData.as_view(),name="get_data")
 ]
