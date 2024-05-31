@@ -58,11 +58,8 @@ const getFootprints = async (date1, date2, bbox) => {
         }
       );
 
-      if (response.status === 200) {
-          console.log('Data fetched successfully:');
+      if (response.status === 200  || response.status === 204) {
           return response;
-      } else if (response.status === 204) {
-          console.warn('No images found for the provided period.');
       } else {
           console.error('Error fetching data:', response.status, response.statusText);
       }
@@ -317,6 +314,11 @@ const Map = ({ filteredProduct }) => {
 
     // setWait(true)
     var response = await getFootprints(date1,date2,bounds)
+    if (response.status===204){
+      window.alert("No images found for this period")
+      setSubmitDisabled(false)
+      return
+    }
     var obj = JSON.parse(response.data);
     setData(obj)
     setSubmitDisabled(false)
@@ -417,18 +419,18 @@ const Map = ({ filteredProduct }) => {
     <>
       {selectImages()}
       <div className='center section'>
-        <button 
+        <p><button 
           className='btn' 
           onClick={()=>setData([])}
         >
           Clear Search
-        </button>
-        <button 
+        </button></p>
+        <p><button 
           className='btn blue' 
           // onClick={()=>setData([])}
         >
           Submit 
-        </button>
+        </button></p>
       </div>
     </>:
       <div className='center section'>

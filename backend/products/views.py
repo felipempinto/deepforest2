@@ -110,16 +110,15 @@ def nearest(items, pivot):
 def select_images(gdf,bounds,date):
 
     bounds = shapely_loads(bounds.split(';')[-1])
-    bounds = list(bounds.geoms)[0]
-
-    gdf["OriginDate"] = pd.to_datetime(gdf["OriginDate"])
-    gdf["OriginDate"] = gdf["OriginDate"].dt.tz_localize(None)
+    # bounds = list(bounds.geoms)[0]
+    gdf["DATE"] = pd.to_datetime(gdf["OriginDate"].copy())
+    gdf["DATE"] = gdf["DATE"].dt.tz_localize(None)
     
     contains = gdf[gdf.contains(bounds)]
 
     if len(contains)>0:
-        near = nearest(contains['OriginDate'], date)
-        contains = contains[contains['OriginDate']==near]
+        near = nearest(contains['DATE'], date)
+        contains = contains[contains['DATE']==near]
         return contains.head(1)
 
     unique = pd.unique(gdf['tile'])
@@ -127,12 +126,12 @@ def select_images(gdf,bounds,date):
     names = []
     for u in unique:
         un = gdf[gdf['tile']==u]
-        near = nearest(un['OriginDate'], date)
-        un = un[un['OriginDate']==near]
-        names.append(un['title'][un.index[0]])
+        near = nearest(un['DATE'], date)
+        un = un[un['DATE']==near]
+        names.append(un['Name'][un.index[0]])
 
     n = len(gdf)        
-    gdf = gdf[gdf['title'].isin(names)] 
+    gdf = gdf[gdf['Name'].isin(names)] 
     return gdf
 
 class GetData(APIView):
@@ -189,11 +188,10 @@ class GetData(APIView):
         # gdf = gdf.drop('Checksum', axis=1)
         # gdf.to_file("Teste.geojson",driver="GeoJSON")
 
-        gdf = gdf[["Name","OriginDate","ContentLength","Footprint","geometry"]]
+        
         gdf["tile"] = gdf["Name"].str[33:44]
-
-
         selected = select_images(gdf,wkt,date2)
+        gdf = selected[["Name","OriginDate","ContentLength","Footprint","geometry"]]
         # output = {
         #     "original":gdf.to_json(),
         #     "selected":selected.to_json()
