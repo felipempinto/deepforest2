@@ -139,4 +139,25 @@ class RequestProcess(models.Model):
         mask = get_mask_by_url(self.mask,expiration=expiration)
         return mask 
 
+
+class RequestBounds(models.Model):
+    name = models.CharField(max_length=50,blank=True,null=True)
+    pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
+    mask = models.CharField(max_length=200,blank=True,null=True)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    done = models.BooleanField(default=False)
+    bounds = models.MultiPolygonField(null=True, blank=True)
+    status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
+    response = models.JSONField(blank=True,null=True)
+    png = models.FileField(blank=True,null=True)
+    bounds_png = models.CharField(max_length=200,blank=True,null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def geojson(self):
+        return self.bounds.geojson
+
+    def get_mask(self,expiration=1200):
+        mask = get_mask_by_url(self.mask,expiration=expiration)
+        return mask 
 # -d 20240508 -b "MULTIPOLYGON (((-51.564331 -27.431661, -51.784058 -27.655707, -51.586304 -27.830727, -51.333618 -27.60704, -51.564331 -27.431661)))" -p "https://s3.us-east-2.amazonaws.com/deepforestweb/static/models/Forest%20Mask/pth/net_JN05TTN.pth?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240525%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240525T001029Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=05620ab3c94a14ec7f60d36c50344dbc0b46396d21445c9641c6562717fce739" -o "processed/felipe/forestmask/0.0.0/20240508/c6a828a89f574d6eaa6cabe32ce0d258.tif" -c "https://s3.us-east-2.amazonaws.com/deepforestweb/static/models/Forest%20Mask/files/commandline_args_XqKLX8W.json?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240525%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240525T001029Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=6d803a7d75765cd45353eaa91ce2114665e7058eb57056b398d3f56a0665020c" -u forestmask --no-tqdm

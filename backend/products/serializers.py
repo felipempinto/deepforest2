@@ -5,7 +5,7 @@ from django.contrib.gis import geos
 import shapely.wkt as wkt
 from shapely.geometry import MultiPolygon
 
-from .models import ModelsTrained, RequestProcess,TrainModel#,RequestVisualization
+from .models import ModelsTrained, RequestProcess,TrainModel,RequestBounds#,RequestVisualization
 from .utils import check_area
 # from .download_and_process import check_area
 
@@ -93,7 +93,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         return fields
 
     class Meta:
-        model = RequestProcess
+        model = RequestBounds#RequestProcess
         fields = '__all__'
     
     def get_geojson(self,obj):
@@ -118,6 +118,7 @@ class RequestProcessSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(str(e))
 
     def create(self, validated_data):
+        print("CREATING")
         request = self.context.get('request')
         user = request.user if request else None
 

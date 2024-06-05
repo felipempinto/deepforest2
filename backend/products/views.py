@@ -12,7 +12,7 @@ from shapely.wkt import loads as shapely_loads
 import pandas as pd
 import geopandas as gpd
 
-from .models import ModelsTrained, RequestProcess
+from .models import ModelsTrained, RequestBounds#RequestProcess
 from .serializers import *
 
 class RequestVisualizationListCreateAPIView(generics.ListCreateAPIView):
@@ -58,6 +58,66 @@ class RequestProcessListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = RequestProcess.objects.all()
     serializer_class = RequestProcessSerializer
+
+class NewRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+
+    def post(self, request):
+        # Retrieve data from request body
+        pth = request.data.get('pth')
+        bounds = request.data.get('bounds')
+        files = request.data.get('files')
+        user_id = request.data.get('user')
+
+        print(pth,bounds,files,user_id)
+
+        request_data = {
+            'pth': pth,
+            'bounds': bounds,
+            'user_id': user_id,
+            "response":{"files":files},
+            # Add any other fields you need to populate
+        }
+        request_serializer = RequestProcessSerializer(data=request_data)
+        if request_serializer.is_valid():
+            request_instance = request_serializer.save()
+            return Response({'message': 'Request created successfully', 'request_id': request_instance.id}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
+
+        # RequestBounds(
+        #     pth=pth,
+        #     bounds=bounds,
+        #     response={"files":files},
+        #     user=user_id
+        # )
+
+        # RequestProcess()
+
+        # name            = models.CharField(max_length=50,blank=True,null=True)
+        # pth             = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
+        # mask            = models.CharField(max_length=200,blank=True,null=True)
+        # user            = models.ForeignKey(User,on_delete=models.CASCADE)
+        # done            = models.BooleanField(default=False)
+        # bounds          = models.MultiPolygonField(null=True, blank=True)
+        # date_requested  = models.DateTimeField(default=datetime.now, blank=True)
+        # response        = models.JSONField(blank=True,null=True)
+        # png             = models.FileField(blank=True,null=True)
+        # bounds_png      = models.CharField(max_length=200,blank=True,null=True)
+        # created_at      = models.DateTimeField(auto_now_add=True)
+        # updated_at      = models.DateTimeField(auto_now=True)
+
+        # Check if all required fields are present
+        if not all([pth, bounds, files, user_id]):
+            return Response({'message': 'Please provide all required fields'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Process the request data here...
+
+        return Response({'message': 'Request received successfully'}, status=status.HTTP_200_OK)
+
 
 class IsProcessingUser(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -186,7 +246,7 @@ class GetData(APIView):
         #     print(i,gdf[i])
         # print(gdf.to_json())
         # gdf = gdf.drop('Checksum', axis=1)
-        # gdf.to_file("Teste.geojson",driver="GeoJSON")
+        # gdf.to_file("Teste.geojson",drivr="GeoJSON")
 
         
         gdf["tile"] = gdf["Name"].str[33:44]

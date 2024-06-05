@@ -91,7 +91,22 @@ const getFootprints = async (date1, date2, bbox) => {
 //   // navigate('/requests');
 // }
 
-
+const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisabled) => {
+  // setSubmitDisabled(true); 
+  if (!pth || !bounds || !data || !userId) {
+    console.log(bounds,data,pth,userId);
+    alert('Please complete all fields');
+    // setSubmitDisabled(false)
+    return;
+  }
+  const files = []
+  data.features.map((file)=>{
+    files.push(file.properties.Name)
+  })
+  console.log(pth,bounds,files,userId);
+  dispatch(request({pth,bounds,files,userId}))
+  // navigate('/requests');
+}
 
 
 
@@ -262,11 +277,11 @@ const Map = ({ filteredProduct }) => {
   const [polygon, setPolygon] = useState('');
   const [data,setData] = useState([]);
   // const [selected,setSelected] = ({});
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-  // const user = useSelector((state) => state.user.user); 
+  const user = useSelector((state) => state.user.user); 
 
   useEffect(() => {
     M.Datepicker.init(dateRef1.current, {
@@ -320,6 +335,7 @@ const Map = ({ filteredProduct }) => {
       return
     }
     var obj = JSON.parse(response.data);
+    console.log(obj)
     setData(obj)
     setSubmitDisabled(false)
     // setWait(false)
@@ -338,42 +354,7 @@ const Map = ({ filteredProduct }) => {
       // navigate
     ]);
 
-
-  // const selectImages = <>
-  // <div className="input-field col s12">
-  //   <select multiple>
-  //     <option value="" disabled selected>Choose your option</option>
-  //     <option value="1">{data}</option>
-  //     {/* {data.map((d,index)=>{
-  //       <option value={index}>{d}</option>
-  //     })} */}
-  //     {/* <option value="1">Option 1</option>
-  //     <option value="2">Option 2</option>
-  //     <option value="3">Option 3</option> */}
-  //   </select>
-  //   <label>Images to process</label>
-  // </div>
-  // </>
-
-  const selectImages =  ()=>{
-    console.log(data)
-    if (data && data.features && data.features.length > 0)
-    return(
-    <div className="input-field col s12">
-      <select multiple>
-        <option value="" disabled selected>Choose your option</option>
-        {data.features.map((feature, index) => (
-          <option key={index} value={index}>{feature.properties.Name}</option>
-        ))}
-      </select>
-      <label>Images to process</label>
-    </div>
-
-      )
-  }
-  
-  
-  
+  const files = []
 
   const textLocation = 'You can draw a polygon by selecting the polygon icon in the top right corner of the map'
   return (
@@ -382,18 +363,18 @@ const Map = ({ filteredProduct }) => {
       <div className='row'>
         <div className='col s6'>
           <label htmlFor="date-picker-1">Date1:</label>
-          <input 
-            ref={dateRef1} 
-            type="text" 
-            id="date-picker-1" 
+          <input
+            ref={dateRef1}
+            type="text"
+            id="date-picker-1"
             className="datepicker"/>
         </div>
         <div className='col s6'>
           <label htmlFor="date-picker-2">Date2:</label>
-          <input 
-            ref={dateRef2} 
-            type="text" 
-            id="date-picker-2" 
+          <input
+            ref={dateRef2}
+            type="text"
+            id="date-picker-2"
             className="datepicker"
             />
         </div>
@@ -401,8 +382,8 @@ const Map = ({ filteredProduct }) => {
       <div className='section'>
       <h3 
         className="center">
-            Select a location 
-            <i className='material-icons tooltipped' 
+            Select a location
+            <i className='material-icons tooltipped'
                data-position="bottom"
                data-tooltip={textLocation}>help
             </i>
@@ -417,7 +398,6 @@ const Map = ({ filteredProduct }) => {
     {
     data && data.features && data.features.length > 0 ? 
     <>
-      {selectImages()}
       <div className='center section'>
         <p><button 
           className='btn' 
@@ -427,6 +407,20 @@ const Map = ({ filteredProduct }) => {
         </button></p>
         <p><button 
           className='btn blue' 
+          onClick={
+            ()=>{
+              handleRequest(
+                filteredProduct.id,
+                polygon,
+                data,
+                user.id,
+                dispatch,
+                navigate,
+                setSubmitDisabled
+              )
+            }
+            
+          }
           // onClick={()=>setData([])}
         >
           Submit 

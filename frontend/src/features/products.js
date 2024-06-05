@@ -144,19 +144,62 @@ export const deleteRequest = createAsyncThunk(
 	}
   );
 
+// export const request = createAsyncThunk(
+//   'products/request',
+//   async ({pth,bounds,date,userId},thunkAPI) => {
+
+//     const body = JSON.stringify({
+//       'pth':pth,
+//       'date_requested':date,
+//       'bounds':bounds,
+//       'user':userId
+//   });
+
+//     try {
+//       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/`, {
+//         method: 'POST',
+//         headers: {
+//           Accept: 'application/json',
+//           Authorization: `Bearer ${Cookies.get("access_token")}`,
+//           'Content-Type': 'application/json',
+//         },
+//         body,
+//         });
+//       // const res = await fetch('/api/products/request/', {
+//       //   method: 'POST',
+//       //   headers: {
+//       //     Accept: 'application/json',
+//       //     'Content-Type': 'application/json',
+//       //   },
+//       //   body,
+//       // });
+//       const data = await res.json();
+
+//       if (res.status === 200) {
+//         console.log(res)
+//         return data;
+//       } else {
+//         return thunkAPI.rejectWithValue(data);
+//       }
+//     } catch (err) {
+//       return thunkAPI.rejectWithValue(err.response.data);
+//     }
+//   }
+// );
+
 export const request = createAsyncThunk(
   'products/request',
-  async ({pth,bounds,date,userId},thunkAPI) => {
+  async ({pth,bounds,files,userId},thunkAPI) => {
 
     const body = JSON.stringify({
       'pth':pth,
-      'date_requested':date,
+      "files":files,
       'bounds':bounds,
       'user':userId
   });
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/request/`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -165,14 +208,6 @@ export const request = createAsyncThunk(
         },
         body,
         });
-      // const res = await fetch('/api/products/request/', {
-      //   method: 'POST',
-      //   headers: {
-      //     Accept: 'application/json',
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body,
-      // });
       const data = await res.json();
 
       if (res.status === 200) {
@@ -186,6 +221,8 @@ export const request = createAsyncThunk(
     }
   }
 );
+
+
 
 
 export const geojsondata = createAsyncThunk(
