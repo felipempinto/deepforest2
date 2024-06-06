@@ -104,7 +104,21 @@ const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisable
     files.push(file.properties.Name)
   })
   console.log(pth,bounds,files,userId);
-  dispatch(request({pth,bounds,files,userId}))
+  // dispatch(request({pth,bounds,files,userId}))
+  dispatch(request({ pth, bounds, files, userId }))
+  .then((response) => {
+    if (response.error) {
+      alert('An error occurred while processing your request');
+      console.log(response)
+      // Handle error message display here
+    } else {
+      navigate('/requests');
+    }
+  }).catch((error) => {
+    console.error('An error occurred:', error);
+    alert('An error occurred while processing your request');
+    // Handle error message display here
+  });
   // navigate('/requests');
 }
 

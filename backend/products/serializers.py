@@ -111,19 +111,16 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         if area>max_area:
             raise serializers.ValidationError(f'Polygon size is too big, maximum size allowed = {max_area}')
         multi = MultiPolygon([poly])
-
         try:
             return GEOSGeometry(multi.wkt)
         except (ValueError, TypeError, GEOSException) as e:
             raise serializers.ValidationError(str(e))
 
     def create(self, validated_data):
-        print("CREATING")
         request = self.context.get('request')
         user = request.user if request else None
 
         validated_data['user'] = user
-        # print("RUNNING WITH THE FOLLOWING DATA:",validated_data)
 
         return super().create(validated_data)
 
