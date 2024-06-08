@@ -124,40 +124,39 @@ def connect_with_ssh(pem,ec2_name):
 
 
 def run_process(
-        date,
-        bounds,
-        pth,
-        output,
-        config_file,
-        product,
+        # date,
+        # bounds,
+        # pth,
+        # output,
+        # config_file,
+        # product,
+        arguments,
         ec2_name,
         pem = 'Forestmaskkeys.pem',
-        mode="production",
+        mode="gdf",
         verbose=True
         ):
     ssh = connect_with_ssh(pem,ec2_name)
 
     if mode=="production":
-        arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
         if verbose:
             print("ARGS")
             print(arguments)
             print("#"*50)
         cmd = f'venv/bin/python3 deepforest_remote_process/process_selected.py {arguments}'
+    elif mode=="gdf":
+        cmd = f'venv/bin/python3 deepforest_remote_process/process_with_gdf.py {arguments}'
     elif mode == "test-error":
         cmd = f'python3 deepforest_remote_process/test.py e' #FOR ERROR
     elif mode == "test-sucess":
         cmd = f'python3 deepforest_remote_process/test.py s' #FOR SUCESS
 
-    t1 = time.time()
     stdin, stdout, stderr = ssh.exec_command( cmd )
-    stdin.flush()
-    stdout.flush()
-    stderr.flush()
-    print("Pre exit status")
-    stdout.channel.recv_exit_status()
-    if verbose:
-        print("PROCESSING DONE")
+    # stdin.flush()
+    # stdout.flush()
+    # stderr.flush()
+    # print("Pre exit status")
+    # stdout.channel.recv_exit_status()
     
     error = stderr.read().decode('utf-8')
     if error!='':
@@ -166,21 +165,16 @@ def run_process(
         # TQDM is passing here, if run using this ssh command, 
         # DO NOT USE TQDM
         raise Exception(error)
-    print(f"Total time of the processing: {datetime.timedelta(time.time()-t1)}")
-
+    
     stdin.flush()
-    print("flush")
     data = stdout.read().splitlines()
-    print("read")
     final = None
-    print("READING DATA FROM OUTPUTS INSIDE THE EC2")
 
     for line in data:
         l = line.decode('utf-8')
         if l.endswith('.tif'):
             final = l
     ssh.close()
-    print("END")
     return final,error
 
 
@@ -274,35 +268,35 @@ def run_process(
 #     return final,error
 
 
-def process(date,bounds,pth,output,config_file,product,verbose=True):
+# def process(date,bounds,pth,output,config_file,product,verbose=True):
+def process(arguments,mode,verbose=True):
     instance_id = [
         # 'i-0414e78255d655284',#TODO: Add this information in the .env file
         'i-0b0bbadd82e9f700d',
         # "",                 #Here you can add more instances copy
         ]
-    print(f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm')
-    print("A")
     for inst in instance_id:
         ec2 = get_instance(inst)
         if ec2 is not None:
             break    
-    print("B")
     if ec2 is None:
         raise Exception("The instances are not ready to be used")
 
     ec2,ec2_name = ec2
-    print("C")
+
+    # arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
     try:
         final,error = run_process(
-            date,
-            bounds,
-            pth,
-            output,
-            config_file,
-            product,
+            # date,
+            # bounds,
+            # pth,
+            # output,
+            # config_file,
+            # product,
+            arguments,
             ec2_name,
             verbose=verbose,
-            mode="production"
+            mode=mode#"production"
             )
     except Exception as e:
         ec2.stop_instances(InstanceIds=instance_id)

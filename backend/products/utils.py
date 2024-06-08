@@ -6,9 +6,9 @@ import numpy as np
 
 import pyproj
 from shapely.ops import transform
-from shapely.geometry import MultiPolygon,Polygon,shape
+from shapely.geometry import MultiPolygon,Polygon,shape,box
 from osgeo import gdal, osr
-
+import geopandas as gpd
 
 from botocore.exceptions import ClientError,ParamValidationError
 from botocore.config import Config
@@ -23,13 +23,14 @@ import requests
 
 from .processing import process,send_emails
 
+
 gdal.SetConfigOption('AWS_REGION', 'us-east-2')
 gdal.SetConfigOption('AWS_ACCESS_KEY_ID', settings.AWS_ACCESS_KEY_ID)
-gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY',settings.AWS_SECRET_ACCESS_KEY)
-
+gdal.SetConfigOption('AWS_SECRET_ACCESS_KEY', settings.AWS_SECRET_ACCESS_KEY)
+gdal.SetConfigOption('AWS_REQUEST_PAYER', 'requester')
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
-EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
+EMAIL_HOST_USER  = settings.EMAIL_HOST_USER
 
 my_config = Config(
     region_name = settings.AWS_S3_REGION_NAME,
@@ -195,9 +196,145 @@ def get_mask_by_url(url,expiration=1200):
         else:
             return response
 
+def get_bounds(ds):
+    xmin, xpixel, _, ymax, _, ypixel = ds.GetGeoTransform()
+    width, height = ds.RasterXSize, ds.RasterYSize
+    xmax = xmin + width * xpixel
+    ymin = ymax + height * ypixel
+    return xmin, ymin, xmax, ymax
 
-STATUS_CHOICES = (
-    ("PROCESSING","Processing"),
-    ("DONE","Done"),
-    ("ERROR","Error"),
-)
+def create_polygons(img,xsize,ysize,px_size,overlap=0.25):
+    xsize *= px_size
+    ysize *= px_size
+
+    xmin, ymin, xmax, ymax = get_bounds(img)
+
+    #TODO:
+    # Desenvolver metodo para calcular overlap.
+    n_x = (xmax-xmin)//xsize
+    x_overlap = (((xmax-xmin)%xsize)/n_x)*px_size
+
+    n_y = (ymax-ymin)//ysize
+    y_overlap = (((ymax-ymin)%ysize)/n_y)*px_size
+
+    stepx = xsize-x_overlap
+    stepy = ysize-y_overlap
+
+    polygons = []
+
+    x_ar = np.arange(xmin,xmax,stepx)
+    y_ar = np.arange(ymin,ymax,stepy)
+
+    for i in range(len(x_ar)):
+        for j in range(len(y_ar)):
+            if x_ar[i]<=xmin:
+                x_0 = xmin
+                x_1 = x_0 + xsize
+            else:
+                x_0 = x_ar[i]-x_overlap
+                x_1 = x_0+stepx+x_overlap
+
+            if x_1>xmax:
+                x_1 = xmax
+                x_0 = x_1 - xsize
+
+            if y_ar[j]<=ymin:
+                y_0 = ymin
+                y_1 = y_0 + ysize
+            else:
+                y_0 = y_ar[j] - y_overlap
+                y_1 = y_0+ stepy + y_overlap
+
+            if y_1 > ymax:
+                y_1 = ymax
+                y_0 = y_1 - ysize
+
+            polygons.append(
+                box(*[x_0,y_0,x_1,y_1])
+                )
+
+    return polygons
+
+def cvt_title_to_s3name(title):
+    s1 = title[39:41]
+    s2 = title[41]
+    s3 = title[42:44]
+    s4 = title[11:15]
+    s5 = int(title[15:17])
+    s6 = int(title[17:19])
+    return f's3://sentinel-s2-l2a/tiles/{s1}/{s2}/{s3}/{s4}/{s5}/{s6}/0/'
+
+def create_chips(
+        img_name,
+        size,
+        ):
+    s3path = cvt_title_to_s3name(img_name)
+    infile = s3path+"R10m/B02.jp2"
+    img = infile.replace('s3://','/vsis3/')
+    img_inp = gdal.Open(img)
+    res = img_inp.GetGeoTransform()[1]
+    proj = img_inp.GetProjection()
+    polygons = create_polygons(img_inp,size,size,res)
+
+    gdf = gpd.GeoDataFrame(
+        geometry=polygons
+        )
+    gdf.set_crs(proj,inplace=True)
+    gdf.to_crs(epsg=4326,inplace=True)
+    return gdf
+
+
+
+def newrequest(gdfs,request):
+    # print(gdfs)
+    # print(request)
+
+    v = request.pth.version
+    product = request.pth.product.name.lower().replace(' ','')
+    pth = request.pth.get_pth()
+
+    config_file = request.pth.parameters.url
+    user = request.user.username
+    bounds = request.bounds.wkt
+    
+    date = request.created_at.strftime("%Y%m%dT%H%M%S")
+    name = request.name
+
+    print(v,product,pth,config_file,user,date,name)
+    mode = "gdf"
+    request.response = {}
+    output = f'processed-v2/{user}/{product}/{v}/{date}/{name}.tif'
+    try:
+        # process_output = ""
+        arguments = f'-g {gdfs} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
+        process_output = process(
+            arguments,
+            mode,
+            # date,
+            # self.bounds.wkt,
+            # pth,
+            # output,
+            # config_file,
+            # product=product,
+        )
+    except Exception as e:
+        self.status="ERROR"        
+        self.response["error"] = str(e)
+        send_emails(self,"error",error=str(e))
+    else:
+        self.status = "DONE"
+        self.mask = output
+        mask = get_mask_by_url(output)
+        self = create_visual(mask,self.mask,self)
+        self.response["sucess"] = process_output
+        send_emails(self,"sucess")
+
+    self.name = os.path.basename(output).replace('.tif','')
+    self.done = True
+    
+    for conn in connections.all():
+        if not conn.is_usable():
+            conn.close()
+            conn.connect()
+
+    self.save()

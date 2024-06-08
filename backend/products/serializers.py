@@ -5,7 +5,12 @@ from django.contrib.gis import geos
 import shapely.wkt as wkt
 from shapely.geometry import MultiPolygon
 
-from .models import ModelsTrained, RequestProcess,TrainModel,RequestBounds#,RequestVisualization
+from .models import (
+                    ModelsTrained, 
+                    # RequestProcess,
+                    TrainModel,
+                    RequestBounds
+                    )#,RequestVisualization
 from .utils import check_area
 # from .download_and_process import check_area
 
@@ -62,7 +67,7 @@ class VisualRequestProcessSerializer(serializers.ModelSerializer):
     geojson = serializers.SerializerMethodField()
 
     class Meta:
-        model = RequestProcess
+        model = RequestBounds#RequestProcess
         fields = ["bounds","png","bounds_png","mask_url","geojson"]
 
     def get_mask_url(self, obj):

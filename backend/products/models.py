@@ -3,6 +3,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import connections, OperationalError
 from django.conf import settings
 from django.core.files import File
+from django.template.defaultfilters import slugify
 # from django.contrib.humanize.templatetags.humanize import naturaltime
 
 import django_rq
@@ -19,12 +20,23 @@ from .utils import (
     get_upload_files,
     get_upload_pth,
     requestprocess,
-    STATUS_CHOICES,
     get_mask_by_url,
     read_text_file_from_s3,
     s3_client,
     )
 
+
+STATUS_CHOICES = (
+    ("PROCESSING","Processing"),
+    ("DONE","Done"),
+    ("ERROR","Error"),
+)
+
+DATASOURCES= (
+    ("DRONE","Drone"),
+    ("AEROPHOTO","Aerophotogrametry"),
+    ("SATELLITE","Satellite"),
+)
 
 
 BUCKET = settings.AWS_STORAGE_BUCKET_NAME
@@ -108,37 +120,46 @@ class ModelsTrained(models.Model):
             self.poly = GEOSGeometry(multi)
             self.save()
 
-class RequestProcess(models.Model):
-    name = models.CharField(max_length=50,blank=True,null=True)
-    pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
-    mask = models.CharField(max_length=200,blank=True,null=True)
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    done = models.BooleanField(default=False)
-    bounds = models.MultiPolygonField(null=True, blank=True)
-    status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
-    date_requested = models.DateTimeField(default=datetime.now, blank=True)
-    response = models.JSONField(blank=True,null=True)
-    png = models.FileField(blank=True,null=True)
-    bounds_png = models.CharField(max_length=200,blank=True,null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+# class RequestProcess(models.Model):
+#     name = models.CharField(max_length=50,blank=True,null=True)
+#     pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
+#     mask = models.CharField(max_length=200,blank=True,null=True)
+#     user = models.ForeignKey(User,on_delete=models.CASCADE)
+#     done = models.BooleanField(default=False)
+#     bounds = models.MultiPolygonField(null=True, blank=True)
+#     status = models.CharField(max_length=10,choices=STATUS_CHOICES,default="PROCESSING")
+#     date_requested = models.DateTimeField(default=datetime.now, blank=True)
+#     response = models.JSONField(blank=True,null=True)
+#     png = models.FileField(blank=True,null=True)
+#     bounds_png = models.CharField(max_length=200,blank=True,null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
     
-    def geojson(self):
-        return self.bounds.geojson
+#     def geojson(self):
+#         return self.bounds.geojson
 
-    def save(self, *args, **kwargs):
-        for conn in connections.all():
-            if not conn.is_usable():
-                conn.close()
-                conn.connect()
-        super(RequestProcess,self).save(*args, **kwargs)
-        if not self.done:
-            job = django_rq.enqueue(requestprocess,args=(self,),timeout=99999)
+#     def save(self, *args, **kwargs):
+#         for conn in connections.all():
+#             if not conn.is_usable():
+#                 conn.close()
+#                 conn.connect()
+#         super(RequestProcess,self).save(*args, **kwargs)
+#         if not self.done:
+#             job = django_rq.enqueue(requestprocess,args=(self,),timeout=99999)
 
-    def get_mask(self,expiration=1200):
-        mask = get_mask_by_url(self.mask,expiration=expiration)
-        return mask 
+#     def get_mask(self,expiration=1200):
+#         mask = get_mask_by_url(self.mask,expiration=expiration)
+#         return mask 
 
+
+class Datasets(models.Model):
+    source = models.CharField(max_length=50,choices=DATASOURCES)
+    name = models.CharField(max_length=255)
+
+class CreateChip(models.Model):
+    source = models.ForeignKey(Datasets,on_delete=models.DO_NOTHING,blank=True,null=True)
+    name = models.CharField()
+    bands = models.JSONField(blank=True,null=True)
 
 class RequestBounds(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)
@@ -160,4 +181,22 @@ class RequestBounds(models.Model):
     def get_mask(self,expiration=1200):
         mask = get_mask_by_url(self.mask,expiration=expiration)
         return mask 
+    
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            self.name = f"newrequest-{
+                slugify(
+                datetime.now().strftime('%Y%m%dT%H:%M:%S')
+                )
+                }"
+        super(RequestBounds, self).save(*args, **kwargs)
 # -d 20240508 -b "MULTIPOLYGON (((-51.564331 -27.431661, -51.784058 -27.655707, -51.586304 -27.830727, -51.333618 -27.60704, -51.564331 -27.431661)))" -p "https://s3.us-east-2.amazonaws.com/deepforestweb/static/models/Forest%20Mask/pth/net_JN05TTN.pth?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240525%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240525T001029Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=05620ab3c94a14ec7f60d36c50344dbc0b46396d21445c9641c6562717fce739" -o "processed/felipe/forestmask/0.0.0/20240508/c6a828a89f574d6eaa6cabe32ce0d258.tif" -c "https://s3.us-east-2.amazonaws.com/deepforestweb/static/models/Forest%20Mask/files/commandline_args_XqKLX8W.json?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVHNKLCXSZQGFRLTK%2F20240525%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20240525T001029Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=6d803a7d75765cd45353eaa91ce2114665e7058eb57056b398d3f56a0665020c" -u forestmask --no-tqdm
+
+#TODO: Count number of requests done by user and their dates,
+# This will be good for pricing later
+
+class Requests(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    requests = models.IntegerField()
+    # date = ?

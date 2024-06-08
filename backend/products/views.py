@@ -12,7 +12,10 @@ from shapely.wkt import loads as shapely_loads
 import pandas as pd
 import geopandas as gpd
 
+import django_rq
+
 from users.models import User
+from .utils import create_chips,newrequest
 from .models import ModelsTrained, RequestBounds#RequestProcess
 from .serializers import *
 
@@ -22,7 +25,8 @@ class RequestVisualizationListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         # return RequestVisualization.objects.filter(request__user=self.request.user)
-        return RequestProcess.objects.filter(request__user=self.request.user)
+        # return RequestProcess.objects.filter(request__user=self.request.user)
+        return RequestBounds.objects.filter(request__user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(request__user=self.request.user)
@@ -33,7 +37,8 @@ class RequestVisualizationRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDe
 
     def get_queryset(self):
         # return RequestVisualization.objects.filter(request__user=self.request.user)
-        return RequestProcess.objects.filter(request__user=self.request.user)
+        # return RequestProcess.objects.filter(request__user=self.request.user)
+        return RequestBounds.objects.filter(request__user=self.request.user)
 
 class TrainList(APIView):
     def get(self, request):
@@ -57,24 +62,17 @@ class ModelsTrainedRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIVi
 
 class RequestProcessListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = RequestProcess.objects.all()
+    # queryset = RequestProcess.objects.all()
+    queryset = RequestBounds.objects.all()
     serializer_class = RequestProcessSerializer
 
 class NewRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
-
     def post(self, request):
-        # Retrieve data from request body
         pth = request.data.get('pth')
         bounds = request.data.get('bounds')
         files = request.data.get('files')
-        # user = request.data.get('user')
-        # user = request.user.id
-        print(pth,bounds,files,request.user.id)
-
-        # pth = ModelsTrained.objects.get(pk=pth)
-        # userObj = User.objects.get(pk=user)
 
         request_data = {
             'pth': pth,
@@ -83,21 +81,35 @@ class NewRequestView(APIView):
             "response":{"files":files},
         }
         request_serializer = RequestProcessSerializer(data=request_data, context={'request':request})
+
+        gdfs = {}
+        for file in files:
+            gdf = create_chips(file,size=256)
+            # gdf["data"] = [file]*len(gdf)    
+            gdfs[file] = gdf.to_json()
+
         if request_serializer.is_valid():
             request_instance = request_serializer.save()
-            return Response({'message': 'Request created successfully', 'request_id': request_instance.id}, status=status.HTTP_201_CREATED)
+            job = django_rq.enqueue(
+                newrequest,
+                args=(gdfs,request_instance)
+                )
+            return Response(
+                {'message': 'Request created successfully', 
+                 'request_id': request_instance.id}, 
+                 status=status.HTTP_201_CREATED)
         else:
             return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class IsProcessingUser(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        print("ADMIN",request.user.username)
         permission = request.user.username == "admin"
         return permission
 
 class RequestProcessRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated,IsProcessingUser]
-    queryset = RequestProcess.objects.all()
+    # queryset = RequestProcess.objects.all()
+    queryset = RequestBounds.objects.all()
     serializer_class = RequestProcessSerializer
 
 class RequestProcessUserListView(generics.ListAPIView):
@@ -106,7 +118,8 @@ class RequestProcessUserListView(generics.ListAPIView):
 
     def get_queryset(self):
         user_id = self.request.user.id
-        queryset = RequestProcess.objects.filter(user_id=user_id).order_by('-created_at')
+        # queryset = RequestProcess.objects.filter(user_id=user_id).order_by('-created_at')
+        queryset = RequestBounds.objects.filter(user_id=user_id).order_by('-created_at')
         return queryset
 
 
@@ -126,10 +139,12 @@ class GeoJSONUploadView(APIView):
 class RequestProcessDeleteView(APIView):
     def delete(self, request, pk):
         try:
-            request_process = RequestProcess.objects.get(pk=pk)
+            # request_process = RequestProcess.objects.get(pk=pk)
+            request_process = RequestBounds.objects.get(pk=pk)
             request_process.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        except RequestProcess.DoesNotExist:
+        # except RequestProcess.DoesNotExist:
+        except RequestBounds.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 from datetime import datetime
@@ -207,25 +222,10 @@ class GetData(APIView):
 
         gdf = gpd.GeoDataFrame(df,geometry=geom)
         gdf.set_crs(epsg=4326,inplace=True)
-
-        # columns = ["Id","Name","OriginDate","S3Path","ContentLength","geometry"]
-        # gdf = gdf[columns]
-
-        # gdf.rename(columns={"Name":"title"},inplace=True)
-        # for i in gdf.columns:
-        #     print(i,gdf[i])
-        # print(gdf.to_json())
-        # gdf = gdf.drop('Checksum', axis=1)
-        # gdf.to_file("Teste.geojson",drivr="GeoJSON")
-
         
         gdf["tile"] = gdf["Name"].str[33:44]
         selected = select_images(gdf,wkt,date2)
         gdf = selected[["Name","OriginDate","ContentLength","Footprint","geometry"]]
-        # output = {
-        #     "original":gdf.to_json(),
-        #     "selected":selected.to_json()
-        # }
 
         output = gdf.to_json()
         return Response(output,status=status.HTTP_200_OK)
