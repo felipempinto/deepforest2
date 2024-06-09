@@ -285,6 +285,18 @@ def create_chips(
 
 
 
+def process_local(arguments,mode):
+    python = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/venv/bin/python"
+    code = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/process_with_gdf.py"
+    cmd = f'{python} {code} {arguments}'
+
+    # os.system(cmd)
+    import subprocess
+ 
+    result = subprocess.check_output(cmd, shell=True, text=True)
+    print(result)
+    
+
 def newrequest(gdfs,request):
     # print(gdfs)
     # print(request)
@@ -307,34 +319,35 @@ def newrequest(gdfs,request):
     try:
         # process_output = ""
         arguments = f'-g {gdfs} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
-        process_output = process(
-            arguments,
-            mode,
-            # date,
-            # self.bounds.wkt,
-            # pth,
-            # output,
-            # config_file,
-            # product=product,
-        )
+        # process_output = process(
+        #     arguments,
+        #     mode,
+        #     # date,
+        #     # self.bounds.wkt,
+        #     # pth,
+        #     # output,
+        #     # config_file,
+        #     # product=product,
+        # )
+        process_output = process_local(arguments,mode)
     except Exception as e:
-        self.status="ERROR"        
-        self.response["error"] = str(e)
-        send_emails(self,"error",error=str(e))
+        request.status="ERROR"        
+        request.response["error"] = str(e)
+        send_emails(request,"error",error=str(e))
     else:
-        self.status = "DONE"
-        self.mask = output
+        request.status = "DONE"
+        request.mask = output
         mask = get_mask_by_url(output)
-        self = create_visual(mask,self.mask,self)
-        self.response["sucess"] = process_output
-        send_emails(self,"sucess")
+        request = create_visual(mask,request.mask,request)
+        request.response["sucess"] = process_output
+        send_emails(request,"sucess")
 
-    self.name = os.path.basename(output).replace('.tif','')
-    self.done = True
+    request.name = os.path.basename(output).replace('.tif','')
+    request.done = True
     
     for conn in connections.all():
         if not conn.is_usable():
             conn.close()
             conn.connect()
 
-    self.save()
+    request.save()

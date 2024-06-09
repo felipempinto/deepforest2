@@ -304,9 +304,6 @@ def process(arguments,mode,verbose=True):
     else:
         ec2.stop_instances(InstanceIds=instance_id)
         return final,error
-        
-        
-# run_on_instance()
 
 
 def get_messages(tp,us,date,user,e="",process_time=""):
@@ -326,13 +323,6 @@ def send_emails(
         self,
         tp,
         error="",
-        # user,
-        # admin_email,
-        # date,
-        # tp="error",
-        # e="",
-        # users=["admin","user"],
-        # processtime=""
         ):
     
     time_difference = self.updated_at-self.created_at
@@ -351,7 +341,7 @@ def send_emails(
             get_messages(
                 tp,
                 us,
-                self.date_requested,
+                self.created_at,
                 self.user,
                 e=error,
                 process_time=process_time
