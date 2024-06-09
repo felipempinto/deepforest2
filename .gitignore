@@ -1,3 +1,4 @@
 .localfiles
 frontend/.env
 .env.test
+*.pyc

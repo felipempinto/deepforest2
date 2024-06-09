@@ -53,7 +53,7 @@ class ModelsTrainedListCreateView(generics.ListCreateAPIView):
 
 class ModelsTrainedDataViewSet(viewsets.ModelViewSet):
     queryset = ModelsTrained.objects.all()
-    serializer_class = ModelsTrainedDataSerializer
+    serializer_class = ModelsTrainedSerializer#ModelsTrainedDataSerializer
 
 class ModelsTrainedRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
@@ -82,17 +82,38 @@ class NewRequestView(APIView):
         }
         request_serializer = RequestProcessSerializer(data=request_data, context={'request':request})
 
-        gdfs = {}
-        for file in files:
-            gdf = create_chips(file,size=256)
-            # gdf["data"] = [file]*len(gdf)    
-            gdfs[file] = gdf.to_json()
+        try:
+            pth_instance = ModelsTrained.objects.get(id=pth)
+        except ModelsTrained.DoesNotExist:
+            return Response({'error': 'Invalid pth ID'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # gdfs = {}
+        # for file in files:
+        #     gdf = create_chips(file,size=256)
+        #     # gdf["data"] = [file]*len(gdf)    
+        #     gdfs[file] = gdf.to_json()
+        # product = request_serializer.pth.product
+        # version = request_serializer.pth.version
+
+        # data = {
+        #     "bounds":bounds,
+        #     "product":product,
+        #     "version":version,
+
+        #     }
         if request_serializer.is_valid():
             request_instance = request_serializer.save()
+            product = pth_instance.product.name
+            version = pth_instance.version
+            data = {
+                "bounds": bounds,
+                "product": product,
+                "version": version,
+                "images": files,
+            }
             job = django_rq.enqueue(
                 newrequest,
-                args=(gdfs,request_instance)
+                args=(data,request_instance)
                 )
             return Response(
                 {'message': 'Request created successfully', 

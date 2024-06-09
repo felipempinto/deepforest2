@@ -68,29 +68,6 @@ const getFootprints = async (date1, date2, bbox) => {
   }
 };
 
-
-
-// const handleRequest = ({bounds,date1,date2,setSubmitDisabled}) => {
-//   // setSubmitDisabled(true); //TODO: uncomment after testing
-//   // const pth = filteredProduct.id;
-//   // const bounds = polygon;
-//   // const date1 = dateRef1.current.value;
-//   // const date2 = dateRef2.current.value;
-//   // const userId = user.id;
-//   // if (!pth || !bounds || !date1 || !date2 || !userId) {
-//   if (!bounds || !date1 || !date2) {
-//     console.log(bounds,date1,date2);
-//     alert('Please complete all fields');
-//     // setSubmitDisabled(false)//TODO: uncomment after testing
-//     return;
-//   }
-//   var response = getFootprints(date1,date2,bounds)
-//   return response
-//   // console.log(pth,bounds,date1,date2,userId);
-//   // dispatch(request({pth,bounds,date,userId}))
-//   // navigate('/requests');
-// }
-
 const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisabled) => {
   // setSubmitDisabled(true); 
   if (!pth || !bounds || !data || !userId) {
@@ -500,7 +477,8 @@ function RequestBounds() {
       </select>
     </div>
   );
-
+  console.log(products)
+  
   const uniqueProducts = [...new Set(products.map(product => product.product))];  
   const filteredProduct = filteredVersions.find((product) => product.version === selectedVersion);
   useEffect(() => {

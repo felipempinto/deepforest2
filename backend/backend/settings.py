@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     'main',
     'users',
     'products',
-    'forestmask',
+    # 'forestmask',
     'storages',
     'rest_framework',
     'rest_framework_simplejwt',

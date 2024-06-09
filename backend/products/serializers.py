@@ -26,15 +26,15 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
         model = ModelsTrained
         fields = '__all__'
 
-class ModelsTrainedDataSerializer(serializers.ModelSerializer):
-    product = serializers.StringRelatedField()
-    # train_data = serializers.SerializerMethodField()
-    # test_data = serializers.SerializerMethodField()
-    # data = serializers.SerializerMethodField()
+# class ModelsTrainedDataSerializer(serializers.ModelSerializer):
+#     product = serializers.StringRelatedField()
+#     # train_data = serializers.SerializerMethodField()
+#     # test_data = serializers.SerializerMethodField()
+#     # data = serializers.SerializerMethodField()
 
-    class Meta:
-        model = ModelsTrained
-        exclude = ("pth_path","pth")
+#     class Meta:
+#         model = ModelsTrained
+#         exclude = ("pth_path","pth")
 
     # def get_data(self, obj):
     #     return obj.read_data()
@@ -89,11 +89,11 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         request = self.context.get('request')
         if request and request.method == 'GET':
-            fields['pth'] = ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
+            fields['pth'] = ModelsTrainedSerializer()#ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
 
             #GAMBIARRA MODE
-            if request.user.username=="admin":
-                fields['pth'] = ModelsTrainedSerializer()
+            # if request.user.username=="admin":
+                # fields['pth'] = ModelsTrainedSerializer()
 
         return fields
 

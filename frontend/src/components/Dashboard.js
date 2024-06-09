@@ -65,6 +65,10 @@ function Dashboard() {
                     <div className='col-2'>Email:</div>
                     <div className='col'>{user.email}</div>
                   </div>
+                  <div className='row'>
+                    <div className='col-2'>Requests:</div>
+                    <div className='col'>{user.request}</div>
+                  </div>
                 </div>
               </div>
               {!confirmDelete ? (

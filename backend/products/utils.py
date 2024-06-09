@@ -289,6 +289,7 @@ def process_local(arguments,mode):
     python = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/venv/bin/python"
     code = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/process_with_gdf.py"
     cmd = f'{python} {code} {arguments}'
+    print(cmd)
 
     # os.system(cmd)
     import subprocess
@@ -297,37 +298,31 @@ def process_local(arguments,mode):
     print(result)
     
 
-def newrequest(gdfs,request):
+def newrequest(data,request):
     # print(gdfs)
     # print(request)
 
-    v = request.pth.version
-    product = request.pth.product.name.lower().replace(' ','')
-    pth = request.pth.get_pth()
+    version = data["version"]
+    product = data["product"]#request.pth.product.name.lower().replace(' ','')
+    images = ",".join(data["images"])
+    # pth = request.pth.get_pth()
 
-    config_file = request.pth.parameters.url
+    # config_file = request.pth.parameters.url
     user = request.user.username
     bounds = request.bounds.wkt
     
     date = request.created_at.strftime("%Y%m%dT%H%M%S")
     name = request.name
 
-    print(v,product,pth,config_file,user,date,name)
-    mode = "gdf"
+    print(version,product,user,date,name)
+    mode = "data"
     request.response = {}
-    output = f'processed-v2/{user}/{product}/{v}/{date}/{name}.tif'
+    output = f'requests/{user}/{product}/{version}/{date}/{name}.tif'
     try:
-        # process_output = ""
-        arguments = f'-g {gdfs} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
+        arguments = f'-i {images} -b "{bounds}" -p "{product}" -v "{version}" -o "{output}" --no-tqdm'
         # process_output = process(
         #     arguments,
         #     mode,
-        #     # date,
-        #     # self.bounds.wkt,
-        #     # pth,
-        #     # output,
-        #     # config_file,
-        #     # product=product,
         # )
         process_output = process_local(arguments,mode)
     except Exception as e:
@@ -345,9 +340,9 @@ def newrequest(gdfs,request):
     request.name = os.path.basename(output).replace('.tif','')
     request.done = True
     
-    for conn in connections.all():
-        if not conn.is_usable():
-            conn.close()
-            conn.connect()
+    # for conn in connections.all():
+    #     if not conn.is_usable():
+    #         conn.close()
+    #         conn.connect()
 
     request.save()
