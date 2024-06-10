@@ -286,8 +286,8 @@ def create_chips(
 
 
 def process_local(arguments,mode):
-    python = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/venv/bin/python"
-    code = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/deepforest_processlocal/process_with_gdf.py"
+    python = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/processingDFNew/venv/bin/python"
+    code = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/processingDFNew/process.py"
     cmd = f'{python} {code} {arguments}'
     print(cmd)
 

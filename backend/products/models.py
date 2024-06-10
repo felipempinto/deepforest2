@@ -91,7 +91,7 @@ class ModelsTrained(models.Model):
 
 class RequestBounds(models.Model):
     name = models.CharField(max_length=50,blank=True,null=True)
-    pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE,blank=True,null=True)
+    pth = models.ForeignKey(ModelsTrained,on_delete=models.CASCADE)
     mask = models.CharField(max_length=200,blank=True,null=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
     done = models.BooleanField(default=False)
@@ -118,7 +118,7 @@ class RequestBounds(models.Model):
 
 # #TODO: Count number of requests done by user and their dates,
 # # This will be good for pricing later
-# class Requests(models.Model):
-#     user = models.ForeignKey(User,on_delete=models.CASCADE)
-#     requests = models.IntegerField()
-#     # date = ?
+class RequestsHistoric(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    product = models.ForeignKey(ModelsTrained,on_delete=models.DO_NOTHING,blank=True,null=True)

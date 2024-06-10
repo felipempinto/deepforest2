@@ -55,7 +55,7 @@ class UserSerializer(serializers.ModelSerializer):
     model = User
     # model = get_user_model()
     # fields = ('username', 'email',)
-    fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture']
+    fields = "__all__"#['id', 'username', 'email', 'first_name', 'last_name', 'profile_picture']
     # read_only_fields = ()
 
 
