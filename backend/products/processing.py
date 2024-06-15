@@ -7,6 +7,8 @@ from django.core.mail import send_mail
 import json
 
 EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
+INSTANCES = settings.INSTANCES
+EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
 
 def get_aws(name):
     if name=="ec2":
@@ -35,22 +37,6 @@ def stop_instance(instance):
     ec2 = get_aws("ec2")
     ec2.stop_instances(InstanceIds=instance)
 
-# def get_name(inst):
-
-#     client = get_aws("ec2")
-#     #TODO: 
-#     # Não ta conseguindo encontrar a instancia se ela é parada após essa
-#     # função ser chamada, precisa encontrar uma solução.
-
-#     response = client.describe_instances(InstanceIds = inst)
-#     # with open('dataAAA.json', 'w') as f:
-#     #     a = json.dumps(response, indent=4, sort_keys=True, default=str)
-#     #     json.dump(a, f)
-        
-#     foo = response['Reservations'][0]['Instances'][0]['NetworkInterfaces'][0]['Association']['PublicDnsName']
-#     return foo
-
-
 def get_name(ec2,instance_id):
     while True:
         try:
@@ -63,11 +49,7 @@ def get_name(ec2,instance_id):
             return ec2_name
 
 
-def get_instance(
-                # ec2,
-                # instance_id=['i-0414e78255d655284'],
-                instance_id = 'i-0414e78255d655284',
-                ):
+def get_instance(instance_id):
     
     ec2 = get_aws("ec2")
     
@@ -78,16 +60,12 @@ def get_instance(
     
     response = response['InstanceStatuses'][0]['InstanceState']['Name'] 
     response_status = response == 'stopped'
-    print("RESPOSE",response)
     if not response_status:
         return 
     else:
         ec2.start_instances(InstanceIds=[instance_id])
-        print("Instance is starting...")
-        t1 = time.time()
         waiter = ec2.get_waiter('instance_running')
         waiter.wait(InstanceIds=[instance_id])
-        print(f"It took {time.time()-t1} seconds to turn on the instance.")
 
         ec2_name = get_name(ec2,instance_id)
 
@@ -124,40 +102,15 @@ def connect_with_ssh(pem,ec2_name):
 
 
 def run_process(
-        # date,
-        # bounds,
-        # pth,
-        # output,
-        # config_file,
-        # product,
         arguments,
         ec2_name,
         pem = 'Forestmaskkeys.pem',
-        mode="gdf",
-        verbose=True
         ):
     ssh = connect_with_ssh(pem,ec2_name)
 
-    if mode=="production":
-        if verbose:
-            print("ARGS")
-            print(arguments)
-            print("#"*50)
-        cmd = f'venv/bin/python3 deepforest_remote_process/process_selected.py {arguments}'
-    elif mode=="gdf":
-        cmd = f'venv/bin/python3 deepforest_remote_process/process_with_gdf.py {arguments}'
-    elif mode == "test-error":
-        cmd = f'python3 deepforest_remote_process/test.py e' #FOR ERROR
-    elif mode == "test-sucess":
-        cmd = f'python3 deepforest_remote_process/test.py s' #FOR SUCESS
-
+    cmd = f'/home/ubuntu/venv/bin/python processingDFNew/process.py {arguments}'
     stdin, stdout, stderr = ssh.exec_command( cmd )
-    # stdin.flush()
-    # stdout.flush()
-    # stderr.flush()
-    # print("Pre exit status")
-    # stdout.channel.recv_exit_status()
-    
+
     error = stderr.read().decode('utf-8')
     if error!='':
         # print("Returning on error")
@@ -177,106 +130,9 @@ def run_process(
     ssh.close()
     return final,error
 
-
-# def run_process(
-#         date,
-#         bounds,
-#         pth,
-#         output,
-#         config_file,
-#         product,
-#         ec2,# = get_aws("ec2")
-#         ec2_name,
-#         pem = 'Forestmaskkeys.pem',
-#         instance_id=['i-0414e78255d655284'],
-#         verbose=True
-#         ):
-
-#     response = ec2.describe_instance_status(InstanceIds=instance_id,
-#         IncludeAllInstances=True
-#     )
-
-#     response = response['InstanceStatuses'][0]['InstanceState']['Name'] 
-#     response_status = response == 'stopped'
-#     # response_status = response == 'running'
-#     # response_stopping = response == 'stopping'
-
-#     while response_stopping:
-#         if verbose:
-#             print("Waiting 10 seconds until instance stops")
-#         time.sleep(10)
-        
-#         response = response['InstanceStatuses'][0]['InstanceState']['Name'] 
-#         response_status = response == 'running'
-#         response_stopping = response == 'stopping'
-        
-#     if not response_status and not response_stopping:
-#         ec2.start_instances(InstanceIds=instance_id)
-#         if verbose:
-#             t1 = time.time()
-#             print("Instance is starting...")
-#         waiter = ec2.get_waiter('instance_running')
-#         waiter.wait(InstanceIds=instance_id)
-#         if verbose:
-#             print(f"It took {time.time()-t1} seconds to turn on the instance.")
-
-#     ssh = paramiko.SSHClient()
-#     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-#     privkey = paramiko.RSAKey.from_private_key_file(pem)
-
-#     while True:
-#         try:
-#             ssh.connect(
-#             # get_name(instance_id),
-#             ec2_name,
-#             username='ubuntu', 
-#             pkey=privkey
-#         )
-#         except paramiko.ssh_exception.NoValidConnectionsError:
-#             print("Error with ssh connection, waiting 10 seconds")
-#             time.sleep(10)
-#         except paramiko.ssh_exception.SSHException:
-#             raise paramiko.ssh_exception.SSHException("Error when connecting the instance with SSH, please, check the ")
-#         except KeyError:
-#             print("Error with the response keys (probably recently closed), waiting 10 seconds")
-#             time.sleep(10)
-#         else:
-#             break
-
-#     arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product}'
-#     print(arguments)
-#     stdin, stdout, stderr = ssh.exec_command(
-#         f'python3 deepforest_remote_process/process_selected.py {arguments}'
-#         # f'python3 deepforest_remote_process/test.py s' #FOR SUCESS
-#         # f'python3 deepforest_remote_process/test.py e' #FOR ERROR
-#         )
-#     error = stderr.read().decode('utf-8')
-#     if error!='':
-#         raise Exception(error)
-
-#     stdin.flush()
-#     data = stdout.read().splitlines()
-#     final = None
-
-#     for line in data:
-#         l = line.decode('utf-8')
-#         if l.endswith('.tif'):
-#             final = l
-#     ssh.close()
-
-#     # ec2.stop_instances(InstanceIds=instance_id)
-#     return final,error
-
-
-# def process(date,bounds,pth,output,config_file,product,verbose=True):
-def process(arguments,mode,verbose=True):
-    instance_id = [
-        # 'i-0414e78255d655284',#TODO: Add this information in the .env file
-        'i-0b0bbadd82e9f700d',
-        # "",                 #Here you can add more instances copy
-        ]
-    for inst in instance_id:
-        ec2 = get_instance(inst)
+def process(arguments):
+    for instance_id in INSTANCES:
+        ec2 = get_instance(instance_id)
         if ec2 is not None:
             break    
     if ec2 is None:
@@ -284,25 +140,13 @@ def process(arguments,mode,verbose=True):
 
     ec2,ec2_name = ec2
 
-    # arguments = f'-d {date} -b "{bounds}" -p "{pth}" -o "{output}" -c "{config_file}" -u {product} --no-tqdm'
     try:
-        final,error = run_process(
-            # date,
-            # bounds,
-            # pth,
-            # output,
-            # config_file,
-            # product,
-            arguments,
-            ec2_name,
-            verbose=verbose,
-            mode=mode#"production"
-            )
+        final,error = run_process(arguments,ec2_name)
     except Exception as e:
-        ec2.stop_instances(InstanceIds=instance_id)
+        ec2.stop_instances(InstanceIds=[instance_id])
         raise Exception(e)
     else:
-        ec2.stop_instances(InstanceIds=instance_id)
+        ec2.stop_instances(InstanceIds=[instance_id])
         return final,error
 
 
@@ -318,7 +162,7 @@ def get_messages(tp,us,date,user,e="",process_time=""):
     else:
         raise TypeError(f"User or Type provided are not correct, please check: type={tp} user={us}")
     
-EMAIL_HOST_USER  = settings.EMAIL_HOST_USER 
+
 def send_emails(
         self,
         tp,

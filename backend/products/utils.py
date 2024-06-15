@@ -285,7 +285,7 @@ def create_chips(
 
 
 
-def process_local(arguments,mode):
+def process_local(arguments):
     python = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/processingDFNew/venv/bin/python"
     code = "/media/felipe/3dbf30eb-9bce-46d8-a833-ec990ba72625/Documentos/websites/processingDFNew/process.py"
     cmd = f'{python} {code} {arguments}'
@@ -299,32 +299,24 @@ def process_local(arguments,mode):
     
 
 def newrequest(data,request):
-    # print(gdfs)
-    # print(request)
 
     version = data["version"]
-    product = data["product"]#request.pth.product.name.lower().replace(' ','')
+    product = data["product"]
     images = ",".join(data["images"])
-    # pth = request.pth.get_pth()
-
-    # config_file = request.pth.parameters.url
+    
     user = request.user.username
     bounds = request.bounds.wkt
     
     date = request.created_at.strftime("%Y%m%dT%H%M%S")
     name = request.name
 
-    print(version,product,user,date,name)
-    mode = "data"
     request.response = {}
     output = f'requests/{user}/{product}/{version}/{date}/{name}.tif'
     try:
         arguments = f'-i {images} -b "{bounds}" -p "{product}" -v "{version}" -o "{output}" --no-tqdm'
-        # process_output = process(
-        #     arguments,
-        #     mode,
-        # )
-        process_output = process_local(arguments,mode)
+        print(arguments)
+        process_output = process(arguments)
+        # process_output = process_local(arguments,mode)
     except Exception as e:
         request.status="ERROR"        
         request.response["error"] = str(e)

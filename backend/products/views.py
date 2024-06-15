@@ -80,7 +80,10 @@ class NewRequestView(APIView):
             'user': request.user.id,
             "response":{"files":files},
         }
-        request_serializer = RequestProcessSerializer(data=request_data, context={'request':request})
+        request_serializer = RequestProcessSerializer(
+            data=request_data, 
+            context={'request':request}
+            )
 
         try:
             pth_instance = ModelsTrained.objects.get(id=pth)

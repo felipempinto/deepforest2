@@ -9,11 +9,10 @@ def user_created_request(sender, instance, created, **kwargs):
         user.request += 1
         user.save()
 
-
         RequestsHistoric.objects.create(
-        user=instance.user,
-        date=sender.created_at,
-        product=sender.product
+            user=instance.user,
+            date=instance.created_at,
+            product=instance.pth 
         )
 
         
