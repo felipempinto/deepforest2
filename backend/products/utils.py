@@ -297,7 +297,7 @@ def process_local(arguments):
     result = subprocess.check_output(cmd, shell=True, text=True)
     print(result)
     
-
+TESTLOCAL=True#False
 def newrequest(data,request):
 
     version = data["version"]
@@ -315,8 +315,11 @@ def newrequest(data,request):
     try:
         arguments = f'-i {images} -b "{bounds}" -p "{product}" -v "{version}" -o "{output}" --no-tqdm'
         print(arguments)
-        process_output = process(arguments)
-        # process_output = process_local(arguments,mode)
+        if TESTLOCAL:
+            print("TESTING LOCALLY")
+            process_output = process_local(arguments)
+        else:
+            process_output = process(arguments)
     except Exception as e:
         request.status="ERROR"        
         request.response["error"] = str(e)
@@ -338,3 +341,12 @@ def newrequest(data,request):
     #         conn.connect()
 
     request.save()
+
+
+
+# -i S2B_MSIL2A_20240506T133149_N0510_R081_T22JCR_20240506T154438.SAFE 
+# -b "MULTIPOLYGON (((-52.875773 -26.216487, -52.967735 -26.289769, -52.977343 -26.410984, -52.931362 -26.470621, -52.824316 -26.507495, -52.75157 -26.482299, -52.671275 -26.410984, -52.659608 -26.332855, -52.68981 -26.257753, -52.812655 -26.214639, -52.875773 -26.216487)))" 
+# -p "Forest Mask" 
+# -v "v0.0.0" 
+# -o "requests/felipe/Forest Mask/v0.0.0/20240616T175449/newrequest-20240616t175449.tif" 
+# --no-tqdm

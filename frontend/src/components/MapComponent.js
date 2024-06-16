@@ -14,18 +14,8 @@ import tileLayersData from './tileLayers.json';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import { useEffect, useState } from "react";
 
-function formatBytes(bytes, decimals = 2) {
-    if (!+bytes) return '0 Bytes'
-  
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-  
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-  }
 
-const SideNav = ({data,setData})=>{
+const SideNav = ({data,setData,mapInstance})=>{
 
     const [isSideNavOpen,setIsSideNavOpen] = useState(true)
 
@@ -68,6 +58,10 @@ const SideNav = ({data,setData})=>{
         }));
     };
 
+    const zoomToLayer = (item) => {  
+        mapInstance.flyToBounds(convertBounds(item.bounds_png));
+      };
+
     const handleGeojsonCheckboxChange = (id, checked) => {
         setData(data.map(item => {
             if (item.id === id) {
@@ -84,10 +78,10 @@ const SideNav = ({data,setData})=>{
                     data.map((item, index) => (
                         <React.Fragment key={`collapsible-${index}`}>
                             <div className="collapsible">
-                                <li key={`list-item-${index}`}>
-                                    <div className="collapsible-header">
+                                <li className='row' key={`list-item-${index}`}>
+                                    <div className="col s10 collapsible-header">
                                         <i className="material-icons">filter_drama</i>
-                                        {item.id}
+                                        {item.name}
                                     </div>
                                     <div className="collapsible-body">
                                         <table>
@@ -98,7 +92,8 @@ const SideNav = ({data,setData})=>{
                                                             <input
                                                                 type="checkbox"
                                                                 checked={item.rasterEnabled}
-                                                                onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)} />
+                                                                onChange={
+                                e => handleRasterCheckboxChange(item.id, e.target.checked)} />
                                                             <span>Raster</span>
                                                         </label>
                                                     </td>
@@ -109,7 +104,8 @@ const SideNav = ({data,setData})=>{
                                                             <input
                                                                 type="checkbox"
                                                                 checked={item.geojsonEnabled}
-                                                                onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
+                                                                onChange={
+                                e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
                                                             <span>GeoJSON</span>
                                                         </label>
                                                     </td>
@@ -117,6 +113,7 @@ const SideNav = ({data,setData})=>{
                                             </tbody>
                                         </table>
                                     </div>
+                                    <a onClick={()=>zoomToLayer(item)} className='col s2' ><i className='material-icons'>zoom_out_map</i></a>
                                 </li>
                             </div>
                         </React.Fragment>
@@ -135,7 +132,35 @@ const SideNav = ({data,setData})=>{
     );
 }
 
-const MapComponent = ({data,setData})=>{
+const convertBounds = (boundsStr) => {
+    const boundsArray = boundsStr.split(',').map(Number);
+    return [
+        [boundsArray[1], boundsArray[0]], 
+        [boundsArray[3], boundsArray[2]]  
+    ];
+};
+
+const MapComponent = ({userRequests})=>{
+
+    const [data,setData] = useState([])
+    const [dataCreated,setDataCreated] = useState(false)
+    const [mapInstance, setMapInstance] = useState(null);
+
+    useEffect(() => {
+        if (!dataCreated && userRequests.length>0) {
+            const filteredRequests = userRequests
+                .filter((item) => item.png)
+                .map((item) => ({
+                    ...item,
+                    rasterEnabled: false,
+                    geojsonEnabled: false
+                }));
+            console.log(filteredRequests)
+            setData(filteredRequests);
+            setDataCreated(true);
+
+        }
+    }, [dataCreated, userRequests]);
 
     const tileLayers = tileLayersData.map((layer) => ({
         key: layer.key,
@@ -144,47 +169,57 @@ const MapComponent = ({data,setData})=>{
       }));
 
     return <>
-    <MapContainer 
-            className='map-container' 
-            center={[51.505, -0.09]} 
-            zoom={5} 
-            zoomControl={false}
-            maxZoom={20} 
-            minZoom={2}>
-            <LayersControl position="bottomright">
-            {tileLayers.map((layer, index) => (
-                <LayersControl.BaseLayer checked name={layer.name} key={index}>
-                <TileLayer url={layer.url} key={index}/>
-                </LayersControl.BaseLayer>
-            ))}
-            </LayersControl>
+    {dataCreated &&
+        <MapContainer 
+        className='map-container' 
+        ref={(map) => {
+            if (map && !mapInstance) {
+              setMapInstance(map);
+            }
+          }}
+        center={[51.505, -0.09]} 
+        zoom={5} 
+        zoomControl={false}
+        maxZoom={20} 
+        minZoom={2}>
+        <LayersControl position="bottomright">
+        {tileLayers.map((layer, index) => (
+            <LayersControl.BaseLayer checked name={layer.name} key={index}>
+            <TileLayer url={layer.url} key={index}/>
+            </LayersControl.BaseLayer>
+        ))}
+        </LayersControl>
 
-            {data && data.map((item, i) => (
-                <React.Fragment key={`map-item-${i}`}>
-                    {item.rasterEnabled && (
+        {data && data.length>0 && data.map((item, i) => (
+            <React.Fragment key={`map-item-${i}`}>
+                {item.rasterEnabled && (
                         <ImageOverlay
-                            url={item.raster}
-                            bounds={item.rasterBounds}
+                            url={item.png}
+                            bounds={convertBounds(item.bounds_png)}
                             // zIndex={1000}
                             key={`raster-${i}`}
                         />
-                    )}
-                    {item.geojsonEnabled && (
+
+                )}
+                {item.geojsonEnabled && (
+
                         <GeoJSON
                             id={`geojson-${i}`}
                             key={`geojson-${i}`}
-                            data={item.geojson}
-                            // style={{ zIndex: 20000 }}
+                            data={JSON.parse(item.geojson)}
+                            style={{ zIndex: 20000 }}
                         />
-                    )}
-                    
-                </React.Fragment>
-            ))}
+                )}
+                
+            </React.Fragment>
+        ))}
         <SideNav
-            data={data}
-            setData={setData}
+        data={data}
+        setData={setData}
+        mapInstance={mapInstance}
         />
         </MapContainer>
+    }
     </>
 }
 

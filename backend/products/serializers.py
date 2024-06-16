@@ -26,37 +26,6 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
         model = ModelsTrained
         fields = '__all__'
 
-# class ModelsTrainedDataSerializer(serializers.ModelSerializer):
-#     product = serializers.StringRelatedField()
-#     # train_data = serializers.SerializerMethodField()
-#     # test_data = serializers.SerializerMethodField()
-#     # data = serializers.SerializerMethodField()
-
-#     class Meta:
-#         model = ModelsTrained
-#         exclude = ("pth_path","pth")
-
-    # def get_data(self, obj):
-    #     return obj.read_data()
-    
-    # def get_train_data(self, obj):
-    #     return obj.read_train()
-
-    # def get_test_data(self, obj):
-    #     return obj.read_test()
-
-# # This one is separated to be able to show data in the /products page.
-# class ModelsTrainedDataSerializer(serializers.ModelSerializer):
-#     id = serializers.IntegerField()
-#     model_data = ModelsTrainedSerializer()
-#     parsed_data = serializers.ListField()
-
-#     def to_representation(self, instance):
-#         return {
-#             'id': instance['id'],
-#             'model_data': ModelsTrainedDataSerializer(instance['model_data']).data,
-#             'parsed_data': instance['parsed_data'],
-#         }
         
 class GeoJSONSerializer(serializers.Serializer):
     geojsonData = serializers.JSONField()
@@ -67,8 +36,8 @@ class VisualRequestProcessSerializer(serializers.ModelSerializer):
     geojson = serializers.SerializerMethodField()
 
     class Meta:
-        model = RequestBounds#RequestProcess
-        fields = ["bounds","png","bounds_png","mask_url","geojson"]
+        model = RequestBounds
+        fields = ["id","name","bounds","png","bounds_png","mask_url","geojson"]
 
     def get_mask_url(self, obj):
         mask_url = obj.get_mask()
@@ -78,10 +47,8 @@ class VisualRequestProcessSerializer(serializers.ModelSerializer):
         geojson = obj.bounds.geojson
         return geojson
 
-
 class RequestProcessSerializer(serializers.ModelSerializer):
 
-    # pth = ModelsTrainedSerializer()
     mask_url = serializers.SerializerMethodField()
     geojson = serializers.SerializerMethodField()
 
@@ -89,16 +56,12 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         fields = super().get_fields()
         request = self.context.get('request')
         if request and request.method == 'GET':
-            fields['pth'] = ModelsTrainedSerializer()#ModelsTrainedDataSerializer()#ModelsTrainedSerializer()
-
-            #GAMBIARRA MODE
-            # if request.user.username=="admin":
-                # fields['pth'] = ModelsTrainedSerializer()
+            fields['pth'] = ModelsTrainedSerializer()
 
         return fields
 
     class Meta:
-        model = RequestBounds#RequestProcess
+        model = RequestBounds
         fields = '__all__'
     
     def get_geojson(self,obj):
@@ -128,32 +91,3 @@ class RequestProcessSerializer(serializers.ModelSerializer):
         validated_data['user'] = user
 
         return super().create(validated_data)
-
-#TODO: Add this again if needed or change the one above.
-# class RequestProcessSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = RequestProcess
-#         fields = ('id', 'name', 'pth', 'mask', 'user', 'done', 'bounds', 'date_requested', 'created_at', 'updated_at')
-
-# class RequestVisualizationSerializer(serializers.ModelSerializer):
-#     request = RequestProcessSerializer()
-
-#     class Meta:
-#         model = RequestVisualization
-#         fields = ('id', 'request', 'png', 'bounds')
-
-#     def create(self, validated_data):
-#         request_data = validated_data.pop('request')
-#         request = RequestProcess.objects.create(**request_data)
-#         visualization = RequestVisualization.objects.create(request=request, **validated_data)
-#         return visualization
-
-#     def update(self, instance, validated_data):
-#         request_data = validated_data.pop('request')
-#         request_serializer = RequestProcessSerializer(instance.request, data=request_data)
-#         if request_serializer.is_valid():
-#             request_serializer.save()
-#         instance.png = validated_data.get('png', instance.png)
-#         instance.bounds = validated_data.get('bounds', instance.bounds)
-#         instance.save()
-#         return instance

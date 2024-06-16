@@ -24,9 +24,8 @@ class RequestVisualizationListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # return RequestVisualization.objects.filter(request__user=self.request.user)
-        # return RequestProcess.objects.filter(request__user=self.request.user)
-        return RequestBounds.objects.filter(request__user=self.request.user)
+        bounds = RequestBounds.objects.filter(user=self.request.user)
+        return bounds
 
     def perform_create(self, serializer):
         serializer.save(request__user=self.request.user)
@@ -90,20 +89,6 @@ class NewRequestView(APIView):
         except ModelsTrained.DoesNotExist:
             return Response({'error': 'Invalid pth ID'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # gdfs = {}
-        # for file in files:
-        #     gdf = create_chips(file,size=256)
-        #     # gdf["data"] = [file]*len(gdf)    
-        #     gdfs[file] = gdf.to_json()
-        # product = request_serializer.pth.product
-        # version = request_serializer.pth.version
-
-        # data = {
-        #     "bounds":bounds,
-        #     "product":product,
-        #     "version":version,
-
-        #     }
         if request_serializer.is_valid():
             request_instance = request_serializer.save()
             product = pth_instance.product.name
@@ -211,7 +196,6 @@ class GetData(APIView):
             wkt = wkt.replace("'","")
             return shapely_loads(wkt)
         
-
         d1 = request.data.get('date1', None)
         d2 = request.data.get('date2', None)
         wkt = request.data.get('bbox', None)
@@ -221,7 +205,6 @@ class GetData(APIView):
 
         if date1>date2:
             return Response({"error":"Date 1 should not be after Date 2"},status=status.HTTP_400_BAD_REQUEST)
-
         cloud = 1.0
 
         main_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$"
@@ -247,9 +230,14 @@ class GetData(APIView):
         gdf = gpd.GeoDataFrame(df,geometry=geom)
         gdf.set_crs(epsg=4326,inplace=True)
         
-        gdf["tile"] = gdf["Name"].str[33:44]
+        gdf["tile"] = gdf["Name"].str[38:44]#.str[33:44]
+        
         selected = select_images(gdf,wkt,date2)
-        gdf = selected[["Name","OriginDate","ContentLength","Footprint","geometry"]]
-
+        gdf = selected[["Name","tile","OriginDate","ContentLength","Footprint","geometry"]]
+        
         output = gdf.to_json()
         return Response(output,status=status.HTTP_200_OK)
+
+
+
+# -i S2B_MSIL2A_20240506T133149_N0510_R081_T22JCS_20240506T154438.SAFE,S2B_MSIL2A_20240506T133149_N0510_R081_T22JBR_20240506T154438.SAFE,S2B_MSIL2A_20240506T133149_N0510_R081_T22JCR_20240506T154438.SAFE,S2A_MSIL2A_20240613T133841_N0510_R124_T22JCR_20240613T201452.SAFE,S2A_MSIL2A_20240613T133841_N0510_R124_T21JZM_20240613T201452.SAFE,S2A_MSIL2A_20240531T133151_N0510_R081_T22JBS_20240531T201553.SAFE,S2A_MSIL2A_20240613T133841_N0510_R124_T22JCS_20240613T201452.SAFE,S2A_MSIL2A_20240613T133841_N0510_R124_T22JBS_20240613T201452.SAFE,S2A_MSIL2A_20240531T133151_N0510_R081_T21JZM_20240531T201553.SAFE -b "MULTIPOLYGON (((-52.864494 -26.20174, -52.962685 -26.21899, -52.966805 -26.303351, -52.923546 -26.447915, -52.842522 -26.46021, -52.759438 -26.423321, -52.688713 -26.361813, -52.699013 -26.294733, -52.741585 -26.203589, -52.864494 -26.20174)))" -p "Forest Mask" -v "v0.0.0" -o "requests/felipe/Forest Mask/v0.0.0/20240615T194942/newrequest-20240615t194942.tif" --no-tqdm
