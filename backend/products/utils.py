@@ -297,7 +297,7 @@ def process_local(arguments):
     result = subprocess.check_output(cmd, shell=True, text=True)
     print(result)
     
-TESTLOCAL=True#False
+TESTLOCAL=False
 def newrequest(data,request):
 
     version = data["version"]
@@ -325,13 +325,15 @@ def newrequest(data,request):
         request.response["error"] = str(e)
         send_emails(request,"error",error=str(e))
     else:
+
         request.status = "DONE"
         request.mask = output
         mask = get_mask_by_url(output)
         request = create_visual(mask,request.mask,request)
-        request.response["sucess"] = process_output
+        request.response["output"] = process_output
         send_emails(request,"sucess")
 
+    ##TODO: Check if image exists, if not, ONLY THEN return error
     request.name = os.path.basename(output).replace('.tif','')
     request.done = True
     

@@ -14,6 +14,14 @@ import tileLayersData from './tileLayers.json';
 import M from 'materialize-css/dist/js/materialize.min.js';
 import { useEffect, useState } from "react";
 
+const convertBounds = (boundsStr) => {
+    const boundsArray = boundsStr.split(',').map(Number);
+    return [
+        [boundsArray[1], boundsArray[0]], 
+        [boundsArray[3], boundsArray[2]]  
+    ];
+};
+
 
 const SideNav = ({data,setData,mapInstance})=>{
 
@@ -34,18 +42,12 @@ const SideNav = ({data,setData,mapInstance})=>{
     },[]);
 
     const handleToggleButton = ()=>{
-        const elem = document.getElementById("slide-out");
-        var instance = M.Sidenav.getInstance(elem);
-        
-
-        if (isSideNavOpen){
-            instance.close();
-            setIsSideNavOpen(false)
-        }
-        else{
-            instance.open();
-            setIsSideNavOpen(true)
-        }
+        setIsSideNavOpen(!isSideNavOpen)
+        // if (isSideNavOpen){
+        //     setIsSideNavOpen(false)
+        // }
+        // else{
+        //     setIsSideNavOpen(true)}
         
     }
 
@@ -72,73 +74,61 @@ const SideNav = ({data,setData,mapInstance})=>{
     };
     return (
         <div>
-            <ul id="slide-out" className="sidenav  sidenav-container">
-                <h5>Your data:</h5>
+            <div className={`side-bar-map-visual ${isSideNavOpen?'active':null}`}>
+                <h5 className='center'>Your data:</h5>
                 {data &&
                     data.map((item, index) => (
-                        <React.Fragment key={`collapsible-${index}`}>
-                            <div className="collapsible">
-                                <li className='row' key={`list-item-${index}`}>
-                                    <div className="col s10 collapsible-header">
-                                        <i className="material-icons">filter_drama</i>
-                                        {item.name}
+
+                        <ul className="collapsible">
+                            <li key={`list-item-${index}`}>
+                                <div className="collapsible-header">
+                                    {item.name}
+                                </div>
+                                <div className="collapsible-body collapsible-body-style ">
+                                    <div className="collapsible-item">
+                                        <p>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={item.rasterEnabled}
+                                                    onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)} />
+                                                <span>Raster</span>
+                                            </label>
+                                        </p>
                                     </div>
-                                    <div className="collapsible-body">
-                                        <table>
-                                            <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <label>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={item.rasterEnabled}
-                                                                onChange={
-                                e => handleRasterCheckboxChange(item.id, e.target.checked)} />
-                                                            <span>Raster</span>
-                                                        </label>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <label>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={item.geojsonEnabled}
-                                                                onChange={
-                                e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
-                                                            <span>GeoJSON</span>
-                                                        </label>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                    <div className="collapsible-item">
+                                        <p>
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={item.geojsonEnabled}
+                                                    onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
+                                                <span>GeoJSON</span>
+                                            </label>
+                                        </p>
                                     </div>
-                                    <a onClick={()=>zoomToLayer(item)} className='col s2' ><i className='material-icons'>zoom_out_map</i></a>
-                                </li>
-                            </div>
-                        </React.Fragment>
+                                    <div className="collapsible-item">
+                                        <p>
+                                            <label>
+                                                <a onClick={()=>zoomToLayer(item)}>
+                                                    <i className='material-icons'>
+                                                        zoom_out_map
+                                                    </i>
+                                                </a>
+                                                <span>Zoom to layer</span>
+                                            </label>
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                     ))}
-            </ul>
-            <a
-                id="sidenav-toggle"
-                href="#"
-                onClick={handleToggleButton}
-                data-target="slide-out"
-                className="sidenav-trigger sidenav-button btn"
-            >
-                <i className="material-icons">menu</i>
-            </a>
+            </div>
+            <a id="sidenav-toggle" href="#" onClick={handleToggleButton} className="sidenav-button btn"><i className="material-icons">menu</i></a>
+            <a href="/" className="sidenav-button-2 btn"><i className="material-icons">home</i></a>
         </div>
     );
 }
-
-const convertBounds = (boundsStr) => {
-    const boundsArray = boundsStr.split(',').map(Number);
-    return [
-        [boundsArray[1], boundsArray[0]], 
-        [boundsArray[3], boundsArray[2]]  
-    ];
-};
 
 const MapComponent = ({userRequests})=>{
 
@@ -148,6 +138,8 @@ const MapComponent = ({userRequests})=>{
 
     useEffect(() => {
         if (!dataCreated && userRequests.length>0) {
+        // if (!dataCreated) {
+            if(userRequests.length>0){
             const filteredRequests = userRequests
                 .filter((item) => item.png)
                 .map((item) => ({
@@ -157,6 +149,9 @@ const MapComponent = ({userRequests})=>{
                 }));
             console.log(filteredRequests)
             setData(filteredRequests);
+            } else {
+                window.alert("You dont have any requests yet, please, create a request and get back on this page.")
+            }
             setDataCreated(true);
 
         }
@@ -167,6 +162,8 @@ const MapComponent = ({userRequests})=>{
         name: layer.name,
         url: layer.url,
       }));
+
+    console.log(dataCreated)
 
     return <>
     {dataCreated &&

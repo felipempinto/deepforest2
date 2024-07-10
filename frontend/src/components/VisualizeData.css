@@ -1,0 +1,39 @@
+.side-bar-map-visual {
+    min-width: 300px;
+    height: 100%;
+    background-color: white;
+    left: 0px;
+    position: fixed;
+    z-index: 500;
+    transition: transform 0.5s ease-out;
+    transform: translateX(-500px); 
+  }
+  
+  .side-bar-map-visual.active {
+    transform: translateX(0);
+  }
+  
+
+
+  .collapsible-body-style{
+    padding: 0%;
+  }
+
+
+.collapsible-item {
+    display: flex;
+    align-items: center;
+}
+
+.collapsible-item label {
+    display: flex;
+    align-items: center;
+}
+
+.collapsible-item .material-icons {
+    vertical-align: middle;
+}
+
+.collapsible-item span {
+    margin-left: 5px; 
+}

@@ -140,14 +140,19 @@ def process(arguments):
 
     ec2,ec2_name = ec2
 
-    try:
-        final,error = run_process(arguments,ec2_name)
-    except Exception as e:
-        ec2.stop_instances(InstanceIds=[instance_id])
-        raise Exception(e)
-    else:
-        ec2.stop_instances(InstanceIds=[instance_id])
-        return final,error
+    final,error = run_process(arguments,ec2_name)
+
+    ec2.stop_instances(InstanceIds=[instance_id])
+    return final,error
+
+    # try:
+    #     final,error = run_process(arguments,ec2_name)
+    # except Exception as e:
+    #     ec2.stop_instances(InstanceIds=[instance_id])
+    #     raise Exception(e)
+    # else:
+    #     ec2.stop_instances(InstanceIds=[instance_id])
+    #     return final,error
 
 
 def get_messages(tp,us,date,user,e="",process_time=""):
