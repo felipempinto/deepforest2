@@ -1,180 +1,198 @@
-import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { NavLink, Link } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Menu, MenuItem, Drawer, List, ListItem, ListItemText, Box, Avatar, Typography, Divider, useMediaQuery } from '@mui/material';
+import React, { useState} from 'react';
+import { Link } from 'react-router-dom';
+import { 
+  AppBar, 
+  Toolbar, 
+  IconButton, 
+  Menu, 
+  MenuItem, 
+  Box, 
+  Avatar, 
+  Typography, 
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import { useTheme } from '@mui/material/styles';
 import { logout } from '../../features/user';
 import './Navbar.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-function NavbarComponent() {
+import Container from '@mui/material/Container';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+
+function ResponsiveAppBar() {
+  const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [anchorElUser, setAnchorElUser] = React.useState(null);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
   const { isAuthenticated } = useSelector((state) => state.user);
-
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const open = Boolean(anchorEl);
-
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate()
 
   const picture = user.user?.profile_picture ?? process.env.PUBLIC_URL + '/Default_pfp.svg';
-  const [formData] = useState({
-    username: user.user?.username || '',
-    email: user.user?.email || '',
-  });
 
-  const toggleDrawer = (open) => (event) => {
-    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return;
-    }
-    setDrawerOpen(open);
+  const handleOpenNavMenu = (event) => {
+    setAnchorElNav(event.currentTarget);
+  };
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
   };
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
   };
 
-  const links = (
-    <>
-      <ListItem button component={NavLink} to="/request">
-        <ListItemText primary="New Request" />
-      </ListItem>
-      <ListItem button component={NavLink} to="/products">
-        <ListItemText primary="Products" />
-      </ListItem>
-      <ListItem button component={NavLink} to="/map">
-        <ListItemText primary="Samples" />
-      </ListItem>
-    </>
-  );
+  const links = <>
+    <Button
+      onClick={()=>navigate("/products")}
+      sx={{ my: 2, color: 'white', display: 'block' }}
+    >
+      Products
+    </Button>
+    <Button
+      onClick={()=>navigate("/map")}
+      sx={{ my: 2, color: 'white', display: 'block' }}
+    >
+      Samples
+    </Button>
+  </>
 
-  const authlinks = (
-    <>
-      <ListItem button component={NavLink} to="/requests">
-        <ListItemText primary="My Requests" />
-      </ListItem>
-      <ListItem button component={NavLink} to="/dashboard">
-        <ListItemText primary="Dashboard" />
-      </ListItem>
-      <ListItem button component={NavLink} to="/viewdata">
-        <ListItemText primary="View Requests" />
-      </ListItem>
-      <ListItem button onClick={() => dispatch(logout())}>
-        <ListItemText primary="Logout" />
-      </ListItem>
-    </>
-  );
+  const links2 = <>
+    <MenuItem onClick={()=>navigate("/products")}>
+      <Typography sx={{ textAlign: 'center' }}>
+        Products
+      </Typography>
+    </MenuItem>
+    <MenuItem onClick={()=>navigate("/map")}>
+      <Typography sx={{ textAlign: 'center' }}>
+        Samples
+      </Typography>
+    </MenuItem>
+  </>
 
-  const guestLinks = (
-    <>
-      <ListItem button component={NavLink} to="/login">
-        <ListItemText primary="Login" />
-      </ListItem>
-      <ListItem button component={NavLink} to="/register">
-        <ListItemText primary="Register" />
-      </ListItem>
+  const authlinks = <>
+  <MenuItem onClick={()=>navigate("/request")}>
+      <Typography sx={{ textAlign: 'center' }}>New Request</Typography>
+    </MenuItem>
+    <MenuItem onClick={()=>navigate("/requests")}>
+      <Typography sx={{ textAlign: 'center' }}>My requests</Typography>
+    </MenuItem>
+    <MenuItem onClick={()=>navigate("/viewdata")}>
+      <Typography sx={{ textAlign: 'center' }}>View Requests</Typography>
+    </MenuItem>
+    <MenuItem onClick={()=>navigate("/dashboard")}>
+      <Typography sx={{ textAlign: 'center' }}>Profile</Typography>
+    </MenuItem>
+    <MenuItem onClick={() => dispatch(logout())}>
+      <Typography sx={{ textAlign: 'center' }}>Logout</Typography>
+    </MenuItem>
     </>
-  );
 
-  const sidenavHeader = (
-    <Box sx={{ p: 2 }}>
-      <Avatar src={picture} sx={{ width: 56, height: 56 }} />
-      <Typography variant="h6">{formData.username}</Typography>
-      <Typography variant="body2">{formData.email}</Typography>
-      <Divider sx={{ mt: 1 }} />
-    </Box>
-  );
+  const guestLinks = <>
+    <MenuItem onClick={()=>navigate("/login")}>
+      <Typography sx={{ textAlign: 'center' }}>Login</Typography>
+    </MenuItem>
+    <MenuItem onClick={()=>navigate("/register")}>
+      <Typography sx={{ textAlign: 'center' }}>Register</Typography>
+    </MenuItem>
+  </>
 
   return (
-    <AppBar position="static" color="default">
-      <Toolbar>
-        <Link to="/" className="navbar-brand">
-          <img
-            className="img-logo"
-            src={process.env.PUBLIC_URL + '/Logo.png'}
-            alt="Deep Forest Logo"
-            style={{ height: '40px' }}
-          />
-        </Link>
-        <Box sx={{ flexGrow: 1 }} />
-        {isSmallScreen ? (
-          // Small Screens: Drawer with menu button
-          <IconButton
-            edge="end"
-            color="inherit"
-            aria-label="menu"
-            onClick={toggleDrawer(true)}
-            sx={{ ml: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-        ) : (
-          <>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {links}
-            </Box>
-            {isAuthenticated ? (
-              <>
-                <IconButton onClick={handleMenu} color="inherit">
-                  <Avatar src={picture} />
-                </IconButton>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  open={open}
-                  onClose={handleClose}
-                >
-                  {authlinks}
-                </Menu>
-              </>
-            ) : (
-              guestLinks
-            )}
-          </>
-        )}
-      </Toolbar>
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        PaperProps={{ sx: { width: 250 } }}
-      >
-        {isAuthenticated ? (
-          <>
-            {sidenavHeader}
-            <List>
-              {links}
-              <Divider />
-              {authlinks}
-            </List>
-          </>
-        ) : (
-          <List>
-            <Typography variant="h6" sx={{ p: 2 }}>
-              Please login or register
-            </Typography>
-            {guestLinks}
-          </List>
-        )}
-      </Drawer>
+    <AppBar position="static">
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
+          <Button sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}>
+            <Link to="/">
+              <img
+                src={process.env.PUBLIC_URL + '/Logo.png'}
+                alt="Deep Forest Logo"
+                style={{ height: '40px' }}
+              />
+            </Link>
+          </Button>
+          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'left',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: 'block', md: 'none' } }}
+            >
+              {links2}
+            </Menu>
+          </Box>
+          <Button
+            sx={{
+              mr: 8,
+              display: { xs: 'flex', md: 'none' },
+              flexGrow: 2,
+            }}
+            >
+            <Link to="/">
+              <img
+                src={process.env.PUBLIC_URL + '/Logo.png'}
+                alt="Deep Forest Logo"
+                style={{ height: '40px' }}
+              />
+            </Link>
+          </Button>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+            {links}
+          </Box>
+          <Box sx={{ flexGrow: 0 }}>
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                <Avatar 
+                  alt={user.username} 
+                  src={picture}
+                />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              {isAuthenticated?authlinks:guestLinks}
+            </Menu>
+          </Box>
+        </Toolbar>
+      </Container>
     </AppBar>
   );
 }
+export default ResponsiveAppBar;
 
-export default NavbarComponent;

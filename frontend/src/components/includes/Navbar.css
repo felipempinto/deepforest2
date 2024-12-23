@@ -1,14 +1,14 @@
 .navbar {
- background-color: #ffffff00 !important;
+    background-color: #ffffff00 !important;
 }
 
-.nav-link{
+.nav-link {
     color: black !important;
     padding-left: 10px !important;
     padding-right: 10px !important;
 }
 
-.img-profile{
+.img-profile {
     height: 50px;
     width: 50px;
     border-radius: 50%;
@@ -16,19 +16,14 @@
     transform: translateY(+15%);
 }
 
-.img-logo{
+.img-logo {
     max-height: 50px;
-    /* display: inline-flex;
-    vertical-align: bottom; */
     position: absolute;
-    /* top: 50%; */
-    top:7px;
+    top: 7px;
     left: 7px;
-    /* transform: translateY(-50%); */
 }
 
 
-.sidenav-style{
- /* background-color: aqua; */
- color: black;
+.sidenav-style {
+    color: black;
 }
