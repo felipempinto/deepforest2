@@ -1,105 +1,139 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { register } from '../features/user';
-import NavbarComponent from './includes/Navbar';
-import { Navigate } from 'react-router-dom';
-import M from 'materialize-css';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { register } from "../features/user";
+import { Navigate } from "react-router-dom";
+import {
+  Container,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Paper,
+  Alert,
+  Avatar,
+} from "@mui/material";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
-function Register() {
+const Register = () => {
   const dispatch = useDispatch();
-  const { registered,  } = useSelector(state => state.user);
-  const [registerError, setRegisterError] = useState('');
-  const [formData,setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-        password2: '',
-  })
+  const { registered } = useSelector((state) => state.user);
+  const [registerError, setRegisterError] = useState([]);
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    password2: "",
+  });
 
-  const { username,email,password,password2 } = formData;
-
-  const onChange = e => {
-    setFormData({...formData,[e.target.name]:e.target.value});
+  const onChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const onSubmit = e => {
-        e.preventDefault();
-        dispatch(register({username,email,password,password2}))
-        .then(data=>{
-          if (data.meta.requestStatus==='rejected') {
-            // setRegisterError(data.payload.username || data.payload.email || data.payload.error || data.payload.non_field_errors);
-            const errors = Object.values(data.payload).flat();
-              setRegisterError(errors.join(' '));
-              errors.forEach(error => {
-                M.toast({
-                  html: error,
-                  classes: 'red rounded',
-                  displayLength: 10000
-                });
-              })
-          } else {
-            console.log("SUCESS")          
-          }        
-        })
-        .catch(error => {
-          console.log("ERROR",error);
-          console.error('Login error:', error);
-    });};
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await dispatch(register(formData));
+      if (data.meta.requestStatus === "rejected") {
+        const errors = Object.values(data.payload).flat();
+        setRegisterError(errors);
+      } else {
+        setRegisterError([]);
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
+  };
 
-  if (registered) return <Navigate to='/login'/>;
+  if (registered) return <Navigate to="/login" />;
 
   return (
-    <>
-      <NavbarComponent />
-      <div className='container'>
-      <h1>Register</h1>
-      <form onSubmit={onSubmit}>
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={onChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={onChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={onChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="password2">Confirm Password</label>
-          <input
-            type="password"
-            id="password2"
-            name="password2"
-            value={formData.password2}
-            onChange={onChange}
-          />
-        </div>
-        {registerError && <p style={{ color: 'red' }}>{registerError}</p>}
-        <button type="submit">Register</button>
-      </form>
-    </div>
-    </>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#f4f6f8",
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper
+          elevation={3}
+          sx={{ padding: 4, backgroundColor: "white", textAlign: "center" }}
+        >
+          <Avatar sx={{ m: "auto", bgcolor: "green" }}>
+            <PersonAddIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5" sx={{ mt: 2, mb: 2 }}>
+            Register
+          </Typography>
+          {registerError.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              {registerError.map((error, index) => (
+                <Alert key={index} severity="error" sx={{ mb: 1 }}>
+                  {error}
+                </Alert>
+              ))}
+            </Box>
+          )}
+          <form onSubmit={onSubmit}>
+            <TextField
+              fullWidth
+              margin="normal"
+              id="username"
+              label="Username"
+              name="username"
+              value={formData.username}
+              onChange={onChange}
+              required
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              id="email"
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={onChange}
+              required
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              id="password"
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={onChange}
+              required
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              id="password2"
+              label="Confirm Password"
+              name="password2"
+              type="password"
+              value={formData.password2}
+              onChange={onChange}
+              required
+            />
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              color="success"
+              sx={{ mt: 2 }}
+            >
+              Register
+            </Button>
+          </form>
+        </Paper>
+      </Container>
+    </Box>
   );
-}
+};
 
 export default Register;

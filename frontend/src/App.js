@@ -9,11 +9,11 @@ import Register from './components/Register';
 import Dashboard from './components/Dashboard'
 import RequestMap from './components/RequestMap';
 import RequestBounds from './components/RequestBounds';
-import Requests from './components/Requests';
+// import Requests from './components/Requests';
 
 import { useCookies } from 'react-cookie';
-import Products from './components/Products';
-import VisualizeMap from './components/VisualizeData';
+// import Products from './components/Products';
+// import VisualizeMap from './components/VisualizeData';
 
 function App() {
   const [
@@ -42,9 +42,9 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/request" exact element={<RequestBounds />} />
         <Route path="/map" exact element={<RequestMap />} />
-        <Route path="/requests" exact element={<Requests />}/>
-        <Route path="/products" exact element={<Products />}/>
-        <Route path="/viewdata" exact element={<VisualizeMap />}/>
+        {/* <Route path="/requests" exact element={<Requests />}/> */}
+        {/* <Route path="/products" exact element={<Products />}/> */}
+        {/* <Route path="/viewdata" exact element={<VisualizeMap />}/> */}
       </Routes>
     </Router>
   );

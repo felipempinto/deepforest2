@@ -67,12 +67,16 @@ def tiles_list(request):
         product = request.data.get('product', None)
         bbox = request.data.get('bbox', None)
 
-        product = product.replace(' ','').lower()
+        product = Product.objects.get(id=product)
         
         if not product:
-            queryset = TilesProcessed.objects.all().order_by(F('date_image').asc(nulls_last=True))
+            queryset = TilesProcessed.objects.all().order_by(
+                F('date_image').asc(nulls_last=True)
+        )
         else:
-            queryset = TilesProcessed.objects.filter(product=product).order_by(F('date_image').asc(nulls_last=True))
+            queryset = TilesProcessed.objects.filter(
+                product=product
+            ).order_by(F('date_image').asc(nulls_last=True))
 
         if date1 and date2:
             date1 = timezone.make_aware(datetime.strptime(date1, '%Y-%m-%d'),timezone.get_default_timezone()).date()

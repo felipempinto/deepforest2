@@ -2,7 +2,6 @@
     position: absolute;
     top: 20px;
     right: 20px;
-    /* padding: 10px; */
     z-index: 400;
     background-color: black;
   }
@@ -22,10 +21,9 @@
 }
 
 .sidebar {
-  max-width: 450px;
+  max-width: 400px;
   max-height: 600px;
   min-width: 260px;
-  color: #868fa0;
   background-color: rgb(7, 7, 7);
   left: 10px;
   right: 10px;
@@ -80,18 +78,7 @@ button#submit-button {
   background-color:darkcyan;
   padding-bottom: 10px;
 }
-/*
-.tabs .tab a {
-  background-color: black;
-  text-decoration: none;
-  color: white;
-}
 
-.tabs .tab a:hover {
-  background-color: rgb(141, 141, 141);
-  text-decoration: none;
-  color: white;
-} */
 
 .tabs .tab a:focus, .tabs .tab a:focus.active {
   background-color: rgba(12, 12, 12, 0.2);
@@ -99,7 +86,6 @@ button#submit-button {
 }
 
 .tabs .tab a:hover, .tabs .tab a.active {
-  /* background-color: transparent; */
   background-color: black;
   text-decoration: none;
   color: white;
@@ -127,9 +113,6 @@ button#submit-button {
   width: 100%;
 }
 
-/* ul{
-  display: flex;
-} */
 
 .collection{
   max-height: 500px;
@@ -142,36 +125,23 @@ button#submit-button {
   color:black;
   background-color: #888888;
   word-wrap: break-word;
-  /* background-color: aqua; */
 }
 
 .collapsible-header{
   color: #888888;
   word-wrap: break-word;
-  /* wordWrap: "break-word" */
 }
 
-
-/* .li-collapsible{
-  color:red
-} */
-
 .ul-collapsible{
-  /* color:darkorange; */
   max-height: 300px;
 }
 
 
-
-
-
-
-
 .form-container {
-  max-width: 400px;
+  /* max-width: 400px; */
   margin: 20px auto;
   padding: 20px;
-  background-color: #727272;
+  background-color: #d6d4d4;
   border-radius: 5px;
 }
 

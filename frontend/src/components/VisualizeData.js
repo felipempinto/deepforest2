@@ -14,7 +14,8 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const VisualizeMap = () => {
   const dispatch = useDispatch();
-  const { visualization: visualData, loading, error } = useSelector(state => state.product);
+  const { visualization: visualData, loading, error } = useSelector(
+    state => state.product);
 
   useEffect(() => {
       dispatch(visualization());

@@ -1,139 +1,180 @@
-import {
-  useEffect,
-  useRef,
-  useState 
-} from 'react';
-import { NavLink,Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import M from 'materialize-css';
-// import { AuthCheck } from "../includes/Auth";
-// import { Logout } from '../Logout';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { NavLink, Link } from 'react-router-dom';
+import { AppBar, Toolbar, IconButton, Menu, MenuItem, Drawer, List, ListItem, ListItemText, Box, Avatar, Typography, Divider, useMediaQuery } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useTheme } from '@mui/material/styles';
 import { logout } from '../../features/user';
-import './Navbar.css'
+import './Navbar.css';
 
 function NavbarComponent() {
-  const ref = useRef(null);
-  const side = useRef(null);
-  const [formData,setFormData] = useState({
-    username:'',
-    email:'',
-});
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user);
-	const { isAuthenticated } = useSelector(state => state.user);
+  const { isAuthenticated } = useSelector((state) => state.user);
 
-  useEffect(() => {
-    const elem = ref.current;
-    M.Dropdown.init(elem, 
-        { 
-          inDuration: 300, 
-          outDuration: 225,
-          coverTrigger:false
-        });
-    
-    const sideElems = side.current;
-    const options = {} 
-    M.Sidenav.init(sideElems, options);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
-    if (isAuthenticated && user.user) {
-      setFormData({
-        username: user.user.username,
-        email: user.user.email,
-      });
-    }
-  }, [isAuthenticated, user]);
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const picture = user.user?.profile_picture ?? process.env.PUBLIC_URL + '/Default_pfp.svg';
+  const [formData] = useState({
+    username: user.user?.username || '',
+    email: user.user?.email || '',
+  });
 
-  const links = <>
-    <li className="nav-item"><NavLink className="nav-link" to="/request">New Request</NavLink></li>
-    <li className="nav-item"><NavLink className="nav-link" to="/products">Products</NavLink></li>
-    <li className="nav-item"><NavLink className="nav-link" to="/map">Samples</NavLink></li>
-  </>
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
 
-  const askLogin = 
-          <div className='container'>
-            <h5 className='black-text'>
-              Please, login or register to access features
-            </h5>
-          </div>
+  const handleMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
-  const sidenavHeader = <>
-        <li>
-          <div className="user-view">
-              <a href="#user"><img className="circle" src={picture}/></a>
-              <a href="#username"><span className="black-text name">{formData.username}</span></a> 
-              <a href="#email"><span className="black-text email">{formData.email}</span></a> 
-          </div>
-        </li>
-  </>
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const links = (
+    <>
+      <ListItem button component={NavLink} to="/request">
+        <ListItemText primary="New Request" />
+      </ListItem>
+      <ListItem button component={NavLink} to="/products">
+        <ListItemText primary="Products" />
+      </ListItem>
+      <ListItem button component={NavLink} to="/map">
+        <ListItemText primary="Samples" />
+      </ListItem>
+    </>
+  );
 
   const authlinks = (
     <>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/requests">My requests</NavLink>
-      </li>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/dashboard">Dashboard</NavLink>
-      </li>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/viewdata">View requests</NavLink>
-      </li>
-      <li className='nav-item'>
-				<a 
-          className='nav-link' 
-          href='#!' 
-          onClick={() => dispatch(logout())}
-          >
-					Logout
-				</a>
-			</li>
+      <ListItem button component={NavLink} to="/requests">
+        <ListItemText primary="My Requests" />
+      </ListItem>
+      <ListItem button component={NavLink} to="/dashboard">
+        <ListItemText primary="Dashboard" />
+      </ListItem>
+      <ListItem button component={NavLink} to="/viewdata">
+        <ListItemText primary="View Requests" />
+      </ListItem>
+      <ListItem button onClick={() => dispatch(logout())}>
+        <ListItemText primary="Logout" />
+      </ListItem>
     </>
   );
-  
+
   const guestLinks = (
     <>
-      <li className="nav-item"><NavLink className="nav-link" to="/login">Login</NavLink></li>
-      <li className="nav-item"><NavLink className="nav-link" to="/register">Register</NavLink></li>
+      <ListItem button component={NavLink} to="/login">
+        <ListItemText primary="Login" />
+      </ListItem>
+      <ListItem button component={NavLink} to="/register">
+        <ListItemText primary="Register" />
+      </ListItem>
     </>
+  );
+
+  const sidenavHeader = (
+    <Box sx={{ p: 2 }}>
+      <Avatar src={picture} sx={{ width: 56, height: 56 }} />
+      <Typography variant="h6">{formData.username}</Typography>
+      <Typography variant="body2">{formData.email}</Typography>
+      <Divider sx={{ mt: 1 }} />
+    </Box>
   );
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-    <div className="container-fluid">
-      <Link className="navbar-brand" to="/">
-        <img className="img-logo" src={process.env.PUBLIC_URL + "/Logo.png"} alt="Deep Forest Logo" />
-      </Link>
-      <ul id="dropdown1" className="dropdown-content">
-        {isAuthenticated ? authlinks : guestLinks}
-      </ul>
-      <ul id="nav-mobile" className="right hide-on-med-and-down">
-        {links}
-
-        <li className="nav-link nav-item">
-          <a 
-            className="dropdown-trigger nav-link" 
-            href='#!'ref={ref} 
-            data-target="dropdown1">
-              <img className="img-profile" src={picture} alt="User" />
-          </a>
-        </li>
-
-      </ul>
-
-
-      <ul id="slide-out" className="sidenav" ref={side}>
-      {isAuthenticated ? 
-           <>{sidenavHeader}{links}<li><div className="divider"></div></li>{authlinks}</>
-         : <>{askLogin}{links}<li><div className="divider"></div></li>{guestLinks}</>  
-         }
-      </ul>
-      <a href="#" data-target="slide-out" className="sidenav-trigger sidenav-style right">
-        <i className="material-icons">menu</i>
-      </a>
-    </div>
-  </nav>
+    <AppBar position="static" color="default">
+      <Toolbar>
+        <Link to="/" className="navbar-brand">
+          <img
+            className="img-logo"
+            src={process.env.PUBLIC_URL + '/Logo.png'}
+            alt="Deep Forest Logo"
+            style={{ height: '40px' }}
+          />
+        </Link>
+        <Box sx={{ flexGrow: 1 }} />
+        {isSmallScreen ? (
+          // Small Screens: Drawer with menu button
+          <IconButton
+            edge="end"
+            color="inherit"
+            aria-label="menu"
+            onClick={toggleDrawer(true)}
+            sx={{ ml: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+        ) : (
+          <>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {links}
+            </Box>
+            {isAuthenticated ? (
+              <>
+                <IconButton onClick={handleMenu} color="inherit">
+                  <Avatar src={picture} />
+                </IconButton>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={open}
+                  onClose={handleClose}
+                >
+                  {authlinks}
+                </Menu>
+              </>
+            ) : (
+              guestLinks
+            )}
+          </>
+        )}
+      </Toolbar>
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+        PaperProps={{ sx: { width: 250 } }}
+      >
+        {isAuthenticated ? (
+          <>
+            {sidenavHeader}
+            <List>
+              {links}
+              <Divider />
+              {authlinks}
+            </List>
+          </>
+        ) : (
+          <List>
+            <Typography variant="h6" sx={{ p: 2 }}>
+              Please login or register
+            </Typography>
+            {guestLinks}
+          </List>
+        )}
+      </Drawer>
+    </AppBar>
   );
-  };
+}
 
 export default NavbarComponent;

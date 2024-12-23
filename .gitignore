@@ -2,3 +2,5 @@
 frontend/.env
 .env.test
 *.pyc
+frontend_vue
+frontend2

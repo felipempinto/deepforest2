@@ -3,6 +3,7 @@ from django.contrib.gis.db import models
 from django.utils.timezone import make_aware
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
+from django.apps import apps
 
 from botocore.exceptions import ClientError,ParamValidationError
 import boto3
@@ -62,13 +63,15 @@ def get_bounds(ds):
 
 
 class TilesProcessed(models.Model):
+
     name = models.CharField(max_length=255)
     date_image = models.DateTimeField(null=True,blank=True)
-    last_modified = models.DateTimeField()
-    size = models.BigIntegerField()
-    product = models.CharField(max_length=50)
+    # product = models.CharField(max_length=50)
+    product = models.ForeignKey('main.Product', on_delete=models.CASCADE)
     location = models.CharField(max_length=200,null=True,blank=True)
     poly = models.MultiPolygonField(null=True,blank=True)
+    # last_modified = models.DateTimeField()
+    # size = models.BigIntegerField()
 
     class Meta:
         verbose_name = 'Tile'
@@ -87,51 +90,57 @@ class TilesProcessed(models.Model):
             return None
         else:
             return response
+        
+    def save(self):
+        super(TilesProcessed, self).save()
+        if self.poly is None:
+            url = f'/vsis3/{BUCKET}/{self.location}'
+            ds = gdal.Open(url)
+            bounds = get_bounds(ds)
+            poly = GEOSGeometry(bounds)
+            self.poly = poly
+            self.save()
 
-    @classmethod
-    def update_from_s3(cls, product):
-        bucket_name = BUCKET#'deepforestbucket'
-        # print('BUCKET',BUCKET)
-        prefix = f'{product}/outputs/tiles/sentinel2/'
 
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
-        # print(response)
+    # @classmethod
+    # def update_from_s3(cls, product):
+    #     bucket_name = BUCKET
+    #     prefix = f'{product}/outputs/tiles/sentinel2/'
 
-        try:
-            for obj in response['Contents']:
-                if not obj['Key'].endswith('/'): 
-                    name = obj['Key'].split('/')[-1]
-                    location = prefix+name
-                    last_modified = obj['LastModified']
-                    size = obj['Size']
-                    date_str = name.split('_')[2]
-                    date_image = make_aware(datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S'))
-                    tile, created = cls.objects.update_or_create(name=name, defaults={
-                        'last_modified': last_modified,
-                        'size': size,
-                        'product': product,
-                        'date_image': date_image
-                    })
-                    if not created:
-                        tile.last_modified = last_modified
-                        tile.size = size
-                        tile.product = product
-                        tile.date_image = date_image
-                        tile.location = location
-                        tile.save()
+    #     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
 
-                    # Set the poly field using the bounding box
-                    # t1 = time.time()
-                    url = f'/vsis3/{bucket_name}/{obj["Key"]}'
-                    ds = gdal.Open(url)   ### It takes something like 0.5 seconds in my PC
-                    # print(time.time()-t1)
-                    bounds = get_bounds(ds)
-                    poly = GEOSGeometry(bounds)#ogr.CreateGeometryFromWkt(bounds)
-                    tile.poly = poly
+    #     try:
+    #         for obj in response['Contents']:
+    #             if not obj['Key'].endswith('/'): 
+    #                 name = obj['Key'].split('/')[-1]
+    #                 location = prefix+name
+    #                 last_modified = obj['LastModified']
+    #                 size = obj['Size']
+    #                 date_str = name.split('_')[2]
+    #                 date_image = make_aware(datetime.datetime.strptime(date_str, '%Y%m%dT%H%M%S'))
+    #                 tile, created = cls.objects.update_or_create(name=name, defaults={
+    #                     'last_modified': last_modified,
+    #                     'size': size,
+    #                     'product': product,
+    #                     'date_image': date_image
+    #                 })
+    #                 if not created:
+    #                     tile.last_modified = last_modified
+    #                     tile.size = size
+    #                     tile.product = product
+    #                     tile.date_image = date_image
+    #                     tile.location = location
+    #                     tile.save()
 
-                    tile.save()
-        except KeyError as e:
-            print(e)
+    #                 url = f'/vsis3/{bucket_name}/{obj["Key"]}'
+    #                 ds = gdal.Open(url)
+    #                 bounds = get_bounds(ds)
+    #                 poly = GEOSGeometry(bounds)
+    #                 tile.poly = poly
+
+    #                 tile.save()
+    #     except KeyError as e:
+    #         print(e)
 
 
 
