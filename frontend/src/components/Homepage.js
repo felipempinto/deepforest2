@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container } from '@mui/material';
 import NavbarComponent from './includes/Navbar';
 import Footer from './includes/Footer';
 import { homepage } from '../features/main';
@@ -49,9 +49,11 @@ const Homepage = () => {
                         textAlign: 'center',
                     }}
                 >
-                    <Typography variant="h3">Deep Forest</Typography>
+                    <Typography variant="h1">Deep Forest</Typography>
                     <Typography variant="subtitle1">
-                        Unlock the Power of Deep Learning for Forestry
+                        <b>
+                            Unlock the Power of Deep Learning for Forestry
+                        </b>
                     </Typography>
                     <Button
                         variant="contained"
@@ -63,38 +65,42 @@ const Homepage = () => {
                     </Button>
                 </Box>
             </Box>
-
-            <Box sx={{ py: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>
-                    How it Works
-                </Typography>
-                <Typography variant="body1" align="center" sx={{ mx: 4, mb: 4 }}>
-                    {text1}
-                </Typography>
-                <Grid container spacing={3} justifyContent="center">
-                    {Object.entries(versions).map(([key, value]) => (
-                        <Grid item xs={12} sm={6} md={3} key={key}>
-                            <Card
-                                elevation={key === 'Version 0.0.2' ? 10 : 3}
-                                sx={{
-                                    bgcolor:
-                                        key === 'Version 0.0.2'
-                                            ? 'primary.main'
-                                            : 'secondary.main',
-                                    color: 'white',
-                                }}
-                            >
-                                <CardContent>
-                                    <Typography variant="h6" gutterBottom>
-                                        {key}
-                                    </Typography>
-                                    <Typography variant="body2">{value}</Typography>
-                                </CardContent>
-                            </Card>
+            
+                <Box sx={{ py: 4,
+                            bgcolor: '#e15638',}}>
+                    <Container>
+                        <Typography variant="h3" align="center" gutterBottom>
+                            How it Works
+                        </Typography>
+                        <Typography variant="body1" align="center" sx={{ mx: 4, mb: 4 }}>
+                            {text1}
+                        </Typography>
+                        <Grid container spacing={3} justifyContent="center">
+                            {Object.entries(versions).map(([key, value]) => (
+                                <Grid item xs={12} sm={6} md={3} key={key}>
+                                    <Card
+                                        elevation={key === 'Version 0.0.2' ? 10 : 3}
+                                        sx={{
+                                            bgcolor:
+                                                key === 'Version 0.0.2'
+                                                    ? '#37474f'
+                                                    : '#546e7a',
+                                            color: 'white',
+                                        }}
+                                    >
+                                        <CardContent>
+                                            <Typography variant="h6" gutterBottom>
+                                                {key}
+                                            </Typography>
+                                            <Typography variant="body2">{value}</Typography>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
                         </Grid>
-                    ))}
-                </Grid>
-            </Box>
+                    </Container>
+                </Box>
+
 
             <Box
                 sx={{
