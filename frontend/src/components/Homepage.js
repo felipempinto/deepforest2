@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container, Container } from '@mui/material';
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container } from '@mui/material';
 import NavbarComponent from './includes/Navbar';
 import Footer from './includes/Footer';
 import { homepage } from '../features/main';
@@ -80,7 +80,6 @@ const Homepage = () => {
                     </Button>
                 </Box>
             </Box>
-
             <Box sx={{ 
                 py: 4, 
                 backgroundColor: "hsla( 10.6508875739645,73.79912663755458%,55.09803921568628% ,1)" 
@@ -127,7 +126,6 @@ const Homepage = () => {
                 </Grid>
                 </Container>
             </Box>
-
             <Box
                 sx={{
                     backgroundImage: `url(${process.env.PUBLIC_URL}/IMG_2694.JPG)`,
@@ -138,7 +136,6 @@ const Homepage = () => {
                 className="parallax"
             />
 
-            {/* Products Section */}
             <Box sx={{ py: 4 }}>
                 <Typography variant="h4" align="center" gutterBottom>
                     Products

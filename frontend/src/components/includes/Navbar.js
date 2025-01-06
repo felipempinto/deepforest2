@@ -51,7 +51,6 @@ function ResponsiveAppBar() {
     <Button
       onClick={()=>navigate("/products")}
       sx={{ my: 2, color: 'black', display: 'block' }}
-      sx={{ my: 2, color: 'black', display: 'block' }}
     >
       Products
     </Button>
@@ -104,7 +103,13 @@ function ResponsiveAppBar() {
   </>
 
   return (
-    <AppBar position="static">
+    <AppBar 
+      position={isHomepage ? 'absolute' : 'static'}
+      sx={{
+        backgroundColor: isHomepage ? 'rgba(0, 0, 0, 0)' : 'primary.main',
+        boxShadow: isHomepage ? 'none' : 'default',
+      }}
+      >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Button sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}>

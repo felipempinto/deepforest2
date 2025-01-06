@@ -121,28 +121,28 @@ export const getRequests = createAsyncThunk(
 );
 
 export const deleteRequest = createAsyncThunk(
-	'requests/delete',
-	async (id, thunkAPI) => {
-	  try {
-		const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/delete/${id}`, {
-		  method: 'DELETE',
-		  headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-		  },
-		});
-  
-		if (res.ok) {
-		  return id;
-		} else {
-		  const data = await res.json();
-		  return thunkAPI.rejectWithValue(data);
-		}
-	  } catch (err) {
-		return thunkAPI.rejectWithValue(err.response.data);
-	  }
-	}
-  );
+  'requests/delete',
+  async (id, thunkAPI) => {
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/products/requests/delete/${id}/`, {
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        return id;
+      } else {
+        const data = await res.json();
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
 
 // export const request = createAsyncThunk(
 //   'products/request',
