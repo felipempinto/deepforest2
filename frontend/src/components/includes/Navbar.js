@@ -1,5 +1,5 @@
 import React, { useState} from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   AppBar, 
   Toolbar, 
@@ -27,6 +27,8 @@ function ResponsiveAppBar() {
   const user = useSelector((state) => state.user);
   const { isAuthenticated } = useSelector((state) => state.user);
   const navigate = useNavigate()
+  const location = useLocation();
+  const isHomepage = location.pathname === '/';
 
   const picture = user.user?.profile_picture ?? process.env.PUBLIC_URL + '/Default_pfp.svg';
 
@@ -48,13 +50,13 @@ function ResponsiveAppBar() {
   const links = <>
     <Button
       onClick={()=>navigate("/products")}
-      sx={{ my: 2, color: 'white', display: 'block' }}
+      sx={{ my: 2, color: 'black', display: 'block' }}
     >
       Products
     </Button>
     <Button
       onClick={()=>navigate("/map")}
-      sx={{ my: 2, color: 'white', display: 'block' }}
+      sx={{ my: 2, color: 'black', display: 'block' }}
     >
       Samples
     </Button>
@@ -101,7 +103,13 @@ function ResponsiveAppBar() {
   </>
 
   return (
-    <AppBar position="static">
+    <AppBar 
+      position={isHomepage ? 'absolute' : 'static'}
+      sx={{
+        backgroundColor: isHomepage ? 'rgba(0, 0, 0, 0)' : 'primary.main',
+        boxShadow: isHomepage ? 'none' : 'default',
+      }}
+      >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Button sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}>

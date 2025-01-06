@@ -95,7 +95,7 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, "build")
 
-                 ],
+                ],
         # "DIRS": [
         #     # os.path.join(BASE_DIR, "build")
         #     ],
@@ -115,13 +115,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-         'NAME': os.environ.get('DB_NAME_DF_WEBSITE'),
-         'USER': os.environ.get('DB_USER_DF_WEBSITE'),
-         'PASSWORD': os.environ.get('DB_PASSWORD_DF_WEBSITE'),
-         'HOST': os.environ.get("DB_HOST_DF_WEBSITE"),
-         'PORT': os.environ.get("DB_PORT_DF_WEBSITE"),#'5432',
-         'OPTIONS': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.environ.get('DB_NAME_DF_WEBSITE'),
+        'USER': os.environ.get('DB_USER_DF_WEBSITE'),
+        'PASSWORD': os.environ.get('DB_PASSWORD_DF_WEBSITE'),
+        'HOST': os.environ.get("DB_HOST_DF_WEBSITE"),
+        'PORT': os.environ.get("DB_PORT_DF_WEBSITE"),#'5432',
+        'OPTIONS': {
             'sslmode': 'require',
             # 'connect_timeout': 3600,  # 10 minutes
             # 'options': '-c statement_timeout=0',  # Disable statement timeout

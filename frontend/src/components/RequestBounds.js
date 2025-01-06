@@ -1,5 +1,5 @@
 import './RequestBounds.css';
-import {  Snackbar, Alert, TextField, Tooltip, Button, Typography, Box, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import {  Snackbar, Alert, TextField, Tooltip, Button, Typography, Box, Select, MenuItem, FormControl, InputLabel, Container } from "@mui/material";
 import HelpIcon from '@mui/icons-material/Help';
 import React, { useCallback, useEffect,useRef,useState } from 'react';
 import {useDispatch, useSelector } from 'react-redux';
@@ -65,11 +65,9 @@ const getFootprints = async (date1, date2, bbox) => {
 };
 
 const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisabled) => {
-  // setSubmitDisabled(true); 
   if (!pth || !bounds || !data || !userId) {
     console.log(bounds,data,pth,userId);
     alert('Please complete all fields');
-    // setSubmitDisabled(false)
     return;
   }
   const files = []
@@ -77,22 +75,18 @@ const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisable
     files.push(file.properties.Name)
   })
   console.log(pth,bounds,files,userId);
-  // dispatch(request({pth,bounds,files,userId}))
   dispatch(request({ pth, bounds, files, userId }))
   .then((response) => {
     if (response.error) {
       alert('An error occurred while processing your request');
       console.log(response)
-      // Handle error message display here
     } else {
       navigate('/requests');
     }
   }).catch((error) => {
     console.error('An error occurred:', error);
     alert('An error occurred while processing your request');
-    // Handle error message display here
   });
-  // navigate('/requests');
 }
 
 
@@ -381,7 +375,8 @@ function RequestBounds() {
 
     return (
         <>
-            <NavbarContainer />
+        <NavbarContainer />
+          <Container>
             <div className='container'>
                 <h1 className='center'>Request new basemap</h1>
 
@@ -432,98 +427,9 @@ function RequestBounds() {
                     } />
                 }
             </div>
+            </Container>
         </>
     );
 }
 
 export default RequestBounds;
-
-// function RequestBounds() {
-//     const dispatch = useDispatch();
-//     const { isAuthenticated, user, loading } = useSelector(state => state.user);
-//     const [selectedProduct, setSelectedProduct] = useState("");
-//     const [selectedVersion, setSelectedVersion] = useState("");
-//     const [footprints,setFootprints] = useState([])
-
-//     const selectProductRef = useRef(null);
-//     const selectVersionRef = useRef(null);
-
-//     const handleProductSelect = (event) => {
-//       const selectedProduct = event.target.value;
-//       setSelectedProduct(selectedProduct);
-//       setSelectedVersion("");
-//     };
-    
-//     useEffect(() => {
-//       dispatch(models());
-//     }, [dispatch]);
-
-//     // useEffect(()=>{
-//     //   M.FormSelect.init(selectProductRef.current, {});
-//     // })
-  
-//     const products = useSelector((state) => state.product.models);
-//     const filteredVersions = products.filter(
-//       (product) => product.product === selectedProduct
-//       );
-
-//     const selectVersion = (
-//     <div className="input-field col s12">
-//       <select
-//         value={selectedVersion}
-//         onChange={(event) => setSelectedVersion(event.target.value)}
-//         ref={selectVersionRef}
-//       >
-//         <option value="" disabled>Choose the version</option>
-//         {filteredVersions.map((product) => (
-//           <option key={product.id} value={product.version}>{product.version}</option>
-//         ))}
-//       </select>
-//     </div>
-//   );
-//   console.log(products)
-  
-//   const uniqueProducts = [...new Set(products.map(product => product.product))];  
-//   const filteredProduct = filteredVersions.find((product) => product.version === selectedVersion);
-//   // useEffect(() => {
-//   //   M.FormSelect.init(selectVersionRef.current, {});
-//   // }, [filteredVersions]);
-
-//   // TODO
-//   // create the way to check if user is authenticated
-
-//   // console.log(isAuthenticated,loading,user)
-//   if (!isAuthenticated && !loading && user === null)
-//       return <Navigate to='/login'/>;
-
-//     // console.log(filteredProduct)
-
-//   return (
-//     <>
-//     <NavbarContainer/>
-//     <div className='container'>
-//       <h1 className='center'>Request new basemap</h1>
-
-//       <div className="input-field col s12">
-//         <select defaultValue={""} onChange={handleProductSelect}  ref={selectProductRef}>
-//           <option value="" disabled>Choose the product</option>
-//           {
-//             uniqueProducts.map((product, i) => (
-//               <option key={i} value={product}>{product}</option>
-//             ))
-//           }
-//         </select>
-//       </div>
-
-//       {selectedProduct && (<>{selectVersion}</>)}
-        
-//       {
-//         selectedVersion && 
-//         <Map key={filteredProduct?.id} filteredProduct={filteredProduct} />
-//       }
-//     </div>
-//     </>
-//   );
-// }
-
-// export default RequestBounds;

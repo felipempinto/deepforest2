@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Button } from '@mui/material';
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container } from '@mui/material';
 import NavbarComponent from './includes/Navbar';
 import Footer from './includes/Footer';
 import { homepage } from '../features/main';
+import { lighten, darken } from '@mui/system';
 import './Homepage.css';
 
 const Homepage = () => {
@@ -31,15 +32,21 @@ const Homepage = () => {
             <NavbarComponent />
 
             <Box
+                className="parallax"
+                // sx={{
+                //     position: 'relative',
+                //     backgroundImage: `url(${process.env.PUBLIC_URL}/michele-purin-uWJo5rEhvo4-unsplash.jpg)`,
+                //     backgroundSize: 'cover',
+                //     backgroundPosition: 'center',
+                //     height: '1080px',
+                // }}
                 sx={{
-                    position: 'relative',
                     backgroundImage: `url(${process.env.PUBLIC_URL}/michele-purin-uWJo5rEhvo4-unsplash.jpg)`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: '500px',
+                    height: '800px',
                 }}
             >
                 <Box
+                    className="parallax-content"
                     sx={{
                         position: 'absolute',
                         top: '50%',
@@ -55,22 +62,44 @@ const Homepage = () => {
                     </Typography>
                     <Button
                         variant="contained"
-                        color="primary"
                         href="/request"
-                        sx={{ mt: 2 }}
-                    >
+                        sx={{
+                            mt: 2,
+                            backgroundImage: 'linear-gradient(to right, #c4a197d0, #92564bc5)',
+                            paddingLeft: '50px',
+                            paddingRight: '50px',
+                            color: 'white',
+                            '&:hover': {
+                            backgroundImage: 'linear-gradient(to right, #b38a87d0, #814c44c5)', // Optional hover effect
+                            },
+                        }}
+                        >
                         Explore
                     </Button>
                 </Box>
             </Box>
 
-            <Box sx={{ py: 4 }}>
-                <Typography variant="h4" align="center" gutterBottom>
+            <Box sx={{ 
+                py: 4, 
+                backgroundColor: "hsla( 10.6508875739645,73.79912663755458%,55.09803921568628% ,1)" 
+                }}>
+                <Container>
+                <Typography 
+                    variant="h4" 
+                    align="center" 
+                    gutterBottom 
+                    sx={{ color: 'white' }} 
+                >
                     How it Works
                 </Typography>
-                <Typography variant="body1" align="center" sx={{ mx: 4, mb: 4 }}>
+                <Typography 
+                    variant="body1" 
+                    align="center" 
+                    sx={{ color: 'white', mx: 4, mb: 4 }} 
+                >
                     {text1}
                 </Typography>
+
                 <Grid container spacing={3} justifyContent="center">
                     {Object.entries(versions).map(([key, value]) => (
                         <Grid item xs={12} sm={6} md={3} key={key}>
@@ -79,8 +108,8 @@ const Homepage = () => {
                                 sx={{
                                     bgcolor:
                                         key === 'Version 0.0.2'
-                                            ? 'primary.main'
-                                            : 'secondary.main',
+                                        ? lighten('#808080', 0.3)
+                                        : darken('#808080', 0.3), 
                                     color: 'white',
                                 }}
                             >
@@ -94,6 +123,7 @@ const Homepage = () => {
                         </Grid>
                     ))}
                 </Grid>
+                </Container>
             </Box>
 
             <Box
@@ -101,8 +131,9 @@ const Homepage = () => {
                     backgroundImage: `url(${process.env.PUBLIC_URL}/IMG_2694.JPG)`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    height: '500px',
+                    height: '600px',
                 }}
+                className="parallax"
             />
 
             {/* Products Section */}
@@ -116,7 +147,7 @@ const Homepage = () => {
                             <Card>
                                 <CardMedia
                                     component="img"
-                                    height="200"
+                                    height="500"
                                     image={product.image}
                                     alt={product.name}
                                 />

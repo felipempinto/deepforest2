@@ -8,12 +8,28 @@ img{
     max-width: 100%;
 }
 
-/* @import url('https://fonts.googleapis.com/css2?family=YourChosenFont&display=swap'); */
+.parallax {
+  position: relative;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
 
-.parallax-container {
+
+.parallax-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+}
+
+/* .parallax-container {
   position: relative;
   overflow: hidden;
-  height: 500px; /* Adjust the height according to your needs */
+  height: 500px;
 }
 
 .parallax-container .parallax {
@@ -34,28 +50,17 @@ img{
 
 .parallax-text-container h1 {
   color: #fff;
-  font-size: 100px; /* Adjust the font size according to your needs */
-  /* font-weight: bold; */
-  font-family: "Playfair Display"; /* Replace 'YourChosenFont' with the desired font name */
+  font-size: 100px; 
+  font-family: "Playfair Display"; 
 }
 
-/* Montserrat
-Lato
-Playfair Display
-Roboto Slab
-Raleway
-Merriweather
-Source Sans Pro
-Open Sans
-Poppins
-Nunito */
 
 .parallax-text-container .professional-text {
     color: #fff5f5;
-    font-size: 20px; /* Adjust the font size according to your needs */
+    font-size: 20px; 
     font-weight: bold;
-    margin-top: 10px; /* Adjust the spacing as desired */
-  }
+    margin-top: 10px; 
+  } */
 
 
 .explore-button{
@@ -77,10 +82,6 @@ Nunito */
 }
 
 .img-card{
-  /* max-width: 600px;
-  max-height: 450px; */
-  /* width: 100%;
-  height: 100%; */
   width: 500px;
   height: 500px;
   object-fit:cover;
