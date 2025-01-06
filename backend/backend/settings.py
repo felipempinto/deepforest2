@@ -15,6 +15,9 @@ SECRET_KEY = os.environ.get('SECRET_KEY_DF_WEBSITE')
 DEBUG = os.environ.get("DEBUG")=='True'
 LOCAL = os.environ.get("LOCAL")=="True"
 
+GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH')
+GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH')
+
 INSTANCES = os.environ.get("INSTANCES")
 if INSTANCES :
     INSTANCES = INSTANCES.split(",") 
@@ -94,11 +97,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(BASE_DIR, "build")
-
-                ],
-        # "DIRS": [
-        #     # os.path.join(BASE_DIR, "build")
-        #     ],
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -113,8 +112,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+USE_SSL = os.environ.get("USE_SSL")=="True"
 DATABASES = {
     'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': os.environ.get('DB_NAME_DF_WEBSITE'),
+        'USER': os.environ.get('DB_USER_DF_WEBSITE'),
+        'PASSWORD': os.environ.get('DB_PASSWORD_DF_WEBSITE'),
+        'HOST': os.environ.get("DB_HOST_DF_WEBSITE"),
+        'PORT': os.environ.get("DB_PORT_DF_WEBSITE"),#'5432',
+        # 'OPTIONS': {
+        #     'sslmode': 'require',
+        #     # 'connect_timeout': 3600,  # 10 minutes
+        #     # 'options': '-c statement_timeout=0',  # Disable statement timeout
+        # },
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('DB_NAME_DF_WEBSITE'),
         'USER': os.environ.get('DB_USER_DF_WEBSITE'),
@@ -131,6 +142,14 @@ DATABASES = {
         "CONN_HEALTH_CHECKS":True,
     },
 }
+
+if USE_SSL:
+    DATABASES["default"]['OPTIONS'] = {
+        'sslmode': 'require',
+            # 'connect_timeout': 3600,  # 10 minutes
+            # 'options': '-c statement_timeout=0',  # Disable statement timeout
+        },
+    
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -211,6 +230,8 @@ AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID_DF_WEBSITE')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY_DF_WEBSITE')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME_DF_WEBSITE')
 
+print(AWS_ACCESS_KEY_ID)
+
 AWS_S3_FILE_OVERWRITE = False
 
 AWS_S3_REGION_NAME = "us-east-2"
@@ -232,6 +253,36 @@ STORAGES = {
         "signature_version": AWS_S3_SIGNATURE_VERSION,
 },
 }
+
+# print(AWS_ACCESS_KEY_ID)
+# print(AWS_SECRET_ACCESS_KEY)
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_S3_REGION_NAME = "us-east-2"
+# AWS_LOCATION = 'static'
+
+# AWS_QUERYSTRING_AUTH = True
+# AWS_S3_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+# AWS_S3_SIGNATURE_VERSION = 's3v4'
+# STATICFILES_DIRS = [
+#     'build/static',
+# ]    
+
+# STATIC_URL = 'https://%s/%s/static/' % (AWS_S3_DOMAIN, AWS_LOCATION)
+
+# STORAGES = {
+#     "default": {
+#         "BACKEND": 'storages.backends.s3boto3.S3Boto3Storage',
+#         },
+#     "staticfiles": {
+#         "BACKEND": 'storages.backends.s3boto3.S3Boto3Storage',
+#         },
+#     "OPTIONS": {
+#         "bucket_name": AWS_STORAGE_BUCKET_NAME,
+#         "region_name": AWS_S3_REGION_NAME,
+#         "signature_version": AWS_S3_SIGNATURE_VERSION,
+#     },
+# }
+
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -257,5 +308,5 @@ REST_AUTH_SERIALIZERS = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
-  }
+}
 

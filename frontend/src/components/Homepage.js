@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container } from '@mui/material';
+import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container, Container } from '@mui/material';
 import NavbarComponent from './includes/Navbar';
 import Footer from './includes/Footer';
 import { homepage } from '../features/main';
@@ -56,9 +56,11 @@ const Homepage = () => {
                         textAlign: 'center',
                     }}
                 >
-                    <Typography variant="h3">Deep Forest</Typography>
+                    <Typography variant="h1">Deep Forest</Typography>
                     <Typography variant="subtitle1">
-                        Unlock the Power of Deep Learning for Forestry
+                        <b>
+                            Unlock the Power of Deep Learning for Forestry
+                        </b>
                     </Typography>
                     <Button
                         variant="contained"

@@ -51,6 +51,7 @@ function ResponsiveAppBar() {
     <Button
       onClick={()=>navigate("/products")}
       sx={{ my: 2, color: 'black', display: 'block' }}
+      sx={{ my: 2, color: 'black', display: 'block' }}
     >
       Products
     </Button>
@@ -64,7 +65,7 @@ function ResponsiveAppBar() {
 
   const links2 = <>
     <MenuItem onClick={()=>navigate("/products")}>
-      <Typography sx={{ textAlign: 'center' }}>
+      <Typography sx={{ textAlign: 'center',color:'black' }}>
         Products
       </Typography>
     </MenuItem>
@@ -103,13 +104,7 @@ function ResponsiveAppBar() {
   </>
 
   return (
-    <AppBar 
-      position={isHomepage ? 'absolute' : 'static'}
-      sx={{
-        backgroundColor: isHomepage ? 'rgba(0, 0, 0, 0)' : 'primary.main',
-        boxShadow: isHomepage ? 'none' : 'default',
-      }}
-      >
+    <AppBar position="static">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Button sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}>
