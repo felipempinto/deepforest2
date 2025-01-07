@@ -1,42 +1,17 @@
 import './RequestBounds.css';
-import {  Snackbar, Alert, TextField, Tooltip, Button, Typography, 
+import {  TextField, Tooltip, Button, Typography, 
   Box, Select, MenuItem, FormControl, InputLabel, Container 
 } from "@mui/material";
 import HelpIcon from '@mui/icons-material/Help';
 import React, { useCallback, useEffect,useRef,useState } from 'react';
 import {useDispatch, useSelector } from 'react-redux';
-import { MapContainer,
-  TileLayer,
-  ZoomControl,
-  LayersControl,
-  GeoJSON,
-  useMap,
-  FeatureGroup,
-  // Popup
-        } from 'react-leaflet';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { EditControl } from 'react-leaflet-draw';
+import MiniMap from './MiniMap';
 import NavbarContainer from './includes/Navbar'
 import { useNavigate } from 'react-router-dom';
 import { models } from '../features/products';
-import L from 'leaflet';
 import {request} from '../features/products'
 import axios from 'axios';
-import { 
-  Navigate,
-  // Link
-} from 'react-router-dom';
-import tileLayersData from './tileLayers.json';
-// import { loadingPage } from './Loading';
-var parse = require('wellknown');
-
-
-const tileLayers = tileLayersData.map((layer) => ({
-  key: layer.key,
-  name: layer.name,
-  url: layer.url,
-}));
-
+import { Navigate } from 'react-router-dom';
 
 const getFootprints = async (date1, date2, bbox) => {
   const url = `${process.env.REACT_APP_API_URL}/api/products/get_data`;
@@ -90,156 +65,6 @@ const handleRequest = (pth,bounds,data,userId,dispatch,navigate,setSubmitDisable
     alert('An error occurred while processing your request');
   });
 }
-
-
-const MiniMap = ({ filteredProduct, setPolygon, data }) => {
-  const [geojsonEnabled, setGeojsonEnabled] = useState(true);
-  const [notification, setNotification] = useState({ open: false, message: "", severity: "error" });
-  const wktPolygon = filteredProduct?.poly;
-  const geojsonPolygon = wktPolygon ? parse(wktPolygon) : null;
-  const featureGroupRef = useRef(null);
-
-  const handleToggleGeojson = () => {
-    setGeojsonEnabled((prevEnabled) => !prevEnabled);
-  };
-
-  const onPolygonCreated = (e) => {
-    const { layer } = e;
-
-    if (featureGroupRef.current && featureGroupRef.current.getLayers().length > 1) {
-      featureGroupRef.current.removeLayer(layer);
-      setNotification({
-        open: true,
-        message: "Only single geometries are allowed.",
-        severity: "warning",
-      });
-      return;
-    }
-
-    const areaMetersSquared = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
-    const areaKilometersSquared = areaMetersSquared / 1000000;
-    const maxArea = 110 * 110;
-
-    if (areaKilometersSquared > maxArea) {
-      const areasqkm = areaKilometersSquared.toFixed(2);
-      featureGroupRef.current.clearLayers();
-      setNotification({
-        open: true,
-        message: `Area exceeds maximum allowed (12100 km²). Requested: ${areasqkm} km².`,
-        severity: "error",
-      });
-      return;
-    }
-
-    const wktPolygon = layer.toGeoJSON().geometry;
-    const wktString = parse.stringify(wktPolygon);
-    setPolygon(wktString);
-  };
-
-  const fitBounds = useCallback(
-    (map) => {
-      if (geojsonPolygon && map) {
-        const bounds = L.geoJSON(geojsonPolygon).getBounds();
-        map.fitBounds(bounds);
-      }
-    },
-    [geojsonPolygon]
-  );
-
-  useEffect(() => {
-    const map = featureGroupRef.current?._map;
-    if (map) fitBounds(map);
-  }, [fitBounds]);
-
-  const MapComponent = () => {
-    const map = useMap();
-    fitBounds(map);
-    return null;
-  };
-
-  const onEachFeature = (feature, layer) => {
-    if (feature.properties) {
-      const { Name, OriginDate, ContentLength, Footprint } = feature.properties;
-      const popupContent = `
-        <div>
-          <p>${Name}</p>
-          <p><strong>Date:</strong> ${new Date(OriginDate).toLocaleString()}</p>
-          <p><strong>Footprint:</strong> ${Footprint}</p>
-          <p><strong>Content Length:</strong> ${ContentLength}</p>
-        </div>
-      `;
-      layer.bindPopup(popupContent);
-    }
-  };
-
-  return (
-    <>
-      <Button
-        variant="contained"
-        color={geojsonEnabled ? "primary" : "secondary"}
-        onClick={handleToggleGeojson}
-      >
-        {geojsonEnabled ? "Disable Locations" : "Enable Locations"}
-      </Button>
-
-      <MapContainer
-        className="map-container map-container-request"
-        center={[51.505, -0.09]}
-        zoom={5}
-        zoomControl={false}
-        maxZoom={20}
-        minZoom={2}
-      >
-        <LayersControl position="bottomright">
-          {tileLayers.map((layer) => (
-            <LayersControl.BaseLayer checked name={layer.name} key={layer.key}>
-              <TileLayer url={layer.url} />
-            </LayersControl.BaseLayer>
-          ))}
-        </LayersControl>
-
-        {geojsonPolygon && geojsonEnabled && (
-          <GeoJSON id="locations" data={geojsonPolygon} style={{ color: "red" }} />
-        )}
-        {data?.features?.length > 0 && (
-          <GeoJSON
-            id="data"
-            data={data}
-            style={{ color: "yellow" }}
-            onEachFeature={onEachFeature}
-          />
-        )}
-
-        <ZoomControl position="bottomright" />
-        <MapComponent />
-        <FeatureGroup ref={featureGroupRef}>
-          <EditControl
-            position="topright"
-            draw={{
-              rectangle: false,
-              circle: false,
-              marker: false,
-              polyline: false,
-              circlemarker: false,
-            }}
-            featureGroup={featureGroupRef.current}
-            onCreated={onPolygonCreated}
-          />
-        </FeatureGroup>
-      </MapContainer>
-
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={5000}
-        onClose={() => setNotification({ ...notification, open: false })}
-      >
-        <Alert onClose={() => setNotification({ ...notification, open: false })} severity={notification.severity}>
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </>
-  );
-};
 
 const Map = ({ filteredProduct }) => {
   const dateRef1 = useRef(null);
