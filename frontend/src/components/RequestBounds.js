@@ -1,5 +1,7 @@
 import './RequestBounds.css';
-import {  Snackbar, Alert, TextField, Tooltip, Button, Typography, Box, Select, MenuItem, FormControl, InputLabel, Container } from "@mui/material";
+import {  Snackbar, Alert, TextField, Tooltip, Button, Typography, 
+  Box, Select, MenuItem, FormControl, InputLabel, Container 
+} from "@mui/material";
 import HelpIcon from '@mui/icons-material/Help';
 import React, { useCallback, useEffect,useRef,useState } from 'react';
 import {useDispatch, useSelector } from 'react-redux';
@@ -10,7 +12,7 @@ import { MapContainer,
   GeoJSON,
   useMap,
   FeatureGroup,
-  Popup
+  // Popup
         } from 'react-leaflet';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
@@ -25,7 +27,7 @@ import {
   // Link
 } from 'react-router-dom';
 import tileLayersData from './tileLayers.json';
-import { loadingPage } from './Loading';
+// import { loadingPage } from './Loading';
 var parse = require('wellknown');
 
 
@@ -352,7 +354,7 @@ function RequestBounds() {
     const { isAuthenticated, user, loading } = useSelector(state => state.user);
     const [selectedProduct, setSelectedProduct] = useState("");
     const [selectedVersion, setSelectedVersion] = useState("");
-    const [footprints, setFootprints] = useState([]);
+    // const [footprints, setFootprints] = useState([]);
 
     useEffect(() => {
         dispatch(models());

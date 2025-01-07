@@ -1,7 +1,5 @@
 import React, { 
-  useState,
-  useEffect,
-  useRef 
+  useEffect
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { visualization } from '../features/products.js';

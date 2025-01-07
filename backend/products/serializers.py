@@ -25,6 +25,7 @@ class ModelsTrainedSerializer(serializers.ModelSerializer):
     class Meta:
         model = ModelsTrained
         fields = '__all__'
+        extra_kwargs = {'read_data': {'read_only': True}}  
 
         
 class GeoJSONSerializer(serializers.Serializer):

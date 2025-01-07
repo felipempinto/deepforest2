@@ -13,8 +13,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-import { Box,MenuItem,Accordion,AccordionSummary,AccordionDetails,Input,InputLabel,FormHelperText, Button, Typography } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
+import { 
+  Box,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Button, Typography } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -41,7 +46,7 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
   const [formSubmitted, setFormSubmitted] = useState(false);
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
-  const collapsibleRef = useRef(null);
+  // const collapsibleRef = useRef(null);
   const dispatch = useDispatch();
 
   const handleMouseOver = (id) => {

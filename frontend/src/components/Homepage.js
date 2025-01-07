@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from "@mui/material";
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Grid, Card, CardContent, CardMedia, Typography, Button, Container } from '@mui/material';
 import NavbarComponent from './includes/Navbar';
@@ -138,7 +139,9 @@ const Homepage = () => {
 
             <Box sx={{ py: 4 }}>
                 <Typography variant="h4" align="center" gutterBottom>
+                <Link href="/products" underline="hover" color="inherit">
                     Products
+                </Link>
                 </Typography>
                 <Grid container spacing={4}>
                     {products.map((product) => (

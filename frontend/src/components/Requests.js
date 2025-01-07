@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import NavbarComponent from './includes/Navbar';
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { getRequests, deleteRequest } from '../features/products';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -149,6 +149,7 @@ const Requests = () => {
                       variant="contained"
                       color="success"
                       size="small"
+                      href="#"
                       onClick={() =>
                         exportGeoJSONAsFile(
                           request.geojson,
