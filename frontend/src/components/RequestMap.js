@@ -12,14 +12,20 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DownloadIcon from "@mui/icons-material/Download";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
+import MenuIcon from '@mui/icons-material/Menu';
+import CircularProgress from '@mui/material/CircularProgress';
 import { 
   Box,
   MenuItem,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Button, Typography } from '@mui/material';
+  Button, 
+  IconButton,
+  Typography,
+  Alert,
+  Snackbar
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -41,12 +47,18 @@ function formatBytes(bytes, decimals = 2) {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
 
-function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors }) {
+function SideNavComponent({ 
+  products, 
+  geojsons, 
+  geojsonColors, 
+  setGeojsonColors,
+  showSuccessSnack,
+  showErrorSnack
+}) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const startDateRef = useRef(null);
-  const endDateRef = useRef(null);
-  // const collapsibleRef = useRef(null);
+  const [date1,setDate1] = useState(null)
+  const [date2,setDate2] = useState(null)
   const dispatch = useDispatch();
 
   const handleMouseOver = (id) => {
@@ -73,29 +85,43 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
 
   const handleBackClick = () => {
     setFormSubmitted(false);
-    startDateRef.current = null;
-    endDateRef.current = null;
+    setDate1(null)
+    setDate2(null)
     dispatch(resetTiles())
   }
 
-  const handleFormSubmit = (event) => {
+  const handleFormSubmit = async (event) => {
     event.preventDefault();
     if (selectedProduct && geojsons.length > 0) {
       setFormSubmitted(true);
     }
 
     if (!selectedProduct) {
-      alert("You need to select the product first!")
+      showErrorSnack("You need to select the product first!")
+      setFormSubmitted(false);
+    } else if (!date1 || !date2){
+      showErrorSnack("You need to select the dates!")
+      setFormSubmitted(false);
     } else {
-      console.log(selectedProduct)
       const formData = {
         product: selectedProduct.id,
-        date1: startDateRef.current.value,
-        date2: endDateRef.current.value
+        date1: date1,
+        date2: date2,
       };
 
-      dispatch(tiles(formData));
       setFormSubmitted(true);
+      const response = await dispatch(tiles(formData));
+      if (response.type==="tiles/rejected"){
+        console.log("ERROR:",response.payload.error)
+      } else if ( response.type==="tiles/fulfilled" ) {
+        console.log(response.payload.length)
+        if (response.payload.length===0){
+          showErrorSnack('No images found')
+        } else {
+          showSuccessSnack(`${response.payload.length} images found`)
+        }
+      }
+      setFormSubmitted(false);
     }
   };
 
@@ -118,12 +144,9 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
       return "Invalid date";
     }
   }
-  
-
-  console.log(geojsons)
 
   const tab1 = (
-    <div className="tab-container">
+    <div>
       <Box component="form"
         onSubmit={handleFormSubmit} 
         className="form-container"
@@ -153,15 +176,17 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker 
               label="Start Date" 
-              ref={startDateRef} 
               className="date-picker"
+              value={date1}
+              onChange={e=>setDate1(e)}
             />
           </LocalizationProvider>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker 
               label="End Date" 
-              ref={endDateRef} 
               className="date-picker"
+              value={date2}
+              onChange={e=>setDate2(e)}
             />
           </LocalizationProvider>
         </div>
@@ -173,34 +198,15 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
           color="primary" 
           disabled={formSubmitted}
         >
+          {formSubmitted?<CircularProgress />:null}
           Submit
         </Button>
       </Box>
-  
-      {geojsons.length === 0 && formSubmitted && (
-        <div className="no-results-container">
-          <Typography variant="body1" className="error-message">
-            No images found.
-          </Typography>
-          <Button
-            variant="outlined"
-            color="secondary"
-            className="dismiss-button"
-            onClick={() => setFormSubmitted(false)}
-          >
-            Dismiss
-          </Button>
-        </div>
-      )}
     </div>
   );
 
   const tab2 = (
-    <div className="container">
-      <Typography variant="h5" className="center-align">
-        Products Based on Your Search
-      </Typography>
-  
+    <>
       <Button
         onClick={handleBackClick}
         className="back-button"
@@ -209,16 +215,12 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
       >
         Back to Search
       </Button>
-  
-      <div 
-        className="accordion-container" 
-        >
         {geojsons.map((geojson) => (
           <Accordion 
               onMouseOver={() => handleMouseOver(geojson.id)}
               onMouseOut={() => handleMouseOut(geojson.id)}
               key={geojson.id} 
-              className="geojson-accordion">
+              >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls={`panel-${geojson.id}-content`}
@@ -248,8 +250,7 @@ function SideNavComponent({ products, geojsons, geojsonColors, setGeojsonColors 
             </AccordionDetails>
           </Accordion>
         ))}
-      </div>
-    </div>
+    </>
   );
   
   
@@ -269,7 +270,9 @@ function RequestMap() {
   useEffect(() => {
     dispatch(homepage());
   }, [dispatch]);
-
+  const [open, setOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [geojsonColors, setGeojsonColors] = useState({});
   const [showSidebar, setShowSidebar] = useState(true);
   const navigate = useNavigate();
@@ -277,8 +280,23 @@ function RequestMap() {
   const tiles = useSelector((state) => state.main.tiles);
   const products = useSelector((state) => state.main.products);
 
-  const handleBackClick = () => {
-    navigate('/');
+  const showSuccessSnack = (message) => {
+    setSnackbarSeverity('success');
+    setSnackbarMessage(message);
+    setOpen(true);
+  };
+  
+  const showErrorSnack = (message) => {
+    setSnackbarSeverity('error');
+    setSnackbarMessage(message);
+    setOpen(true);
+  };
+  
+  const handleCloseSnack = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpen(false);
   };
 
   const toggleSidebar = () => {
@@ -299,7 +317,6 @@ function RequestMap() {
         "product": tile.product,
         "mask_url": tile.mask_url,
         "date_image": tile.date_image,
-        // "last_modified": tile.last_modified,
         "size": tile.size
       }
     }
@@ -309,7 +326,7 @@ function RequestMap() {
   useEffect(() => {
     if (tiles.length) {
       const initialColors = tiles.reduce((acc, tile) => {
-        acc[tile.id] = 'red'; // Set the default color to 'red'
+        acc[tile.id] = 'red';
         return acc;
       }, {});
       setGeojsonColors(initialColors);
@@ -377,68 +394,51 @@ function RequestMap() {
           geojsons={tiles} 
           geojsonColors={geojsonColors} 
           setGeojsonColors={setGeojsonColors} 
+          showSuccessSnack={showSuccessSnack}
+          showErrorSnack={showErrorSnack}
           />
       </div>
-      {/* <button onClick={handleBackClick} 
-          className="waves-effect waves-light btn" 
-          id="back-button">Back
-      </button> */}
-      <Button id="back-button" onClick={handleBackClick}>
-        homepage
-      </Button>
-      <button
+      <IconButton
+          href="/"
+          style={{ 
+              position: 'absolute', 
+              top: '10px', 
+              right: '10px',
+              zIndex:"10000" 
+          }}
+          color="primary"
+      >
+          {/* <Home /> */}
+          <img
+          src={process.env.PUBLIC_URL + '/Logo.png'}
+          alt="Deep Forest Logo"
+          style={{ height: '40px' }}
+      />
+      </IconButton>
+      <Button 
         onClick={toggleSidebar}
         className="waves-effect waves-light btn"
-        id="button-toggle-side-nav"><i className="material-icons">menu</i></button>
+        id="button-toggle-side-nav"
+      >
+        <MenuIcon/>
+      </Button>
+      <Snackbar 
+        open={open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnack}
+      >
+        <Alert
+          onClose={handleCloseSnack}
+          severity={snackbarSeverity} 
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
     </>
   );
 }
 
 export default RequestMap;
-
-
-
-
-
-{/* <form onSubmit={handleFormSubmit} className="form-container">
-        <div className="">
-          <h4 className="form-heading">Search for Free Products:</h4>
-
-          <select
-            id="product-select"
-            className="select-class"
-            value={selectedProduct ? selectedProduct.id : ''}
-            onChange={handleProductChange}
-          >
-            <option value="">-- Select a product --</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
-              </option>
-            ))}
-          </select>
-
-          <div className='date-section'>
-            <div className="date-input">
-              <label htmlFor="start-date-picker">Start Date:</label>
-              <input
-                ref={startDateRef}
-                type="text"
-                className="datepicker my-datepicker"
-              />
-            </div>
-            <div className="date-input">
-              <label htmlFor="end-date-picker">End Date:</label>
-              <input ref={endDateRef} type="text" className="datepicker my-datepicker" />
-            </div>
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          className="submit-button"
-          disabled={formSubmitted}
-        >
-          Submit
-        </button>
-      </form> */}

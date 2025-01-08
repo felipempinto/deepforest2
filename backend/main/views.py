@@ -77,11 +77,14 @@ def tiles_list(request):
             queryset = TilesProcessed.objects.filter(
                 product=product
             ).order_by(F('date_image').asc(nulls_last=True))
-
         if date1 and date2:
-            date1 = timezone.make_aware(datetime.strptime(date1, '%Y-%m-%d'),timezone.get_default_timezone()).date()
-            date2 = timezone.make_aware(datetime.strptime(date2, '%Y-%m-%d'),timezone.get_default_timezone()).date()
+            d1 = datetime.strptime(date1.split("T")[0], '%Y-%m-%d')
+            d2 = datetime.strptime(date2.split("T")[0], '%Y-%m-%d')
+            date1 = timezone.make_aware(d1,timezone.get_default_timezone()).date()
+            date2 = timezone.make_aware(d2,timezone.get_default_timezone()).date()
             queryset = queryset.filter(date_image__range=(date1, date2))
+        else:
+            return Response({"error":"Date is missing!"},status=status.HTTP_400_BAD_REQUEST)
 
         if bbox is not None:
             try:
@@ -91,7 +94,7 @@ def tiles_list(request):
                 bbox_poly = None
             # bbox_poly = Polygon.from_bbox(bbox['geometry']['coordinates'])
             queryset = queryset.filter(poly__intersects=bbox_poly)
-        
+
         serializer = TilesSerializer(queryset, many=True)
         return Response(serializer.data)
 

@@ -33,7 +33,8 @@ export const tiles = createAsyncThunk(
       date2,
     });
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/main/tiles/`,{
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/main/tiles/`,{
         method: 'POST',
         headers: {
             Accept: 'application/json',
