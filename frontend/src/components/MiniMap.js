@@ -11,11 +11,17 @@ import { MapContainer,
 import L from 'leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import BorderAllIcon from '@mui/icons-material/BorderAll';
+import BorderClearIcon from '@mui/icons-material/BorderClear';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import {  
     Snackbar, 
     Alert, 
     Box,
-    Button
+    Button,
+    Tooltip,
 } from "@mui/material";
 import tileLayersData from './tileLayers.json';
 var parse = require('wellknown');
@@ -84,14 +90,13 @@ const MiniMap = ({ filteredProduct, setPolygon, data }) => {
         [geojsonPolygon]
     );
 
-    // useEffect(() => {
-    //     const map = featureGroupRef.current?._map;
-    //     if (map) fitBounds(map);
-    // }, [fitBounds]);
+    const handleUpload = ()=>{
+        
+    }
 
     const MapComponent = () => {
         const map = useMap();
-        fitBounds(map);
+        // fitBounds(map);
         return null;
     };
 
@@ -112,13 +117,6 @@ const MiniMap = ({ filteredProduct, setPolygon, data }) => {
 
     return (
         <>
-            <Button
-                variant="contained"
-                color={geojsonEnabled ? "primary" : "secondary"}
-                onClick={handleToggleGeojson}
-            >
-                {geojsonEnabled ? "Disable Locations" : "Enable Locations"}
-            </Button>
             <Box position={isMaximized ? "absolute": "relative"} 
                 height={isMaximized ? "100%" : "400px"} 
                 width="100%"
@@ -126,18 +124,51 @@ const MiniMap = ({ filteredProduct, setPolygon, data }) => {
                 left={isMaximized?"0px":""}
                 zIndex={isMaximized?1000:""}
             >
-            <Button
-                variant="text"
-                onClick={() => setIsMaximized(!isMaximized)}
-                sx={{ 
-                    position: "absolute", 
-                    top: 10, 
-                    left: 10, 
-                    zIndex: 1000 
-                }}
-                >
-                {isMaximized ? "Minimizar" : "Maximizar"}
-            </Button>
+            <Tooltip title={isMaximized?"Minimize":"Maximize"} placement="right">
+                <Button
+                    variant="text"
+                    onClick={() => setIsMaximized(!isMaximized)}
+                    sx={{ 
+                        color:"white",
+                        position: "absolute", 
+                        top: 10, 
+                        left: 10, 
+                        zIndex: 1000 
+                    }}
+                    >
+                    {isMaximized ? <FullscreenExitIcon/>: <FullscreenIcon/>}
+                </Button>
+            </Tooltip>
+            <Tooltip title="Locations used during training phase" placement="right">
+                <Button
+                    variant="text"
+                    onClick={handleToggleGeojson}
+                    sx={{ 
+                        color:"white",
+                        position: "absolute", 
+                        top: 40, 
+                        left: 10, 
+                        zIndex: 1000, 
+                    }}
+                    >
+                    {geojsonEnabled ? <BorderClearIcon/>:<BorderAllIcon/>}
+                </Button>
+            </Tooltip>
+            <Tooltip title="Upload Geometry" placement="right">
+                <Button
+                    variant="text"
+                    onClick={handleUpload}
+                    sx={{ 
+                        color:"white",
+                        position: "absolute", 
+                        top: 70, 
+                        left: 10, 
+                        zIndex: 1000, 
+                    }}
+                    >
+                    <FileUploadIcon/>
+                </Button>
+            </Tooltip>
 
             <MapContainer
                 className="map-container map-container-request"

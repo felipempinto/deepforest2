@@ -24,7 +24,8 @@ import {
   IconButton,
   Typography,
   Alert,
-  Snackbar
+  Snackbar,
+  Tooltip,
 } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -59,6 +60,8 @@ function SideNavComponent({
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [date1,setDate1] = useState(null)
   const [date2,setDate2] = useState(null)
+  const textRef = useRef(null);
+  const [isTextOverflowing, setIsTextOverflowing] = useState(false);
   const dispatch = useDispatch();
 
   const handleMouseOver = (id) => {
@@ -229,9 +232,24 @@ function SideNavComponent({
               <Typography>{cvtDate(geojson.date_image)}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Typography>
-                <strong>Name: </strong>{geojson.name}
+            <Tooltip 
+              title={geojson.name} 
+              disableHoverListener={geojson.name.length >= 200}
+              >
+              <Typography
+                component="div"
+                style={{
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '200px',
+                }}
+              >
+                <strong>Name: </strong>
+                {geojson.name}
               </Typography>
+            </Tooltip>
+
               <Typography>
                 <strong>Product: </strong>{geojson.product}
               </Typography>
@@ -252,8 +270,6 @@ function SideNavComponent({
         ))}
     </>
   );
-  
-  
 
   return (
     <>
@@ -262,8 +278,6 @@ function SideNavComponent({
 
   );
 }
-
-
 
 function RequestMap() {
   const dispatch = useDispatch();
@@ -275,7 +289,6 @@ function RequestMap() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [geojsonColors, setGeojsonColors] = useState({});
   const [showSidebar, setShowSidebar] = useState(true);
-  const navigate = useNavigate();
 
   const tiles = useSelector((state) => state.main.tiles);
   const products = useSelector((state) => state.main.products);
@@ -408,7 +421,6 @@ function RequestMap() {
           }}
           color="primary"
       >
-          {/* <Home /> */}
           <img
           src={process.env.PUBLIC_URL + '/Logo.png'}
           alt="Deep Forest Logo"

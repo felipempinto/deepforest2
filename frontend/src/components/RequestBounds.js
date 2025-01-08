@@ -179,7 +179,6 @@ function RequestBounds() {
     const { isAuthenticated, user, loading } = useSelector(state => state.user);
     const [selectedProduct, setSelectedProduct] = useState("");
     const [selectedVersion, setSelectedVersion] = useState("");
-    // const [footprints, setFootprints] = useState([]);
 
     useEffect(() => {
         dispatch(models());
@@ -227,7 +226,15 @@ function RequestBounds() {
                 </FormControl>
 
                 {selectedProduct && (
-                    <FormControl fullWidth style={{ marginTop: "20px" }}>
+                    <FormControl fullWidth 
+                      sx={{
+                        marginTop:"20px",
+                        marginBottom:"20px"
+                      }}
+                      // style={{ 
+                      //   marginTop: "20px" 
+                      // }}
+                      >
                         <InputLabel>Choose the version</InputLabel>
                         <Select
                             value={selectedVersion}
