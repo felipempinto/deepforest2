@@ -16,7 +16,7 @@ import {
     IconButton,
     Button,
 } from '@mui/material';
-import { Menu, Home, ExpandMore, ZoomOutMap } from '@mui/icons-material';
+import { Home, ExpandMore, ZoomOutMap, ArrowRight, ArrowLeft } from '@mui/icons-material';
 import './MapComponent.css';
 import tileLayersData from './tileLayers.json';
 
@@ -101,17 +101,38 @@ const SideNav = ({ data, setData, mapInstance }) => {
             </Drawer>
             <IconButton
                 onClick={handleToggleButton}
-                style={{ position: 'absolute', top: '10px', left: '10px' }}
+                style={{ 
+                    position: 'absolute', 
+                    top: "10px", 
+                    left: !isSideNavOpen?'10px':"300px", 
+                    zIndex:"10000",
+                    backgroundColor:"white",
+                    color:"black"
+                }}
                 color="primary"
             >
-                <Menu />
+                {isSideNavOpen?
+                <ArrowLeft/>:
+                <ArrowRight/>
+                }
+                
             </IconButton>
             <IconButton
                 href="/"
-                style={{ position: 'absolute', top: '10px', left: '60px' }}
+                style={{ 
+                    position: 'absolute', 
+                    top: '10px', 
+                    right: '10px',
+                    zIndex:"10000" 
+                }}
                 color="primary"
             >
-                <Home />
+                {/* <Home /> */}
+                <img
+                src={process.env.PUBLIC_URL + '/Logo.png'}
+                alt="Deep Forest Logo"
+                style={{ height: '40px' }}
+            />
             </IconButton>
         </>
     );
@@ -156,6 +177,7 @@ const MapComponent = ({ userRequests }) => {
                     zoom={5}
                     maxZoom={20}
                     minZoom={2}
+                    zoomControl={false}
                 >
                     <LayersControl position="bottomright">
                         {tileLayers.map((layer, index) => (
@@ -191,228 +213,3 @@ const MapComponent = ({ userRequests }) => {
 };
 
 export default MapComponent;
-
-// import React from 'react';
-// import {
-//     MapContainer,
-//     TileLayer,
-//     ZoomControl,
-//     LayersControl,
-//     GeoJSON,
-//     ImageOverlay,
-//     ScaleControl,
-//     Popup,
-//   } from 'react-leaflet';
-// import './MapComponent.css';
-// import tileLayersData from './tileLayers.json';
-// import M from 'materialize-css/dist/js/materialize.min.js';
-// import { useEffect, useState } from "react";
-
-// const convertBounds = (boundsStr) => {
-//     const boundsArray = boundsStr.split(',').map(Number);
-//     return [
-//         [boundsArray[1], boundsArray[0]], 
-//         [boundsArray[3], boundsArray[2]]  
-//     ];
-// };
-
-
-// const SideNav = ({data,setData,mapInstance})=>{
-
-//     const [isSideNavOpen,setIsSideNavOpen] = useState(true)
-
-//     useEffect(()=>{
-//         const initializeMaterialize = () => {
-//             var options = {};
-//             const sidenav = document.querySelectorAll('.sidenav');
-//             M.Sidenav.init(sidenav, options);
-    
-//             const collapsible = document.querySelectorAll('.collapsible');
-//             M.Collapsible.init(collapsible, options);
-//         };
-    
-//         // Delay initialization by 500 milliseconds
-//         setTimeout(initializeMaterialize, 500);
-//     },[]);
-
-//     const handleToggleButton = ()=>{
-//         setIsSideNavOpen(!isSideNavOpen)
-//         // if (isSideNavOpen){
-//         //     setIsSideNavOpen(false)
-//         // }
-//         // else{
-//         //     setIsSideNavOpen(true)}
-        
-//     }
-
-//     const handleRasterCheckboxChange = (id, checked) => {
-//         setData(data.map(item => {
-//             if (item.id === id) {
-//                 return { ...item, rasterEnabled: checked };
-//             }
-//             return item;
-//         }));
-//     };
-
-//     const zoomToLayer = (item) => {  
-//         mapInstance.flyToBounds(convertBounds(item.bounds_png));
-//       };
-
-//     const handleGeojsonCheckboxChange = (id, checked) => {
-//         setData(data.map(item => {
-//             if (item.id === id) {
-//                 return { ...item, geojsonEnabled: checked };
-//             }
-//             return item;
-//         }));
-//     };
-//     return (
-//         <div>
-//             <div className={`side-bar-map-visual ${isSideNavOpen?'active':null}`}>
-//                 <h5 className='center'>Your data:</h5>
-//                 {data &&
-//                     data.map((item, index) => (
-
-//                         <ul className="collapsible">
-//                             <li key={`list-item-${index}`}>
-//                                 <div className="collapsible-header">
-//                                     {item.name}
-//                                 </div>
-//                                 <div className="collapsible-body collapsible-body-style ">
-//                                     <div className="collapsible-item">
-//                                         <p>
-//                                             <label>
-//                                                 <input
-//                                                     type="checkbox"
-//                                                     checked={item.rasterEnabled}
-//                                                     onChange={e => handleRasterCheckboxChange(item.id, e.target.checked)} />
-//                                                 <span>Raster</span>
-//                                             </label>
-//                                         </p>
-//                                     </div>
-//                                     <div className="collapsible-item">
-//                                         <p>
-//                                             <label>
-//                                                 <input
-//                                                     type="checkbox"
-//                                                     checked={item.geojsonEnabled}
-//                                                     onChange={e => handleGeojsonCheckboxChange(item.id, e.target.checked)} />
-//                                                 <span>GeoJSON</span>
-//                                             </label>
-//                                         </p>
-//                                     </div>
-//                                     <div className="collapsible-item">
-//                                         <p>
-//                                             <label>
-//                                                 <a onClick={()=>zoomToLayer(item)}>
-//                                                     <i className='material-icons'>
-//                                                         zoom_out_map
-//                                                     </i>
-//                                                 </a>
-//                                                 <span>Zoom to layer</span>
-//                                             </label>
-//                                         </p>
-//                                     </div>
-//                                 </div>
-//                             </li>
-//                         </ul>
-//                     ))}
-//             </div>
-//             <a id="sidenav-toggle" href="#" onClick={handleToggleButton} className="sidenav-button btn"><i className="material-icons">menu</i></a>
-//             <a href="/" className="sidenav-button-2 btn"><i className="material-icons">home</i></a>
-//         </div>
-//     );
-// }
-
-// const MapComponent = ({userRequests})=>{
-
-//     const [data,setData] = useState([])
-//     const [dataCreated,setDataCreated] = useState(false)
-//     const [mapInstance, setMapInstance] = useState(null);
-
-//     useEffect(() => {
-//         if (!dataCreated && userRequests.length>0) {
-//         // if (!dataCreated) {
-//             if(userRequests.length>0){
-//             const filteredRequests = userRequests
-//                 .filter((item) => item.png)
-//                 .map((item) => ({
-//                     ...item,
-//                     rasterEnabled: false,
-//                     geojsonEnabled: false
-//                 }));
-//             console.log(filteredRequests)
-//             setData(filteredRequests);
-//             } else {
-//                 window.alert("You dont have any requests yet, please, create a request and get back on this page.")
-//             }
-//             setDataCreated(true);
-
-//         }
-//     }, [dataCreated, userRequests]);
-
-//     const tileLayers = tileLayersData.map((layer) => ({
-//         key: layer.key,
-//         name: layer.name,
-//         url: layer.url,
-//       }));
-
-//     console.log(dataCreated)
-
-//     return <>
-//     {dataCreated &&
-//         <MapContainer 
-//         className='map-container' 
-//         ref={(map) => {
-//             if (map && !mapInstance) {
-//               setMapInstance(map);
-//             }
-//           }}
-//         center={[51.505, -0.09]} 
-//         zoom={5} 
-//         zoomControl={false}
-//         maxZoom={20} 
-//         minZoom={2}>
-//         <LayersControl position="bottomright">
-//         {tileLayers.map((layer, index) => (
-//             <LayersControl.BaseLayer checked name={layer.name} key={index}>
-//             <TileLayer url={layer.url} key={index}/>
-//             </LayersControl.BaseLayer>
-//         ))}
-//         </LayersControl>
-
-//         {data && data.length>0 && data.map((item, i) => (
-//             <React.Fragment key={`map-item-${i}`}>
-//                 {item.rasterEnabled && (
-//                         <ImageOverlay
-//                             url={item.png}
-//                             bounds={convertBounds(item.bounds_png)}
-//                             // zIndex={1000}
-//                             key={`raster-${i}`}
-//                         />
-
-//                 )}
-//                 {item.geojsonEnabled && (
-
-//                         <GeoJSON
-//                             id={`geojson-${i}`}
-//                             key={`geojson-${i}`}
-//                             data={JSON.parse(item.geojson)}
-//                             style={{ zIndex: 20000 }}
-//                         />
-//                 )}
-                
-//             </React.Fragment>
-//         ))}
-//         <SideNav
-//         data={data}
-//         setData={setData}
-//         mapInstance={mapInstance}
-//         />
-//         </MapContainer>
-//     }
-//     </>
-// }
-
-
-// export default MapComponent;

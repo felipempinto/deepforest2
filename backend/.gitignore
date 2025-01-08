@@ -1,6 +1,8 @@
 static
 temp
 venv
+venv2
+venv3
 .env
 .env.production.local
 backup

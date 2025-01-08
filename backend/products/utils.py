@@ -335,6 +335,7 @@ def newrequest(data,request):
         request.mask = output
         mask = get_mask_by_url(output)
         try:
+            print(mask)
             file,filename,bounds_png = create_visual(mask,request.mask,request)
         except Exception as e:
             print(e)

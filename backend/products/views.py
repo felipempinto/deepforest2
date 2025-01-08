@@ -105,8 +105,8 @@ class NewRequestView(APIView):
                 )
             return Response(
                 {'message': 'Request created successfully', 
-                 'request_id': request_instance.id}, 
-                 status=status.HTTP_201_CREATED)
+                'request_id': request_instance.id}, 
+                status=status.HTTP_201_CREATED)
         else:
             return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
