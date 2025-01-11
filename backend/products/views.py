@@ -188,27 +188,79 @@ def select_images(gdf,bounds,date):
     gdf = gdf[gdf['Name'].isin(names)] 
     return gdf
 
+
+from shapely.geometry import shape, box
+from shapely.ops import unary_union
+from shapely.wkt import loads as shapely_loads
+import geopandas as gpd
+import pandas as pd
+from datetime import datetime
+import requests
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+
 class GetData(APIView):
 
-    def post(self,request):
+    def post(self, request):
         def parse_geo(wkt):
-            wkt = wkt.replace("geography'SRID=4326;","")
-            wkt = wkt.replace("'","")
+            wkt = wkt.replace("geography'SRID=4326;", "")
+            wkt = wkt.replace("'", "")
             return shapely_loads(wkt)
         
+        def calculate_bounding_box(geometry_wkt):
+            try:
+                geom = shapely_loads(geometry_wkt)
+                return geom.bounds
+            except Exception as e:
+                raise ValueError("Invalid geometry provided.")
+
+        def is_geometry_too_complex(geometry_wkt, threshold=5000):
+            try:
+                geom = shapely_loads(geometry_wkt)
+                return len(geom.wkt) > threshold
+            except Exception:
+                return True
+
         d1 = request.data.get('date1', None)
         d2 = request.data.get('date2', None)
         wkt = request.data.get('bbox', None)
 
-        date1 = datetime.strptime(d1,"%Y-%m-%d")
-        date2 = datetime.strptime(d2,"%Y-%m-%d")
+        if not (d1 and d2 and wkt):
+            return Response(
+                {"error": "date1, date2, and bbox are required parameters."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        if date1>date2:
-            return Response({"error":"Date 1 should not be after Date 2"},status=status.HTTP_400_BAD_REQUEST)
+        try:
+            date1 = datetime.strptime(d1, "%Y-%m-%d")
+            date2 = datetime.strptime(d2, "%Y-%m-%d")
+        except ValueError:
+            return Response(
+                {"error": "Invalid date format. Use 'YYYY-MM-DD'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if date1 > date2:
+            return Response(
+                {"error": "Date 1 should not be after Date 2."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if is_geometry_too_complex(wkt):
+            bounding_box = calculate_bounding_box(wkt)
+            bbox_wkt = box(*bounding_box).wkt
+            wkt = bbox_wkt  
+
+            response_message = {
+                "info": "The provided geometry was too complex and has been simplified to its bounding box.",
+                "bounding_box": bounding_box,
+            }
+        else:
+            response_message = {}
+
         cloud = 1.0
-
         main_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$"
-
         cc = f"Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value lt {cloud})"
         l2 = 'S2MSI2A'
         S2L2A = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '{l2}')"
@@ -216,27 +268,88 @@ class GetData(APIView):
         location = f"OData.CSC.Intersects(area=geography'SRID=4326;{wkt}')"
 
         URL = f"{main_url}filter={cc} and {S2L2A} and {date} and {location}"
-
-        json = requests.get(URL).json()
-        df = pd.DataFrame.from_dict(json['value'])
-
-        if len(df)==0:
+        
+        try:
+            json = requests.get(URL).json()
+            df = pd.DataFrame.from_dict(json['value'])
+        except Exception as e:
             return Response(
-                {"Not found":"No images found for the provided period."},
-                status=status.HTTP_204_NO_CONTENT)
+                {"error": f"Error fetching data: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-        geom = df["Footprint"].map(parse_geo)
+        if df.empty:
+            return Response(
+                {"info": "No images found for the provided period."},
+                status=status.HTTP_204_NO_CONTENT,
+            )
 
-        gdf = gpd.GeoDataFrame(df,geometry=geom)
-        gdf.set_crs(epsg=4326,inplace=True)
+        try:
+            geom = df["Footprint"].map(parse_geo)
+            gdf = gpd.GeoDataFrame(df, geometry=geom)
+            gdf.set_crs(epsg=4326, inplace=True)
+            gdf["tile"] = gdf["Name"].str[38:44]
+            selected = select_images(gdf, wkt, date2)
+            gdf = selected[["Name", "tile", "OriginDate", "ContentLength", "Footprint", "geometry"]]
+            output = gdf.to_json()
+        except Exception as e:
+            return Response(
+                {"error": f"Error processing data: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        response_message["results"] = output
+        return Response(response_message, status=status.HTTP_200_OK)
+
+# class GetData(APIView):
+
+#     def post(self,request):
+#         def parse_geo(wkt):
+#             wkt = wkt.replace("geography'SRID=4326;","")
+#             wkt = wkt.replace("'","")
+#             return shapely_loads(wkt)
         
-        gdf["tile"] = gdf["Name"].str[38:44]#.str[33:44]
+#         d1 = request.data.get('date1', None)
+#         d2 = request.data.get('date2', None)
+#         wkt = request.data.get('bbox', None)
+
+#         date1 = datetime.strptime(d1,"%Y-%m-%d")
+#         date2 = datetime.strptime(d2,"%Y-%m-%d")
+
+#         if date1>date2:
+#             return Response({"error":"Date 1 should not be after Date 2"},status=status.HTTP_400_BAD_REQUEST)
+#         cloud = 1.0
+
+#         main_url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products?$"
+
+#         cc = f"Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value lt {cloud})"
+#         l2 = 'S2MSI2A'
+#         S2L2A = f"Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq '{l2}')"
+#         date = f"ContentDate/Start gt {d1} and ContentDate/Start lt {d2}"
+#         location = f"OData.CSC.Intersects(area=geography'SRID=4326;{wkt}')"
+
+#         URL = f"{main_url}filter={cc} and {S2L2A} and {date} and {location}"
+
+#         json = requests.get(URL).json()
+#         df = pd.DataFrame.from_dict(json['value'])
+
+#         if len(df)==0:
+#             return Response(
+#                 {"Not found":"No images found for the provided period."},
+#                 status=status.HTTP_204_NO_CONTENT)
+
+#         geom = df["Footprint"].map(parse_geo)
+
+#         gdf = gpd.GeoDataFrame(df,geometry=geom)
+#         gdf.set_crs(epsg=4326,inplace=True)
         
-        selected = select_images(gdf,wkt,date2)
-        gdf = selected[["Name","tile","OriginDate","ContentLength","Footprint","geometry"]]
+#         gdf["tile"] = gdf["Name"].str[38:44]#.str[33:44]
         
-        output = gdf.to_json()
-        return Response(output,status=status.HTTP_200_OK)
+#         selected = select_images(gdf,wkt,date2)
+#         gdf = selected[["Name","tile","OriginDate","ContentLength","Footprint","geometry"]]
+        
+#         output = gdf.to_json()
+#         return Response(output,status=status.HTTP_200_OK)
 
 
 

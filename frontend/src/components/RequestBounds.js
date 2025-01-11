@@ -95,8 +95,8 @@ const Map = ({ filteredProduct }) => {
       setSubmitDisabled(false);
       return;
     }
-
-    const obj = JSON.parse(response.data);
+    // TODO: if response.data.info then show message in a warning
+    const obj = JSON.parse(response.data.results);
     console.log(obj);
     setData(obj);
     setSubmitDisabled(false);
@@ -164,7 +164,7 @@ const Map = ({ filteredProduct }) => {
           <Button
             variant="contained"
             onClick={handleGetData}
-            disabled={submitDisabled}
+            disabled={submitDisabled || !polygon}
           >
             {submitDisabled ? 'Searching...' : 'Search'}
           </Button>
