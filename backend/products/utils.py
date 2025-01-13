@@ -302,7 +302,7 @@ def process_local(arguments):
     result = subprocess.check_output(cmd, shell=True, text=True)
     print(result)
     
-TESTLOCAL=False
+TESTLOCAL=True
 def newrequest(data,request):
 
     version = data["version"]
@@ -319,9 +319,10 @@ def newrequest(data,request):
     output = f'requests/{user}/{product}/{version}/{date}/{name}.tif'
     try:
         arguments = f'-i {images} -b "{bounds}" -p "{product}" -v "{version}" -o "{output}" --no-tqdm'
-        print(arguments)
         if TESTLOCAL:
             print("TESTING LOCALLY")
+            with open("command.txt",mode="w") as f:
+                f.write(arguments)
             process_output = process_local(arguments)
         else:
             process_output = process(arguments)
